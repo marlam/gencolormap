@@ -1,7 +1,7 @@
 # gencolormap
 
 This tool generates Brewer-like color maps for visualization using intuitive parameters.
-It implements the paper M. Wijffelaars, R. Vliegen, J.J. van Wijk, E.-J. van
+It implements this paper: M. Wijffelaars, R. Vliegen, J.J. van Wijk, E.-J. van
 der Linden. Generating color palettes using intuitive parameters. In Computer
 Graphics Forum, vol. 27, no. 3, pp. 743-750, 2008.
 
