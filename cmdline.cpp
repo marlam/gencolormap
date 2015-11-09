@@ -116,21 +116,40 @@ int main(int argc, char* argv[])
         return retval;
     }
 
-    if (type < 0) {
-        fprintf(stderr, "Invalid or missing option -t|--type.\n");
-        print_help = true;
-        retval = 1;
+    if (!print_help) {
+        if (type < 0) {
+            fprintf(stderr, "Invalid or missing option -t|--type.\n");
+            print_help = true;
+            retval = 1;
+        }
+        if (n < 2) {
+            fprintf(stderr, "Invalid or missing option -n|--n.\n");
+            print_help = true;
+            retval = 1;
+        }
+        if (hue < 0.0f) {
+            fprintf(stderr, "Invalid or missing option -h|--hue.\n");
+            print_help = true;
+            retval = 1;
+        }
     }
-    if (n < 2) {
-        fprintf(stderr, "Invalid or missing option -n|--n.\n");
-        print_help = true;
-        retval = 1;
+    if (print_help) {
+        printf("Usage: %s\n"
+                "  -t|--type=sequential   Generate a sequential color map\n"
+                "  -t|--type=diverging    Generate a diverging color map\n"
+                "  -t|--type=qualitative  Generate a qualitative color map\n"
+                "  -n|--n=N               Set number of colors in the map\n"
+                "  -h|--hue=H             Set hue in [0,360] degrees\n"
+                "  [-d|--divergence=D]    Set divergence for div. and qual. maps\n"
+                "  [-c|--contrast=C]      Set contrast in [0,1]\n"
+                "  [-s|--saturation=S]    Set saturation in [0,1]\n"
+                "  [-b|--brightness=B]    Set brightness in [0,1]\n"
+                "  [-w|--warmth=W]        Set color warmth in [0,1] for seq. and div. maps\n"
+                "Generates a color map and prints it to standard output as sRGB triplets.\n"
+                "Report bugs to <martin.lambers@uni-siegen.de>.\n", argv[0]);
+        return retval;
     }
-    if (hue < 0.0f) {
-        fprintf(stderr, "Invalid or missing option -h|--hue.\n");
-        print_help = true;
-        retval = 1;
-    }
+
     if (divergence < 0.0f) {
         if (type <= 1)
             divergence = 2.0f / 3.0f * static_cast<float>(M_PI);
@@ -160,23 +179,6 @@ int main(int argc, char* argv[])
     }
     if (warmth < 0.0f) {
         warmth = ColorMap::DefaultWarmth;
-    }
-
-    if (print_help) {
-        printf("Usage: %s\n"
-                "  -t|--type=sequential   Generate a sequential color map\n"
-                "  -t|--type=diverging    Generate a diverging color map\n"
-                "  -t|--type=qualitative  Generate a sequential color map\n"
-                "  -n|--n=N               Set number of colors in the map\n"
-                "  -h|--hue=H             Set hue in [0,360] degrees\n"
-                "  [-d|--divergence=D]    Set divergence for div. and qual. maps\n"
-                "  [-c|--contrast=C]      Set contrast in [0,1]\n"
-                "  [-s|--saturation=S]    Set saturation in [0,1]\n"
-                "  [-b|--brightness=B]    Set brightness in [0,1]\n"
-                "  [-w|--warmth=W]        Set color warmth in [0,1] for seq. and div. maps\n"
-                "Generates a color map and prints it to standard output as sRGB triplets.\n"
-                "Report bugs to <martin.lambers@uni-siegen.de>.\n", argv[0]);
-        return retval;
     }
 
     std::vector<unsigned char> colormap(3 * n);
