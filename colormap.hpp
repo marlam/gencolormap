@@ -124,7 +124,7 @@ void BrewerQualitative(int n, unsigned char* colormap,
 // of colors in the sRGB space. The gamma parameter sets optional gamma correction.
 // The return value is the number of colors that had to be clipped.
 
-const float CubeHelixDefaultHue = 5.23598775598f; // 5/6 * 2PI
+const float CubeHelixDefaultHue = 0.523598775598f; // 1/12 * 2PI
 const float CubeHelixDefaultRotations = -1.5f;
 const float CubeHelixDefaultSaturation = 1.2f;
 const float CubeHelixDefaultGamma = 1.0f;
