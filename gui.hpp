@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,37 +24,166 @@
 #ifndef GUI_HPP
 #define GUI_HPP
 
-#include <vector>
-
+#include <QVector>
 #include <QMainWindow>
 
+class QTabWidget;
 class QLabel;
 class QRadioButton;
 class QSpinBox;
 class QSlider;
 class QDoubleSpinBox;
+class QTabWidget;
 
 
-class CombinedSliderSpinBox : public QObject
+class ColorMapCombinedSliderSpinBox : public QObject
 {
 Q_OBJECT
 private:
     bool _update_lock;
+
 public:
     float minval, maxval, step;
     QSlider* slider;
     QDoubleSpinBox* spinbox;
 
-    CombinedSliderSpinBox(float minval, float maxval, float step);
+    ColorMapCombinedSliderSpinBox(float minval, float maxval, float step);
     float value() const;
     void setValue(float v);
 
 private slots:
-    void slider_changed();
-    void spinbox_changed();
+    void sliderChanged();
+    void spinboxChanged();
 
 signals:
     void valueChanged(float);
+};
+
+class ColorMapWidget : public QWidget
+{
+Q_OBJECT
+protected:
+    QVector<unsigned char> _colormap;
+    virtual void recomputeColorMap() = 0;
+
+public:
+    ColorMapWidget() {}
+    ~ColorMapWidget() {}
+
+    virtual void reset() = 0;
+
+    const QVector<unsigned char>* colorMap()
+    {
+        recomputeColorMap();
+        return &_colormap;
+    }
+
+signals:
+    void colorMapChanged();
+};
+
+class ColorMapBrewerSequentialWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _warmth_changer;
+    ColorMapCombinedSliderSpinBox* _contrast_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+    ColorMapCombinedSliderSpinBox* _brightness_changer;
+private slots:
+    void update();
+
+protected:
+    void recomputeColorMap() override;
+
+public:
+    ColorMapBrewerSequentialWidget();
+    ~ColorMapBrewerSequentialWidget();
+
+    void reset() override;
+    void parameters(int& n, float& hue,
+            float& contrast, float& saturation, float& brightness, float& warmth);
+};
+
+class ColorMapBrewerDivergingWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _divergence_changer;
+    ColorMapCombinedSliderSpinBox* _warmth_changer;
+    ColorMapCombinedSliderSpinBox* _contrast_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+    ColorMapCombinedSliderSpinBox* _brightness_changer;
+private slots:
+    void update();
+
+protected:
+    void recomputeColorMap() override;
+
+public:
+    ColorMapBrewerDivergingWidget();
+    ~ColorMapBrewerDivergingWidget();
+
+    void reset() override;
+    void parameters(int& n, float& hue, float& divergence,
+            float& contrast, float& saturation, float& brightness, float& warmth);
+};
+
+class ColorMapBrewerQualitativeWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _divergence_changer;
+    ColorMapCombinedSliderSpinBox* _contrast_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+    ColorMapCombinedSliderSpinBox* _brightness_changer;
+private slots:
+    void update();
+
+protected:
+    void recomputeColorMap() override;
+
+public:
+    ColorMapBrewerQualitativeWidget();
+    ~ColorMapBrewerQualitativeWidget();
+
+    void reset() override;
+    void parameters(int& n, float& hue, float& divergence,
+            float& contrast, float& saturation, float& brightness);
+};
+
+class ColorMapCubeHelixWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _rotations_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+    ColorMapCombinedSliderSpinBox* _gamma_changer;
+private slots:
+    void update();
+
+protected:
+    void recomputeColorMap() override;
+
+public:
+    ColorMapCubeHelixWidget();
+    ~ColorMapCubeHelixWidget();
+
+    void reset() override;
+    void parameters(int& n, float& hue, float& rotations,
+            float& saturation, float& gamma);
 };
 
 class GUI : public QMainWindow
@@ -66,27 +195,12 @@ public:
     ~GUI();
 
 private:
-    bool update_lock;
-    QRadioButton* type_seq_btn;
-    QRadioButton* type_div_btn;
-    QSpinBox* n_spinbox;
-    CombinedSliderSpinBox* hue_changer;
-    QLabel* divergence_label;
-    CombinedSliderSpinBox* divergence_changer;
-    QLabel* warmth_label;
-    CombinedSliderSpinBox* warmth_changer;
-    CombinedSliderSpinBox* contrast_changer;
-    CombinedSliderSpinBox* saturation_changer;
-    CombinedSliderSpinBox* brightness_changer;
-    QLabel* colormap_label;
-
-    void get_params(int& type, int& n, float& hue, float& divergence,
-            float& contrast, float& saturation, float& brightness,
-            float& warmth);
-    std::vector<unsigned char> get_map(int type, int n, float hue, float divergence,
-            float contrast, float saturation, float brightness,
-            float warmth);
-
+    ColorMapBrewerSequentialWidget* _brewerseq_widget;
+    ColorMapBrewerDivergingWidget* _brewerdiv_widget;
+    ColorMapBrewerQualitativeWidget* _brewerqual_widget;
+    ColorMapCubeHelixWidget* _cubehelix_widget;
+    QTabWidget* _tab_widget;
+    QLabel* _colormap_label;
 
 private slots:
     void update();

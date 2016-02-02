@@ -49,44 +49,91 @@
 
 namespace ColorMap {
 
-const float DefaultContrast = 0.88f;
-float DefaultContrastForSmallN(int n); // only for discrete color maps, i.e. n <= 9
-const float DefaultSaturation = 0.6f;
-const float DefaultBrightness = 0.75f;
-const float DefaultWarmth = 0.15f;
+/*
+ * Brewer-like color maps, as described in
+ * M. Wijffelaars, R. Vliegen, J.J. van Wijk, E.-J. van der Linden. Generating
+ * color palettes using intuitive parameters. In Computer Graphics Forum, vol. 27,
+ * no. 3, pp. 743-750, 2008.
+ */
 
 // Create a sequential color map with n colors of the given hue in [0,2*PI].
-void Sequential(int n, unsigned char* srgb_colormap, float hue,
-        float contrast = DefaultContrast,
-        float saturation = DefaultSaturation,
-        float brightness = DefaultBrightness,
-        float warmth = DefaultWarmth);
 
-// Create a diverging color map with n colors. Half of them will have hue0 (in
-// [0,2*PI]), the other half will have a hue that has the distance given by
-// divergence (in [0,2*PI]) to hue0, and they will meet in the middle at a
-// neutral color.
-void Diverging(int n, unsigned char* srgb_colormap, float hue0, float divergence,
-        float contrast = DefaultContrast,
-        float saturation = DefaultSaturation,
-        float brightness = DefaultBrightness,
-        float warmth = DefaultWarmth);
+const float BrewerSequentialDefaultHue = 0.0;
+const float BrewerSequentialDefaultContrast = 0.88f;
+float BrewerSequentialDefaultContrastForSmallN(int n); // only for discrete color maps, i.e. n <= 9
+const float BrewerSequentialDefaultSaturation = 0.6f;
+const float BrewerSequentialDefaultBrightness = 0.75f;
+const float BrewerSequentialDefaultWarmth = 0.15f;
 
-const float DefaultQualitativeDivergence = 6.2831853071795864769; // 2*PI
-const float DefaultQualitativeContrast = 0.5f;
-const float DefaultQualitativeSaturation = 0.5f;
-const float DefaultQualitativeBrightness = 1.0f;
+void BrewerSequential(int n, unsigned char* srgb_colormap,
+        float hue = BrewerSequentialDefaultHue,
+        float contrast = BrewerSequentialDefaultContrast,
+        float saturation = BrewerSequentialDefaultSaturation,
+        float brightness = BrewerSequentialDefaultBrightness,
+        float warmth = BrewerSequentialDefaultWarmth);
+
+// Create a diverging color map with n colors. Half of them will have the given
+// hue (in [0,2*PI]), the other half will have a hue that has the distance given
+// by divergence (in [0,2*PI]) to that hue, and they will meet in the middle at
+// a neutral color.
+
+const float BrewerDivergingDefaultHue = 0.0;
+const float BrewerDivergingDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+const float BrewerDivergingDefaultContrast = 0.88f;
+float BrewerDivergingDefaultContrastForSmallN(int n); // only for discrete color maps, i.e. n <= 9
+const float BrewerDivergingDefaultSaturation = 0.6f;
+const float BrewerDivergingDefaultBrightness = 0.75f;
+const float BrewerDivergingDefaultWarmth = 0.15f;
+
+void BrewerDiverging(int n, unsigned char* srgb_colormap,
+        float hue = BrewerDivergingDefaultHue,
+        float divergence = BrewerDivergingDefaultDivergence,
+        float contrast = BrewerDivergingDefaultContrast,
+        float saturation = BrewerDivergingDefaultSaturation,
+        float brightness = BrewerDivergingDefaultBrightness,
+        float warmth = BrewerDivergingDefaultWarmth);
 
 // Create a qualitative color map with n colors. The colors will have the same
-// saturation; lightness and hue will differ. The parameter hue0 sets the hue of
+// saturation; lightness and hue will differ. The parameter hue sets the hue of
 // the first color, and the parameter divergence defines the hue range starting
-// from hue0 that can be used for the colors.
-void Qualitative(int n, unsigned char* colormap, float hue0,
-        float divergence = DefaultQualitativeDivergence,
-        float contrast = DefaultQualitativeContrast,
-        float saturation = DefaultQualitativeSaturation,
-        float brightness = DefaultQualitativeBrightness);
+// from that hue that can be used for the colors.
 
+const float BrewerQualitativeDefaultHue = 0.0f;
+const float BrewerQualitativeDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+const float BrewerQualitativeDefaultContrast = 0.5f;
+const float BrewerQualitativeDefaultSaturation = 0.5f;
+const float BrewerQualitativeDefaultBrightness = 1.0f;
+
+void BrewerQualitative(int n, unsigned char* colormap,
+        float hue = BrewerQualitativeDefaultHue,
+        float divergence = BrewerQualitativeDefaultDivergence,
+        float contrast = BrewerQualitativeDefaultContrast,
+        float saturation = BrewerQualitativeDefaultSaturation,
+        float brightness = BrewerQualitativeDefaultBrightness);
+
+/*
+ * CubeHelix color maps, as described in
+ * Green, D. A., 2011, A colour scheme for the display of astronomical intensity
+ * images, Bulletin of the Astronomical Society of India, 39, 289.
+ */
+
+// Create a CubeHelix colormap with n colors. The parameter hue (in [0,2*PI])
+// sets the hue of the first color. The parameter rot sets the number of
+// rotations. It can be negative for backwards rotation. The saturation parameter
+// determines the saturation of the colors; higher values may lead to clipping
+// of colors in the sRGB space. The gamma parameter sets optional gamma correction.
+// The return value is the number of colors that had to be clipped.
+
+const float CubeHelixDefaultHue = 5.23598775598f; // 5/6 * 2PI
+const float CubeHelixDefaultRotations = -1.5f;
+const float CubeHelixDefaultSaturation = 1.2f;
+const float CubeHelixDefaultGamma = 1.0f;
+
+int CubeHelix(int n, unsigned char* colormap,
+        float hue = CubeHelixDefaultHue,
+        float rotations = CubeHelixDefaultRotations,
+        float saturation = CubeHelixDefaultSaturation,
+        float gamma = CubeHelixDefaultGamma);
 }
 
 #endif

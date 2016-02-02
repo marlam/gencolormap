@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -366,14 +366,14 @@ static void convert_colormap_entry(LUVColor color, unsigned char* srgb)
     srgb[2] = std::round(sb * 255.0f);
 }
 
-/* The public functions */
+/* Public functions: Brewer-like color maps */
 
-float DefaultContrastForSmallN(int n)
+float BrewerSequentialDefaultContrastForSmallN(int n)
 {
     return std::min(0.88f, 0.34f + 0.06f * n);
 }
 
-void Sequential(int n, unsigned char* colormap, float hue,
+void BrewerSequential(int n, unsigned char* colormap, float hue,
         float contrast, float saturation, float brightness, float warmth)
 {
     LUVColor pb, p0, p1, p2, q0, q1, q2;
@@ -390,10 +390,15 @@ void Sequential(int n, unsigned char* colormap, float hue,
     }
 }
 
-void Diverging(int n, unsigned char* colormap, float hue0, float divergence,
+float BrewerDivergingDefaultContrastForSmallN(int n)
+{
+    return std::min(0.88f, 0.34f + 0.06f * n);
+}
+
+void BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence,
         float contrast, float saturation, float brightness, float warmth)
 {
-    float hue1 = hue0 + divergence;
+    float hue1 = hue + divergence;
     if (hue1 >= twopi)
         hue1 -= twopi;
 
@@ -404,7 +409,7 @@ void Diverging(int n, unsigned char* colormap, float hue0, float divergence,
     float pbc, pbh, pbs;
     luv_to_lch(pb.u, pb.v, &pbc, &pbh);
     pbs = lch_saturation(pb.l, pbc);
-    get_color_points(hue0, saturation, warmth, pb, pbh, pbs, &p00, &p01, &p02, &q00, &q01, &q02);
+    get_color_points(hue,  saturation, warmth, pb, pbh, pbs, &p00, &p01, &p02, &q00, &q01, &q02);
     get_color_points(hue1, saturation, warmth, pb, pbh, pbs, &p10, &p11, &p12, &q10, &q11, &q12);
 
     for (int i = 0; i < n; i++) {
@@ -445,7 +450,7 @@ static float HueDiff(float h0, float h1)
     return (t < pi ? t : twopi - t);
 }
 
-void Qualitative(int n, unsigned char* colormap, float hue0, float divergence,
+void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergence,
         float contrast, float saturation, float brightness)
 {
     // Get all information about yellow
@@ -470,7 +475,7 @@ void Qualitative(int n, unsigned char* colormap, float hue0, float divergence,
     }
 
     // Derive parameters of the method
-    float eps = hue0 / twopi;
+    float eps = hue / twopi;
     float r = divergence / twopi;
     float l0 = brightness * yl;
     float l1 = (1.0f - contrast) * l0;
@@ -487,6 +492,53 @@ void Qualitative(int n, unsigned char* colormap, float hue0, float divergence,
         lch_to_luv(lch_chroma(cl, cs), ch, &(c.u), &(c.v));
         convert_colormap_entry(c, colormap + 3 * i);
     }
+}
+
+/* Public functions: CubeHelix */
+
+int CubeHelix(int n, unsigned char* colormap, float hue,
+        float rot, float saturation, float gamma)
+{
+    int clippings = 0;
+    for (int i = 0; i < n; i++) {
+        float fract = i / (n - 1.0f);
+        float angle = twopi * (hue / 3.0f + 1.0f + rot * fract);
+        fract = std::pow(fract, gamma);
+        float amp = saturation * fract * (1.0f - fract) / 2.0f;
+        float s = std::sin(angle);
+        float c = std::cos(angle);
+        float r = fract + amp * (-0.14861f * c + 1.78277f * s);
+        float g = fract + amp * (-0.29227f * c - 0.90649f * s);
+        float b = fract + amp * (1.97294f * c);
+        bool clipped = false;
+        if (r < 0.0f) {
+            r = 0.0f;
+            clipped = true;
+        } else if (r > 1.0f) {
+            r = 1.0f;
+            clipped = true;
+        }
+        if (g < 0.0f) {
+            g = 0.0f;
+            clipped = true;
+        } else if (g > 1.0f) {
+            g = 1.0f;
+            clipped = true;
+        }
+        if (b < 0.0f) {
+            b = 0.0f;
+            clipped = true;
+        } else if (b > 1.0f) {
+            b = 1.0f;
+            clipped = true;
+        }
+        if (clipped)
+            clippings++;
+        colormap[3 * i + 0] = r * 255.0f;
+        colormap[3 * i + 1] = g * 255.0f;
+        colormap[3 * i + 2] = b * 255.0f;
+    }
+    return clippings;
 }
 
 }

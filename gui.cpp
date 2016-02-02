@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,11 +21,10 @@
  * SOFTWARE.
  */
 
-#include <cmath>
-
 #include "gui.hpp"
 
 #include <QApplication>
+#include <QGuiApplication>
 #include <QGridLayout>
 #include <QLabel>
 #include <QRadioButton>
@@ -39,11 +38,12 @@
 #include <QClipboard>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QtMath>
 
 #include "colormap.hpp"
 
 
-CombinedSliderSpinBox::CombinedSliderSpinBox(float minval, float maxval, float step) :
+ColorMapCombinedSliderSpinBox::ColorMapCombinedSliderSpinBox(float minval, float maxval, float step) :
     _update_lock(false),
     minval(minval), maxval(maxval), step(step)
 {
@@ -57,16 +57,16 @@ CombinedSliderSpinBox::CombinedSliderSpinBox(float minval, float maxval, float s
     spinbox->setSingleStep(step);
     spinbox->setDecimals(std::log10(1.0f / step));
 
-    connect(slider, SIGNAL(valueChanged(int)), this, SLOT(slider_changed()));
-    connect(spinbox, SIGNAL(valueChanged(double)), this, SLOT(spinbox_changed()));
+    connect(slider, SIGNAL(valueChanged(int)), this, SLOT(sliderChanged()));
+    connect(spinbox, SIGNAL(valueChanged(double)), this, SLOT(spinboxChanged()));
 }
 
-float CombinedSliderSpinBox::value() const
+float ColorMapCombinedSliderSpinBox::value() const
 {
     return spinbox->value();
 }
 
-void CombinedSliderSpinBox::setValue(float v)
+void ColorMapCombinedSliderSpinBox::setValue(float v)
 {
     _update_lock = true;
     spinbox->setValue(v);
@@ -74,7 +74,7 @@ void CombinedSliderSpinBox::setValue(float v)
     _update_lock = false;
 }
 
-void CombinedSliderSpinBox::slider_changed()
+void ColorMapCombinedSliderSpinBox::sliderChanged()
 {
     if (!_update_lock) {
         _update_lock = true;
@@ -86,7 +86,7 @@ void CombinedSliderSpinBox::slider_changed()
     }
 }
 
-void CombinedSliderSpinBox::spinbox_changed()
+void ColorMapCombinedSliderSpinBox::spinboxChanged()
 {
     if (!_update_lock) {
         _update_lock = true;
@@ -98,80 +98,462 @@ void CombinedSliderSpinBox::spinbox_changed()
     }
 }
 
+static void hideWidgetButPreserveSize(QWidget* widget)
+{
+    QSizePolicy sp = widget->sizePolicy();
+    sp.setRetainSizeWhenHidden(true);
+    widget->setSizePolicy(sp);
+    widget->hide();
+}
+
+ColorMapBrewerSequentialWidget::ColorMapBrewerSequentialWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 2, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 2, 3);
+
+    QLabel* divergence_label = new QLabel("Divergence:");
+    layout->addWidget(divergence_label, 3, 0);
+    ColorMapCombinedSliderSpinBox* divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(divergence_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(divergence_changer->spinbox, 3, 3);
+    hideWidgetButPreserveSize(divergence_label);
+    hideWidgetButPreserveSize(divergence_changer->slider);
+    hideWidgetButPreserveSize(divergence_changer->spinbox);
+
+    QLabel* warmth_label = new QLabel("Warmth:");
+    layout->addWidget(warmth_label, 4, 0);
+    _warmth_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_warmth_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_warmth_changer->spinbox, 4, 3);
+
+    QLabel* contrast_label = new QLabel("Contrast:");
+    layout->addWidget(contrast_label, 5, 0);
+    _contrast_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_contrast_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_contrast_changer->spinbox, 5, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 6, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_saturation_changer->slider, 6, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 6, 3);
+
+    QLabel* brightness_label = new QLabel("Brightness:");
+    layout->addWidget(brightness_label, 7, 0);
+    _brightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_brightness_changer->slider, 7, 1, 1, 2);
+    layout->addWidget(_brightness_changer->spinbox, 7, 3);
+
+    layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
+    layout->setRowStretch(8, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_warmth_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_contrast_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_brightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapBrewerSequentialWidget::~ColorMapBrewerSequentialWidget()
+{
+}
+
+void ColorMapBrewerSequentialWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::BrewerSequentialDefaultHue));
+    _warmth_changer->setValue(ColorMap::BrewerSequentialDefaultWarmth);
+    _contrast_changer->setValue(ColorMap::BrewerSequentialDefaultContrast);
+    _saturation_changer->setValue(ColorMap::BrewerSequentialDefaultSaturation);
+    _brightness_changer->setValue(ColorMap::BrewerSequentialDefaultBrightness);
+    _update_lock = false;
+    update();
+}
+
+void ColorMapBrewerSequentialWidget::parameters(int& n, float& hue,
+        float& contrast, float& saturation, float& brightness, float& warmth)
+{
+    n = _n_spinbox->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    contrast = _contrast_changer->value();
+    saturation = _saturation_changer->value();
+    brightness = _brightness_changer->value();
+    warmth = _warmth_changer->value();
+}
+
+void ColorMapBrewerSequentialWidget::recomputeColorMap()
+{
+    int n;
+    float h, c, s, b, w;
+    parameters(n, h, c, s, b, w);
+    _colormap.resize(3 * n);
+    ColorMap::BrewerSequential(n, _colormap.data(), h, c, s, b, w);
+}
+
+void ColorMapBrewerSequentialWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+ColorMapBrewerDivergingWidget::ColorMapBrewerDivergingWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 2, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 2, 3);
+
+    QLabel* divergence_label = new QLabel("Divergence:");
+    layout->addWidget(divergence_label, 3, 0);
+    _divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_divergence_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_divergence_changer->spinbox, 3, 3);
+
+    QLabel* warmth_label = new QLabel("Warmth:");
+    layout->addWidget(warmth_label, 4, 0);
+    _warmth_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_warmth_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_warmth_changer->spinbox, 4, 3);
+
+    QLabel* contrast_label = new QLabel("Contrast:");
+    layout->addWidget(contrast_label, 5, 0);
+    _contrast_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_contrast_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_contrast_changer->spinbox, 5, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 6, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_saturation_changer->slider, 6, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 6, 3);
+
+    QLabel* brightness_label = new QLabel("Brightness:");
+    layout->addWidget(brightness_label, 7, 0);
+    _brightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_brightness_changer->slider, 7, 1, 1, 2);
+    layout->addWidget(_brightness_changer->spinbox, 7, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
+    layout->setRowStretch(8, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_warmth_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_contrast_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_brightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapBrewerDivergingWidget::~ColorMapBrewerDivergingWidget()
+{
+}
+
+void ColorMapBrewerDivergingWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::BrewerDivergingDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::BrewerDivergingDefaultDivergence));
+    _warmth_changer->setValue(ColorMap::BrewerDivergingDefaultWarmth);
+    _contrast_changer->setValue(ColorMap::BrewerDivergingDefaultContrast);
+    _saturation_changer->setValue(ColorMap::BrewerDivergingDefaultSaturation);
+    _brightness_changer->setValue(ColorMap::BrewerDivergingDefaultBrightness);
+    _update_lock = false;
+    update();
+}
+
+void ColorMapBrewerDivergingWidget::parameters(int& n, float& hue, float& divergence,
+        float& contrast, float& saturation, float& brightness, float& warmth)
+{
+    n = _n_spinbox->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    divergence = qDegreesToRadians(_divergence_changer->value());
+    contrast = _contrast_changer->value();
+    saturation = _saturation_changer->value();
+    brightness = _brightness_changer->value();
+    warmth = _warmth_changer->value();
+}
+
+void ColorMapBrewerDivergingWidget::recomputeColorMap()
+{
+    int n;
+    float h, d, c, s, b, w;
+    parameters(n, h, d, c, s, b, w);
+    _colormap.resize(3 * n);
+    ColorMap::BrewerDiverging(n, _colormap.data(), h, d, c, s, b, w);
+}
+
+void ColorMapBrewerDivergingWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+ColorMapBrewerQualitativeWidget::ColorMapBrewerQualitativeWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 2, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 2, 3);
+
+    QLabel* divergence_label = new QLabel("Divergence:");
+    layout->addWidget(divergence_label, 3, 0);
+    _divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_divergence_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_divergence_changer->spinbox, 3, 3);
+
+    QLabel* warmth_label = new QLabel("Warmth:");
+    layout->addWidget(warmth_label, 4, 0);
+    ColorMapCombinedSliderSpinBox* warmth_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(warmth_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(warmth_changer->spinbox, 4, 3);
+    hideWidgetButPreserveSize(warmth_label);
+    hideWidgetButPreserveSize(warmth_changer->slider);
+    hideWidgetButPreserveSize(warmth_changer->spinbox);
+
+    QLabel* contrast_label = new QLabel("Contrast:");
+    layout->addWidget(contrast_label, 5, 0);
+    _contrast_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_contrast_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_contrast_changer->spinbox, 5, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 6, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_saturation_changer->slider, 6, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 6, 3);
+
+    QLabel* brightness_label = new QLabel("Brightness:");
+    layout->addWidget(brightness_label, 7, 0);
+    _brightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_brightness_changer->slider, 7, 1, 1, 2);
+    layout->addWidget(_brightness_changer->spinbox, 7, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
+    layout->setRowStretch(8, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_contrast_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_brightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapBrewerQualitativeWidget::~ColorMapBrewerQualitativeWidget()
+{
+}
+
+void ColorMapBrewerQualitativeWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::BrewerQualitativeDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::BrewerQualitativeDefaultDivergence));
+    _contrast_changer->setValue(ColorMap::BrewerQualitativeDefaultContrast);
+    _saturation_changer->setValue(ColorMap::BrewerQualitativeDefaultSaturation);
+    _brightness_changer->setValue(ColorMap::BrewerQualitativeDefaultBrightness);
+    _update_lock = false;
+    update();
+}
+
+void ColorMapBrewerQualitativeWidget::parameters(int& n, float& hue, float& divergence,
+        float& contrast, float& saturation, float& brightness)
+{
+    n = _n_spinbox->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    divergence = qDegreesToRadians(_divergence_changer->value());
+    contrast = _contrast_changer->value();
+    saturation = _saturation_changer->value();
+    brightness = _brightness_changer->value();
+}
+
+void ColorMapBrewerQualitativeWidget::recomputeColorMap()
+{
+    int n;
+    float h, d, c, s, b;
+    parameters(n, h, d, c, s, b);
+    _colormap.resize(3 * n);
+    ColorMap::BrewerQualitative(n, _colormap.data(), h, d, c, s, b);
+}
+
+void ColorMapBrewerQualitativeWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+ColorMapCubeHelixWidget::ColorMapCubeHelixWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 2, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 2, 3);
+
+    QLabel* rotations_label = new QLabel("Rotations:");
+    layout->addWidget(rotations_label, 3, 0);
+    _rotations_changer = new ColorMapCombinedSliderSpinBox(-5.0f, +5.0f, 0.1f);
+    layout->addWidget(_rotations_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_rotations_changer->spinbox, 3, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 4, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0.0f, 2.0f, 0.1f);
+    layout->addWidget(_saturation_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 4, 3);
+
+    QLabel* gamma_label = new QLabel("Gamma:");
+    layout->addWidget(gamma_label, 5, 0);
+    _gamma_changer = new ColorMapCombinedSliderSpinBox(0.3f, 3.0f, 0.1f);
+    layout->addWidget(_gamma_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_gamma_changer->spinbox, 5, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
+    layout->setRowStretch(6, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_rotations_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_gamma_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapCubeHelixWidget::~ColorMapCubeHelixWidget()
+{
+}
+
+void ColorMapCubeHelixWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::CubeHelixDefaultHue));
+    _rotations_changer->setValue(ColorMap::CubeHelixDefaultRotations);
+    _saturation_changer->setValue(ColorMap::CubeHelixDefaultSaturation);
+    _gamma_changer->setValue(ColorMap::CubeHelixDefaultGamma);
+    _update_lock = false;
+    update();
+}
+
+void ColorMapCubeHelixWidget::parameters(int& n, float& hue,
+        float& rotations, float& saturation, float& gamma)
+{
+    n = _n_spinbox->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    rotations = _rotations_changer->value();
+    saturation = _saturation_changer->value();
+    gamma = _gamma_changer->value();
+}
+
+void ColorMapCubeHelixWidget::recomputeColorMap()
+{
+    int n;
+    float h, r, s, g;
+    parameters(n, h, r, s, g);
+    _colormap.resize(3 * n);
+    ColorMap::CubeHelix(n, _colormap.data(), h, r, s, g);
+}
+
+void ColorMapCubeHelixWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+
 GUI::GUI()
 {
     setWindowTitle("Generate Color Map");
     setWindowIcon(QIcon(":cg-logo.png"));
+
+    _brewerseq_widget = new ColorMapBrewerSequentialWidget;
+    _brewerdiv_widget = new ColorMapBrewerDivergingWidget;
+    _brewerqual_widget = new ColorMapBrewerQualitativeWidget;
+    _cubehelix_widget = new ColorMapCubeHelixWidget;
+    connect(_brewerseq_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+    connect(_brewerdiv_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+    connect(_brewerqual_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+    connect(_cubehelix_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+
     QWidget *widget = new QWidget;
+    widget->setMinimumWidth(384 * qApp->devicePixelRatio());
     QGridLayout *layout = new QGridLayout;
 
-    QLabel* type_label = new QLabel("Type:");
-    layout->addWidget(type_label, 0, 0);
-    type_seq_btn = new QRadioButton("Sequential");
-    layout->addWidget(type_seq_btn, 0, 1);
-    type_div_btn = new QRadioButton("Diverging");
-    layout->addWidget(type_div_btn, 0, 2);
-    QRadioButton* type_qual_btn = new QRadioButton("Qualitative");
-    layout->addWidget(type_qual_btn, 0, 3);
+    _tab_widget = new QTabWidget();
+    _tab_widget->addTab(_brewerseq_widget,  "Brewer-like Sequential");
+    _tab_widget->addTab(_brewerdiv_widget,  "Brewer-like Diverging");
+    _tab_widget->addTab(_brewerqual_widget, "Brewer-like Qualitative");
+    _tab_widget->addTab(_cubehelix_widget,  "CubeHelix");
+    connect(_tab_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
+    layout->addWidget(_tab_widget, 0, 0);
 
-    QLabel* n_label = new QLabel("Colors:");
-    layout->addWidget(n_label, 1, 0);
-    n_spinbox = new QSpinBox();
-    n_spinbox->setRange(2, 1024);
-    n_spinbox->setSingleStep(1);
-    layout->addWidget(n_spinbox, 1, 1, 1, 3);
+    _colormap_label = new QLabel();
+    _colormap_label->setScaledContents(true);
+    layout->addWidget(_colormap_label, 0, 1);
 
-    QLabel* hue_label = new QLabel("Hue:");
-    layout->addWidget(hue_label, 2, 0);
-    hue_changer = new CombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(hue_changer->slider, 2, 1, 1, 2);
-    layout->addWidget(hue_changer->spinbox, 2, 3);
-
-    divergence_label = new QLabel("Divergence:");
-    layout->addWidget(divergence_label, 3, 0);
-    divergence_changer = new CombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(divergence_changer->slider, 3, 1, 1, 2);
-    layout->addWidget(divergence_changer->spinbox, 3, 3);
-
-    warmth_label = new QLabel("Warmth:");
-    layout->addWidget(warmth_label, 4, 0);
-    warmth_changer = new CombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(warmth_changer->slider, 4, 1, 1, 2);
-    layout->addWidget(warmth_changer->spinbox, 4, 3);
-
-    QLabel* contrast_label = new QLabel("Contrast:");
-    layout->addWidget(contrast_label, 5, 0);
-    contrast_changer = new CombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(contrast_changer->slider, 5, 1, 1, 2);
-    layout->addWidget(contrast_changer->spinbox, 5, 3);
-
-    QLabel* saturation_label = new QLabel("Saturation:");
-    layout->addWidget(saturation_label, 6, 0);
-    saturation_changer = new CombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(saturation_changer->slider, 6, 1, 1, 2);
-    layout->addWidget(saturation_changer->spinbox, 6, 3);
-
-    QLabel* brightness_label = new QLabel("Brightness:");
-    layout->addWidget(brightness_label, 7, 0);
-    brightness_changer = new CombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(brightness_changer->slider, 7, 1, 1, 2);
-    layout->addWidget(brightness_changer->spinbox, 7, 3);
-
-    connect(type_seq_btn, SIGNAL(toggled(bool)), this, SLOT(update()));
-    connect(n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
-    connect(type_div_btn, SIGNAL(toggled(bool)), this, SLOT(update()));
-    connect(hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(warmth_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(contrast_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(brightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-
-    colormap_label = new QLabel();
-    colormap_label->setScaledContents(true);
-    layout->addWidget(colormap_label, 0, 4, 8, 1);
-
-    layout->setColumnStretch(4, 1);
+    layout->setColumnStretch(0, 1);
     widget->setLayout(layout);
     setCentralWidget(widget);
 
@@ -204,87 +586,30 @@ GUI::GUI()
     help_menu->addAction(help_about_act);
 
     show();
-    edit_reset();
+    update();
 }
 
 GUI::~GUI()
 {
 }
 
-void GUI::get_params(int& type, int& n, float& hue, float& divergence,
-        float& contrast, float& saturation, float& brightness,
-        float& warmth)
-{
-    type = type_seq_btn->isChecked() ? 0 : type_div_btn->isChecked() ? 1 : 2;
-    n = n_spinbox->value();
-    hue = hue_changer->value() / 180.0f * static_cast<float>(M_PI);
-    divergence = divergence_changer->value() / 180.0f * static_cast<float>(M_PI);
-    contrast = contrast_changer->value();
-    saturation = saturation_changer->value();
-    brightness = brightness_changer->value();
-    warmth = warmth_changer->value();
-}
-
-std::vector<unsigned char> GUI::get_map(int type, int n, float hue, float divergence,
-        float contrast, float saturation, float brightness,
-        float warmth)
-{
-    std::vector<unsigned char> colormap(3 * n);
-    if (type == 0) {
-        ColorMap::Sequential(n, &(colormap[0]), hue,
-                contrast, saturation, brightness, warmth);
-    } else if (type == 1) {
-        ColorMap::Diverging(n, &(colormap[0]), hue, divergence,
-                contrast, saturation, brightness, warmth);
-    } else {
-        ColorMap::Qualitative(n, &(colormap[0]), hue, divergence,
-                contrast, saturation, brightness);
-    }
-    return colormap;
-}
-
 void GUI::update()
 {
-    if (update_lock)
-        return;
+    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
+    const QVector<unsigned char>& colormap = *currentWidget->colorMap();
 
-    int type, n;
-    float hue, divergence, contrast, saturation, brightness, warmth;
-    get_params(type, n, hue, divergence, contrast, saturation, brightness, warmth);
-
-    divergence_label->setEnabled(type >= 1);
-    divergence_changer->slider->setEnabled(type >= 1);
-    divergence_changer->spinbox->setEnabled(type >= 1);
-    warmth_label->setEnabled(type <= 1);
-    warmth_changer->slider->setEnabled(type <= 1);
-    warmth_changer->spinbox->setEnabled(type <= 1);
-
-    const int img_width = 32;
-    const int img_height = colormap_label->height();
-    if (img_height < n)
-        n = img_height;
+    int img_width = 32;
+    int img_height = _colormap_label->height();
     QImage img(img_width, img_height, QImage::Format_RGB32);
-
-    std::vector<unsigned char> colormap(3 * n);
-    if (type == 0) {
-        ColorMap::Sequential(n, &(colormap[0]), hue,
-                contrast, saturation, brightness, warmth);
-    } else if (type == 1) {
-        ColorMap::Diverging(n, &(colormap[0]), hue, divergence,
-                contrast, saturation, brightness, warmth);
-    } else {
-        ColorMap::Qualitative(n, &(colormap[0]), hue, divergence,
-                contrast, saturation, brightness);
-    }
     for (int y = 0; y < img_height; y++) {
-        float entry_height = img_height / static_cast<float>(n);
+        float entry_height = img_height / static_cast<float>(colormap.size() / 3);
         int i = y / entry_height;
         QRgb rgb = QColor(colormap[3 * i + 0], colormap[3 * i + 1], colormap[3 * i + 2]).rgb();
         QRgb* scanline = reinterpret_cast<QRgb*>(img.scanLine(y));
         for (int x = 0; x < img_width; x++)
             scanline[x] = rgb;
     }
-    colormap_label->setPixmap(QPixmap::fromImage(img));
+    _colormap_label->setPixmap(QPixmap::fromImage(img));
 }
 
 void GUI::file_export_png()
@@ -292,14 +617,11 @@ void GUI::file_export_png()
     QString name = QFileDialog::getSaveFileName();
     if (!name.isEmpty()) {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        int type, n;
-        float hue, divergence, contrast, saturation, brightness, warmth;
-        get_params(type, n, hue, divergence, contrast, saturation, brightness, warmth);
-        std::vector<unsigned char> colormap = get_map(type, n, hue, divergence,
-                contrast, saturation, brightness, warmth);
-        QImage img(n, 1, QImage::Format_RGB32);
+        ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
+        const QVector<unsigned char>& colormap = *currentWidget->colorMap();
+        QImage img(colormap.size() / 3, 1, QImage::Format_RGB32);
         QRgb* scanline = reinterpret_cast<QRgb*>(img.scanLine(0));
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < colormap.size() / 3; i++) {
             scanline[i] = QColor(colormap[3 * i + 0], colormap[3 * i + 1], colormap[3 * i + 2]).rgb();
         }
         img.save(name, "png");
@@ -314,13 +636,10 @@ void GUI::file_export_csv()
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         QFile file(name);
         if (file.open(QIODevice::ReadWrite)) {
-            int type, n;
-            float hue, divergence, contrast, saturation, brightness, warmth;
-            get_params(type, n, hue, divergence, contrast, saturation, brightness, warmth);
-            std::vector<unsigned char> colormap = get_map(type, n, hue, divergence,
-                    contrast, saturation, brightness, warmth);
+            ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
+            const QVector<unsigned char>& colormap = *currentWidget->colorMap();
             QTextStream stream(&file);
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < colormap.size() / 3; i++) {
                 stream << colormap[3 * i + 0] << ", "
                        << colormap[3 * i + 1] << ", "
                        << colormap[3 * i + 2] << endl;
@@ -332,29 +651,17 @@ void GUI::file_export_csv()
 
 void GUI::edit_reset()
 {
-    update_lock = true;
-    type_seq_btn->setChecked(true);
-    n_spinbox->setValue(301);
-    hue_changer->setValue(0);
-    divergence_changer->setValue(240);
-    warmth_changer->setValue(ColorMap::DefaultWarmth);
-    contrast_changer->setValue(ColorMap::DefaultContrast);
-    saturation_changer->setValue(ColorMap::DefaultSaturation);
-    brightness_changer->setValue(ColorMap::DefaultBrightness);
-    update_lock = false;
-    update();
+    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
+    currentWidget->reset();
 }
 
 void GUI::edit_copy_as_img()
 {
-    int type, n;
-    float hue, divergence, contrast, saturation, brightness, warmth;
-    get_params(type, n, hue, divergence, contrast, saturation, brightness, warmth);
-    std::vector<unsigned char> colormap = get_map(type, n, hue, divergence,
-            contrast, saturation, brightness, warmth);
-    QImage img(n, 1, QImage::Format_RGB32);
+    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
+    const QVector<unsigned char>& colormap = *currentWidget->colorMap();
+    QImage img(colormap.size() / 3, 1, QImage::Format_RGB32);
     QRgb* scanline = reinterpret_cast<QRgb*>(img.scanLine(0));
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < colormap.size() / 3; i++) {
         scanline[i] = QColor(colormap[3 * i + 0], colormap[3 * i + 1], colormap[3 * i + 2]).rgb();
     }
     QApplication::clipboard()->setImage(img);
@@ -362,14 +669,11 @@ void GUI::edit_copy_as_img()
 
 void GUI::edit_copy_as_txt()
 {
-    int type, n;
-    float hue, divergence, contrast, saturation, brightness, warmth;
-    get_params(type, n, hue, divergence, contrast, saturation, brightness, warmth);
-    std::vector<unsigned char> colormap = get_map(type, n, hue, divergence,
-            contrast, saturation, brightness, warmth);
+    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
+    const QVector<unsigned char>& colormap = *currentWidget->colorMap();
     QString string;
     QTextStream stream(&string);
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < colormap.size() / 3; i++) {
         stream << colormap[3 * i + 0] << ", "
                << colormap[3 * i + 1] << ", "
                << colormap[3 * i + 2] << endl;
@@ -380,8 +684,8 @@ void GUI::edit_copy_as_txt()
 void GUI::help_about()
 {
     QMessageBox::about(this, "About",
-                "<p>gencolormap version 0.1</p>"
-                "<p>Copyright (C) 2015<br>"
+                "<p>gencolormap version 0.2</p>"
+                "<p>Copyright (C) 2016<br>"
                 "   <a href=\"http://www.cg.informatik.uni-siegen.de/\">"
                 "   Computer Graphics Group, University of Siegen</a>.<br>"
                 "   Written by <a href=\"http://www.cg.informatik.uni-siegen.de/lambers-martin\">Martin Lambers</a>.<br>"
