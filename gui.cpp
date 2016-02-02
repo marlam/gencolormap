@@ -43,6 +43,17 @@
 #include "colormap.hpp"
 
 
+static QString brewerlike_reference = QString("Relevant paper: "
+        "M. Wijffelaars, R. Vliegen, J. J. van Wijk, E-J. van der Linden, "
+        "<a href=\"http://dx.doi.org/10.1111/j.1467-8659.2008.01203.x\">Generating Color Palettes using Intuitive Parameters</a>, "
+        "Computer Graphics Forum 27(3), May 2008.");
+
+static QString cubehelix_reference = QString("Relevant paper: "
+        "D. A. Green, "
+        "<a href=\"http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/\">A colour scheme for the display of astronomical intensity</a>, "
+        "Bulletin of the Astronomical Society of India 39(2), June 2011.");
+
+
 ColorMapCombinedSliderSpinBox::ColorMapCombinedSliderSpinBox(float minval, float maxval, float step) :
     _update_lock(false),
     minval(minval), maxval(maxval), step(step)
@@ -158,9 +169,12 @@ ColorMapBrewerSequentialWidget::ColorMapBrewerSequentialWidget() :
     layout->addWidget(_brightness_changer->spinbox, 7, 3);
 
     layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
+    QLabel* reference_label = new QLabel(brewerlike_reference);
+    reference_label->setWordWrap(true);
+    reference_label->setOpenExternalLinks(true);
+    layout->addWidget(reference_label, 9, 0, 1, 4);
 
     layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
     layout->setRowStretch(8, 1);
     setLayout(layout);
 
@@ -264,8 +278,13 @@ ColorMapBrewerDivergingWidget::ColorMapBrewerDivergingWidget() :
     layout->addWidget(_brightness_changer->slider, 7, 1, 1, 2);
     layout->addWidget(_brightness_changer->spinbox, 7, 3);
 
-    layout->setColumnStretch(1, 1);
     layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
+    QLabel* reference_label = new QLabel(brewerlike_reference);
+    reference_label->setWordWrap(true);
+    reference_label->setOpenExternalLinks(true);
+    layout->addWidget(reference_label, 9, 0, 1, 4);
+
+    layout->setColumnStretch(1, 1);
     layout->setRowStretch(8, 1);
     setLayout(layout);
 
@@ -375,8 +394,13 @@ ColorMapBrewerQualitativeWidget::ColorMapBrewerQualitativeWidget() :
     layout->addWidget(_brightness_changer->slider, 7, 1, 1, 2);
     layout->addWidget(_brightness_changer->spinbox, 7, 3);
 
-    layout->setColumnStretch(1, 1);
     layout->addItem(new QSpacerItem(0, 0), 8, 0, 1, 4);
+    QLabel* reference_label = new QLabel(brewerlike_reference);
+    reference_label->setWordWrap(true);
+    reference_label->setOpenExternalLinks(true);
+    layout->addWidget(reference_label, 9, 0, 1, 4);
+
+    layout->setColumnStretch(1, 1);
     layout->setRowStretch(8, 1);
     setLayout(layout);
 
@@ -446,7 +470,7 @@ ColorMapCubeHelixWidget::ColorMapCubeHelixWidget() :
 
     QLabel* hue_label = new QLabel("Hue:");
     layout->addWidget(hue_label, 2, 0);
-    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 180, 1);
     layout->addWidget(_hue_changer->slider, 2, 1, 1, 2);
     layout->addWidget(_hue_changer->spinbox, 2, 3);
 
@@ -468,8 +492,13 @@ ColorMapCubeHelixWidget::ColorMapCubeHelixWidget() :
     layout->addWidget(_gamma_changer->slider, 5, 1, 1, 2);
     layout->addWidget(_gamma_changer->spinbox, 5, 3);
 
-    layout->setColumnStretch(1, 1);
     layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
+    QLabel* reference_label = new QLabel(cubehelix_reference);
+    reference_label->setWordWrap(true);
+    reference_label->setOpenExternalLinks(true);
+    layout->addWidget(reference_label, 7, 0, 1, 4);
+
+    layout->setColumnStretch(1, 1);
     layout->setRowStretch(6, 1);
     setLayout(layout);
 
