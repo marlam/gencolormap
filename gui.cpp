@@ -634,7 +634,7 @@ void GUI::update()
         float entry_height = img_height / static_cast<float>(colormap.size() / 3);
         int i = y / entry_height;
         QRgb rgb = QColor(colormap[3 * i + 0], colormap[3 * i + 1], colormap[3 * i + 2]).rgb();
-        QRgb* scanline = reinterpret_cast<QRgb*>(img.scanLine(y));
+        QRgb* scanline = reinterpret_cast<QRgb*>(img.scanLine(img_height - 1 - y));
         for (int x = 0; x < img_width; x++)
             scanline[x] = rgb;
     }
