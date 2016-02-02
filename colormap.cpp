@@ -384,7 +384,7 @@ void BrewerSequential(int n, unsigned char* colormap, float hue,
     get_color_points(hue, saturation, warmth, pb, pbh, pbs, &p0, &p1, &p2, &q0, &q1, &q2);
 
     for (int i = 0; i < n; i++) {
-        float t = (n - 1 - i) / (n - 1.0f);
+        float t = i / (n - 1.0f);
         LUVColor c = get_colormap_entry(t, p0, p2, q0, q1, q2, contrast, brightness);
         convert_colormap_entry(c, colormap + 3 * i);
     }
