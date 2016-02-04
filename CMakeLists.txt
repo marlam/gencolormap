@@ -1,4 +1,4 @@
-# Copyright (C) 2015
+# Copyright (C) 2015, 2016
 # Computer Graphics Group, University of Siegen
 # Written by Martin Lambers <martin.lambers@uni-siegen.de>
 #
@@ -21,7 +21,9 @@ install(TARGETS gencolormap RUNTIME DESTINATION bin)
 
 if(Qt5Widgets_FOUND)
         qt5_add_resources(GUI_RESOURCES gui.qrc)
-	add_executable(gencolormap-gui gui.cpp colormap.hpp colormap.cpp ${GUI_RESOURCES})
+	add_executable(gencolormap-gui gui.cpp
+		colormapwidgets.hpp colormapwidgets.cpp
+		colormap.hpp colormap.cpp ${GUI_RESOURCES})
 	target_link_libraries(gencolormap-gui Qt5::Widgets)
 	install(TARGETS gencolormap-gui RUNTIME DESTINATION bin)
 endif()

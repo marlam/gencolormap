@@ -24,167 +24,15 @@
 #ifndef GUI_HPP
 #define GUI_HPP
 
-#include <QVector>
 #include <QMainWindow>
 
+class ColorMapBrewerSequentialWidget;
+class ColorMapBrewerDivergingWidget;
+class ColorMapBrewerQualitativeWidget;
+class ColorMapCubeHelixWidget;
 class QTabWidget;
 class QLabel;
-class QRadioButton;
-class QSpinBox;
-class QSlider;
-class QDoubleSpinBox;
-class QTabWidget;
 
-
-class ColorMapCombinedSliderSpinBox : public QObject
-{
-Q_OBJECT
-private:
-    bool _update_lock;
-
-public:
-    float minval, maxval, step;
-    QSlider* slider;
-    QDoubleSpinBox* spinbox;
-
-    ColorMapCombinedSliderSpinBox(float minval, float maxval, float step);
-    float value() const;
-    void setValue(float v);
-
-private slots:
-    void sliderChanged();
-    void spinboxChanged();
-
-signals:
-    void valueChanged(float);
-};
-
-class ColorMapWidget : public QWidget
-{
-Q_OBJECT
-protected:
-    QVector<unsigned char> _colormap;
-    virtual void recomputeColorMap() = 0;
-
-public:
-    ColorMapWidget() {}
-    ~ColorMapWidget() {}
-
-    virtual void reset() = 0;
-
-    const QVector<unsigned char>* colorMap()
-    {
-        recomputeColorMap();
-        return &_colormap;
-    }
-
-signals:
-    void colorMapChanged();
-};
-
-class ColorMapBrewerSequentialWidget : public ColorMapWidget
-{
-Q_OBJECT
-private:
-    bool _update_lock;
-    QSpinBox* _n_spinbox;
-    ColorMapCombinedSliderSpinBox* _hue_changer;
-    ColorMapCombinedSliderSpinBox* _warmth_changer;
-    ColorMapCombinedSliderSpinBox* _contrast_changer;
-    ColorMapCombinedSliderSpinBox* _saturation_changer;
-    ColorMapCombinedSliderSpinBox* _brightness_changer;
-private slots:
-    void update();
-
-protected:
-    void recomputeColorMap() override;
-
-public:
-    ColorMapBrewerSequentialWidget();
-    ~ColorMapBrewerSequentialWidget();
-
-    void reset() override;
-    void parameters(int& n, float& hue,
-            float& contrast, float& saturation, float& brightness, float& warmth);
-};
-
-class ColorMapBrewerDivergingWidget : public ColorMapWidget
-{
-Q_OBJECT
-private:
-    bool _update_lock;
-    QSpinBox* _n_spinbox;
-    ColorMapCombinedSliderSpinBox* _hue_changer;
-    ColorMapCombinedSliderSpinBox* _divergence_changer;
-    ColorMapCombinedSliderSpinBox* _warmth_changer;
-    ColorMapCombinedSliderSpinBox* _contrast_changer;
-    ColorMapCombinedSliderSpinBox* _saturation_changer;
-    ColorMapCombinedSliderSpinBox* _brightness_changer;
-private slots:
-    void update();
-
-protected:
-    void recomputeColorMap() override;
-
-public:
-    ColorMapBrewerDivergingWidget();
-    ~ColorMapBrewerDivergingWidget();
-
-    void reset() override;
-    void parameters(int& n, float& hue, float& divergence,
-            float& contrast, float& saturation, float& brightness, float& warmth);
-};
-
-class ColorMapBrewerQualitativeWidget : public ColorMapWidget
-{
-Q_OBJECT
-private:
-    bool _update_lock;
-    QSpinBox* _n_spinbox;
-    ColorMapCombinedSliderSpinBox* _hue_changer;
-    ColorMapCombinedSliderSpinBox* _divergence_changer;
-    ColorMapCombinedSliderSpinBox* _contrast_changer;
-    ColorMapCombinedSliderSpinBox* _saturation_changer;
-    ColorMapCombinedSliderSpinBox* _brightness_changer;
-private slots:
-    void update();
-
-protected:
-    void recomputeColorMap() override;
-
-public:
-    ColorMapBrewerQualitativeWidget();
-    ~ColorMapBrewerQualitativeWidget();
-
-    void reset() override;
-    void parameters(int& n, float& hue, float& divergence,
-            float& contrast, float& saturation, float& brightness);
-};
-
-class ColorMapCubeHelixWidget : public ColorMapWidget
-{
-Q_OBJECT
-private:
-    bool _update_lock;
-    QSpinBox* _n_spinbox;
-    ColorMapCombinedSliderSpinBox* _hue_changer;
-    ColorMapCombinedSliderSpinBox* _rotations_changer;
-    ColorMapCombinedSliderSpinBox* _saturation_changer;
-    ColorMapCombinedSliderSpinBox* _gamma_changer;
-private slots:
-    void update();
-
-protected:
-    void recomputeColorMap() override;
-
-public:
-    ColorMapCubeHelixWidget();
-    ~ColorMapCubeHelixWidget();
-
-    void reset() override;
-    void parameters(int& n, float& hue, float& rotations,
-            float& saturation, float& gamma);
-};
 
 class GUI : public QMainWindow
 {
@@ -200,6 +48,7 @@ private:
     ColorMapBrewerQualitativeWidget* _brewerqual_widget;
     ColorMapCubeHelixWidget* _cubehelix_widget;
     QTabWidget* _tab_widget;
+    QLabel* _reference_label;
     QLabel* _colormap_label;
 
 private slots:
