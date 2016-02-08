@@ -58,14 +58,23 @@ GUI::GUI()
     widget->setMinimumWidth(384 * qApp->devicePixelRatio());
     QGridLayout *layout = new QGridLayout;
 
-    _tab_widget = new QTabWidget();
-    _tab_widget->addTab(_brewerseq_widget,   "Brewer-like Sequential");
-    _tab_widget->addTab(_brewerdiv_widget,   "Brewer-like Diverging");
-    _tab_widget->addTab(_brewerqual_widget,  "Brewer-like Qualitative");
-    _tab_widget->addTab(_cubehelix_widget,   "CubeHelix");
-    _tab_widget->addTab(_morelanddiv_widget, "Moreland Diverging");
-    connect(_tab_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
-    layout->addWidget(_tab_widget, 0, 0);
+    _category_widget = new QTabWidget();
+    _category_seq_widget = new QTabWidget();
+    _category_seq_widget->addTab(_brewerseq_widget, "Brewer-like");
+    _category_seq_widget->addTab(_cubehelix_widget, "CubeHelix");
+    connect(_category_seq_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
+    _category_widget->addTab(_category_seq_widget, "Sequential");
+    _category_div_widget = new QTabWidget();
+    _category_div_widget->addTab(_brewerdiv_widget, "Brewer-like");
+    _category_div_widget->addTab(_morelanddiv_widget, "Moreland");
+    connect(_category_div_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
+    _category_widget->addTab(_category_div_widget, "Diverging");
+    _category_qual_widget = new QTabWidget();
+    _category_qual_widget->addTab(_brewerqual_widget, "Brewer-like");
+    connect(_category_qual_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
+    _category_widget->addTab(_category_qual_widget, "Qualitative");
+    connect(_category_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
+    layout->addWidget(_category_widget, 0, 0);
     layout->addItem(new QSpacerItem(0, 0), 1, 0);
     _reference_label = new QLabel(_brewerseq_widget->reference());
     _reference_label->setWordWrap(true);
@@ -117,11 +126,16 @@ GUI::~GUI()
 {
 }
 
+ColorMapWidget* GUI::currentWidget()
+{
+    QTabWidget* tw = reinterpret_cast<QTabWidget*>(_category_widget->currentWidget());
+    return reinterpret_cast<ColorMapWidget*>(tw->currentWidget());
+}
+
 void GUI::update()
 {
-    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
-    _reference_label->setText(currentWidget->reference());
-    _colormap_label->setPixmap(QPixmap::fromImage(currentWidget->colorMapImage(32, _colormap_label->height())));
+    _reference_label->setText(currentWidget()->reference());
+    _colormap_label->setPixmap(QPixmap::fromImage(currentWidget()->colorMapImage(32, _colormap_label->height())));
 }
 
 void GUI::file_export_png()
@@ -129,8 +143,7 @@ void GUI::file_export_png()
     QString name = QFileDialog::getSaveFileName();
     if (!name.isEmpty()) {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
-        currentWidget->colorMapImage(0, 1).save(name, "png");
+        currentWidget()->colorMapImage(0, 1).save(name, "png");
         QApplication::restoreOverrideCursor();
     }
 }
@@ -142,8 +155,7 @@ void GUI::file_export_csv()
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         QFile file(name);
         if (file.open(QIODevice::WriteOnly)) {
-            ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
-            QVector<QColor> colormap = currentWidget->colorMap();
+            QVector<QColor> colormap = currentWidget()->colorMap();
             QTextStream stream(&file);
             for (int i = 0; i < colormap.size(); i++) {
                 stream << colormap[i].red()   << ", "
@@ -157,20 +169,17 @@ void GUI::file_export_csv()
 
 void GUI::edit_reset()
 {
-    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
-    currentWidget->reset();
+    currentWidget()->reset();
 }
 
 void GUI::edit_copy_as_img()
 {
-    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
-    QApplication::clipboard()->setImage(currentWidget->colorMapImage(0, 1));
+    QApplication::clipboard()->setImage(currentWidget()->colorMapImage(0, 1));
 }
 
 void GUI::edit_copy_as_txt()
 {
-    ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
-    QVector<QColor> colormap = currentWidget->colorMap();
+    QVector<QColor> colormap = currentWidget()->colorMap();
     QString string;
     QTextStream stream(&string);
     for (int i = 0; i < colormap.size() / 3; i++) {

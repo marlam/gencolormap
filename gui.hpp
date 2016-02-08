@@ -26,6 +26,7 @@
 
 #include <QMainWindow>
 
+class ColorMapWidget;
 class ColorMapBrewerSequentialWidget;
 class ColorMapBrewerDivergingWidget;
 class ColorMapBrewerQualitativeWidget;
@@ -49,9 +50,14 @@ private:
     ColorMapBrewerQualitativeWidget* _brewerqual_widget;
     ColorMapCubeHelixWidget* _cubehelix_widget;
     ColorMapMorelandDivergingWidget* _morelanddiv_widget;
-    QTabWidget* _tab_widget;
+    QTabWidget* _category_widget;
+    QTabWidget* _category_seq_widget;
+    QTabWidget* _category_div_widget;
+    QTabWidget* _category_qual_widget;
     QLabel* _reference_label;
     QLabel* _colormap_label;
+
+    ColorMapWidget* currentWidget();
 
 private slots:
     void update();
