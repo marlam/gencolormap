@@ -141,7 +141,7 @@ void GUI::file_export_csv()
     if (!name.isEmpty()) {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         QFile file(name);
-        if (file.open(QIODevice::ReadWrite)) {
+        if (file.open(QIODevice::WriteOnly)) {
             ColorMapWidget* currentWidget = reinterpret_cast<ColorMapWidget*>(_tab_widget->currentWidget());
             QVector<QColor> colormap = currentWidget->colorMap();
             QTextStream stream(&file);
