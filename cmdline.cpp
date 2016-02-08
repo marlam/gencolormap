@@ -38,7 +38,8 @@ enum type {
     brewer_diverging = 1,
     brewer_qualitative = 2,
     cubehelix = 3,
-    morelanddiverging = 4
+    morelanddiverging = 4,
+    mcnamessequential = 5
 };
 
 int main(int argc, char* argv[])
@@ -59,6 +60,7 @@ int main(int argc, char* argv[])
     unsigned char color0[3];
     bool have_color1 = false;
     unsigned char color1[3];
+    float periods = NAN;
     struct option options[] = {
         { "version",    no_argument,       0, 'v' },
         { "help",       no_argument,       0, 'H' },
@@ -74,11 +76,12 @@ int main(int argc, char* argv[])
         { "gamma",      required_argument, 0, 'g' },
         { "color0",     required_argument, 0, 'A' },
         { "color1",     required_argument, 0, 'O' },
+        { "periods",    required_argument, 0, 'p' },
         { 0, 0, 0, 0 }
     };
 
     for (;;) {
-        int c = getopt_long(argc, argv, "vHt:n:h:d:c:s:b:w:r:g:A:O:", options, NULL);
+        int c = getopt_long(argc, argv, "vHt:n:h:d:c:s:b:w:r:g:A:O:p:", options, NULL);
         if (c == -1)
             break;
         switch (c) {
@@ -94,6 +97,7 @@ int main(int argc, char* argv[])
                     : strcmp(optarg, "brewer-qualitative") == 0 ? brewer_qualitative
                     : strcmp(optarg, "cubehelix") == 0 ? cubehelix
                     : strcmp(optarg, "morelanddiverging") == 0 ? morelanddiverging
+                    : strcmp(optarg, "mcnamessequential") == 0 ? mcnamessequential
                     : -2);
             break;
         case 'n':
@@ -131,6 +135,9 @@ int main(int argc, char* argv[])
             std::sscanf(optarg, "%hhu,%hhu,%hhu", color1 + 0, color1 + 1, color1 + 2);
             have_color1 = true;
             break;
+        case 'p':
+            periods = atof(optarg);
+            break;
         default:
             return 1;
         }
@@ -164,10 +171,13 @@ int main(int argc, char* argv[])
                 "    [-r|--rotations=R]            Set number of rotations, in (-infty,infty)\n"
                 "    [-s|--saturation=S]           Set saturation, in [0,1]\n"
                 "    [-g|--gamma=G]                Set gamma correction, in (0,infty)\n"
-                "  MorelandDiverging color maps:\n"
+                "  Moreland diverging color maps:\n"
                 "    -t|--type=morelanddiverging   Generate a Moreland diverging color map\n"
                 "    [-A|--color0=sr,sg,sb         Set the first color as sRGB values in [0,255]\n"
                 "    [-O|--color1=sr,sg,sb         Set the last color as sRGB values in [0,255]\n"
+                "  McNames sequential color maps:\n"
+                "    -t|--type=mcnamessequential   Generate a McNames sequential color map\n"
+                "    [-p|--periods=p]              Set the number of periods in (0, infty)\n"
                 "Generates a color map and prints it to standard output as sRGB triplets.\n"
                 "Report bugs to <martin.lambers@uni-siegen.de>.\n", argv[0]);
         return 0;
@@ -253,6 +263,10 @@ int main(int argc, char* argv[])
             color1[2] = ColorMap::MorelandDivergingDefaultB1;
         }
     }
+    if (std::isnan(periods)) {
+        if (type == mcnamessequential)
+            periods = ColorMap::McNamesSequentialDefaultPeriods;
+    }
 
     std::vector<unsigned char> colormap(3 * n);
     switch (type) {
@@ -272,6 +286,9 @@ int main(int argc, char* argv[])
         ColorMap::MorelandDiverging(n, &(colormap[0]),
                 color0[0], color0[1], color0[2],
                 color1[0], color1[1], color1[2]);
+        break;
+    case mcnamessequential:
+        ColorMap::McNamesSequential(n, &(colormap[0]), periods);
         break;
     }
 

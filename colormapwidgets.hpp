@@ -209,4 +209,24 @@ public:
             unsigned char& r1, unsigned char& g1, unsigned char& b1) const;
 };
 
+class ColorMapMcNamesSequentialWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _periods_changer;
+private slots:
+    void update();
+
+public:
+    ColorMapMcNamesSequentialWidget();
+    ~ColorMapMcNamesSequentialWidget();
+
+    void reset() override;
+    QVector<QColor> colorMap() const override;
+    QString reference() const override;
+    void parameters(int& n, float& p) const;
+};
+
 #endif

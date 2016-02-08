@@ -53,6 +53,11 @@ static QString moreland_reference = QString("Relevant paper: "
         "<a href=\"http://www.kennethmoreland.com/color-maps/\">Diverging Color Maps for Scientific Visualization</a>, "
         "Proc. Int. Symp. Visual Computing, December 2009."); // DOI 10.1007/978-3-642-10520-3_9.
 
+static QString mcnames_references = QString("Relevant paper: "
+        "J. McNames, "
+        "<a href=\"http://dx.doi.org/10.1109/MSP.2006.1593340\">An Effective Color Scale for Simultaneous Color and Gray-Scale Publications</a>, "
+        "IEEE Signal Processing Magazine 23(1), January 2006.");
+
 /* ColorMapCombinedSliderSpinBox */
 
 ColorMapCombinedSliderSpinBox::ColorMapCombinedSliderSpinBox(float minval, float maxval, float step) :
@@ -723,6 +728,74 @@ void ColorMapMorelandDivergingWidget::parameters(int& n,
 }
 
 void ColorMapMorelandDivergingWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+ColorMapMcNamesSequentialWidget::ColorMapMcNamesSequentialWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* periods_label = new QLabel("Periods:");
+    layout->addWidget(periods_label, 2, 0);
+    _periods_changer = new ColorMapCombinedSliderSpinBox(0.1f, 5.0f, 0.1f);
+    layout->addWidget(_periods_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_periods_changer->spinbox, 2, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 3, 0, 1, 4);
+    layout->setRowStretch(3, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_periods_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapMcNamesSequentialWidget::~ColorMapMcNamesSequentialWidget()
+{
+}
+
+void ColorMapMcNamesSequentialWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _periods_changer->setValue(ColorMap::McNamesSequentialDefaultPeriods);
+    _update_lock = false;
+    update();
+}
+
+QVector<QColor> ColorMapMcNamesSequentialWidget::colorMap() const
+{
+    int n;
+    float p;
+    parameters(n, p);
+    QVector<unsigned char> colormap(3 * n);
+    ColorMap::McNamesSequential(n, colormap.data(), p);
+    return toQColor(colormap);
+}
+
+QString ColorMapMcNamesSequentialWidget::reference() const
+{
+    return mcnames_references;
+}
+
+void ColorMapMcNamesSequentialWidget::parameters(int& n, float& p) const
+{
+    n = _n_spinbox->value();
+    p = _periods_changer->value();
+}
+
+void ColorMapMcNamesSequentialWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();

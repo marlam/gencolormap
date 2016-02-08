@@ -147,6 +147,21 @@ void MorelandDiverging(int n, unsigned char* colormap,
         unsigned char sg1 = MorelandDivergingDefaultG1,
         unsigned char sb1 = MorelandDivergingDefaultB1);
 
+/*
+ * McNamesSequential color maps, as described in
+ * J. McNames, An Effective Color Scale for Simultaneous Color and Gray-Scale Publications,
+ * IEEE Signal Processing Magazine 23(1), January 2006, DOI 10.1109/MSP.2006.1593340.
+ *
+ * Note: Use CubeHelix instead! The McNames color maps are perceptually not linear in luminance!
+ */
+
+// Create a McNamesSequential colormap with n colors. Specify the number of
+// periods.
+const float McNamesSequentialDefaultPeriods = 2.0f;
+
+void McNamesSequential(int n, unsigned char* colormap,
+        float periods = McNamesSequentialDefaultPeriods);
+
 }
 
 #endif

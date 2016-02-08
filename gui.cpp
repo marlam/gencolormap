@@ -48,11 +48,13 @@ GUI::GUI()
     _brewerqual_widget = new ColorMapBrewerQualitativeWidget;
     _cubehelix_widget = new ColorMapCubeHelixWidget;
     _morelanddiv_widget = new ColorMapMorelandDivergingWidget;
+    _mcnamesseq_widget = new ColorMapMcNamesSequentialWidget;
     connect(_brewerseq_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_brewerdiv_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_brewerqual_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_cubehelix_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_morelanddiv_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+    connect(_mcnamesseq_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
 
     QWidget *widget = new QWidget;
     widget->setMinimumWidth(384 * qApp->devicePixelRatio());
@@ -62,6 +64,7 @@ GUI::GUI()
     _category_seq_widget = new QTabWidget();
     _category_seq_widget->addTab(_brewerseq_widget, "Brewer-like");
     _category_seq_widget->addTab(_cubehelix_widget, "CubeHelix");
+    //_category_seq_widget->addTab(_mcnamesseq_widget, "McNames");
     connect(_category_seq_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
     _category_widget->addTab(_category_seq_widget, "Sequential");
     _category_div_widget = new QTabWidget();

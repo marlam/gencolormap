@@ -684,4 +684,66 @@ void MorelandDiverging(int n, unsigned char* colormap,
     }
 }
 
+/* McNames */
+
+static void cart2pol(float x, float y, float* theta, float* rho)
+{
+    *theta = std::atan2(y, x);
+    *rho = std::hypot(x, y);
+}
+
+static void pol2cart(float theta, float rho, float* x, float* y)
+{
+    *x = rho * std::cos(theta);
+    *y = rho * std::sin(theta);
+}
+
+static float windowfunc(float t)
+{
+    static const float ww = std::sqrt(3.0f / 8.0f);
+    /* triangular window function: */
+#if 0
+    if (t <= 0.5f) {
+        return ww * 2.0f * t;
+    } else {
+        return ww * 2.0f * (1.0f - t);
+    }
+#endif
+    /* window function based on cosh: */
+#if 1
+    static const float acosh2 = std::acosh(2.0f);
+    return 0.95f * ww * (2.0f - std::cosh(acosh2 * (2.0f * t - 1.0f)));
+#endif
+}
+
+void McNamesSequential(int n, unsigned char* colormap, float periods)
+{
+    static const float sqrt3 = std::sqrt(3.0f);
+    static const float a12 = std::asin(1.0f / sqrt3);
+    static const float a23 = pi / 4.0f;
+
+    for (int i = 0; i < n; i++) {
+        float t = 1.0f - i / (n - 1.0f);
+        float w = windowfunc(t);
+        float tt = (1.0f - t) * sqrt3;
+        float ttt = (tt - sqrt3 / 2.0f) * periods * twopi / sqrt3;
+
+        float r0, g0, b0, r1, g1, b1, r2, g2, b2;
+        float ag, rd;
+        r0 = tt;
+        g0 = w * std::cos(ttt);
+        b0 = w * std::sin(ttt);
+        cart2pol(r0, g0, &ag, &rd);
+        pol2cart(ag + a12, rd, &r1, &g1);
+        b1 = b0;
+        cart2pol(r1, b1, &ag, &rd);
+        pol2cart(ag + a23, rd, &r2, &b2);
+        g2 = g1;
+
+        colormap[3 * i + 0] = float_to_uchar(clamp(r2, 0.0f, 1.0f));
+        colormap[3 * i + 1] = float_to_uchar(clamp(g2, 0.0f, 1.0f));
+        colormap[3 * i + 2] = float_to_uchar(clamp(b2, 0.0f, 1.0f));
+    }
+}
+
 }
