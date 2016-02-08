@@ -91,7 +91,7 @@ const float BrewerQualitativeDefaultHue = 0.0f;
 const float BrewerQualitativeDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 const float BrewerQualitativeDefaultContrast = 0.5f;
 const float BrewerQualitativeDefaultSaturation = 0.5f;
-const float BrewerQualitativeDefaultBrightness = 1.0f;
+const float BrewerQualitativeDefaultBrightness = 0.8f;
 
 void BrewerQualitative(int n, unsigned char* colormap,
         float hue = BrewerQualitativeDefaultHue,
