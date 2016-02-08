@@ -30,6 +30,7 @@ class ColorMapBrewerSequentialWidget;
 class ColorMapBrewerDivergingWidget;
 class ColorMapBrewerQualitativeWidget;
 class ColorMapCubeHelixWidget;
+class ColorMapMorelandDivergingWidget;
 class QTabWidget;
 class QLabel;
 
@@ -47,6 +48,7 @@ private:
     ColorMapBrewerDivergingWidget* _brewerdiv_widget;
     ColorMapBrewerQualitativeWidget* _brewerqual_widget;
     ColorMapCubeHelixWidget* _cubehelix_widget;
+    ColorMapMorelandDivergingWidget* _morelanddiv_widget;
     QTabWidget* _tab_widget;
     QLabel* _reference_label;
     QLabel* _colormap_label;

@@ -26,25 +26,14 @@
 
 /* Generate color maps for scientific visualization purposes.
  *
- * This implements the methods described in
- * "Generating Color Palettes using Intuitive Parameters" by
- * Martijn Wijffelaars, Roel Vliegen, Jarke J. van Wijk and Erik-Jan van der
- * Linden, Eurographics/IEEE-VGTC Symposium on Visualization 2008
- *
  * Usage:
+ * - Decide which type of color map you need and how many colors the map should
+ *   contain.
+ * - Allocate memory for you color map (3 * unsigned char for each color entry).
+ * - Call the function that generates your color map.
  *
- * Decide which type of color map you need and how many colors the map should
- * contain:
- * - For a continuous range of values (e.g. temperature, size, ...):
- *   Sequential map with a single hue, at least 200 colors
- * - For a continuous of values around a neutral middle (e.g. deviation from an
- *   ideal value):
- *   Diverging map, composed of two sequential maps with a neutral color in the
- *   middle, at least 200 colors
- *
- * Allocate memory for your color map, and call the function that generates your
- * map. All colors are represented as unsigned char sRGB triplets, with each
- * value in [0,255].
+ * All colors are represented as unsigned char sRGB triplets, with each value in
+ * [0,255].
  */
 
 namespace ColorMap {
@@ -134,6 +123,30 @@ int CubeHelix(int n, unsigned char* colormap,
         float rotations = CubeHelixDefaultRotations,
         float saturation = CubeHelixDefaultSaturation,
         float gamma = CubeHelixDefaultGamma);
+
+/*
+ * MorelandDiverging color maps, as described in
+ * K. Moreland, Diverging Color Maps for Scientific Visualization, Proc. Int.
+ * Symp. Visual Computing, December 2009, DOI 10.1007/978-3-642-10520-3_9.
+ */
+
+// Create a MorelandDiverging colormap with n colors. Specify the two endpoints
+// of the colormap as sRGB colors; all intermediate colors will be generated.
+const unsigned char MorelandDivergingDefaultR0 = 59;
+const unsigned char MorelandDivergingDefaultG0 = 76;
+const unsigned char MorelandDivergingDefaultB0 = 192;
+const unsigned char MorelandDivergingDefaultR1 = 180;
+const unsigned char MorelandDivergingDefaultG1 = 4;
+const unsigned char MorelandDivergingDefaultB1 = 38;
+
+void MorelandDiverging(int n, unsigned char* colormap,
+        unsigned char sr0 = MorelandDivergingDefaultR0,
+        unsigned char sg0 = MorelandDivergingDefaultG0,
+        unsigned char sb0 = MorelandDivergingDefaultB0,
+        unsigned char sr1 = MorelandDivergingDefaultR1,
+        unsigned char sg1 = MorelandDivergingDefaultG1,
+        unsigned char sb1 = MorelandDivergingDefaultB1);
+
 }
 
 #endif

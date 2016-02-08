@@ -27,12 +27,16 @@
 #include <QLabel>
 #include <QSlider>
 #include <QDoubleSpinBox>
+#include <QPushButton>
+#include <QColorDialog>
 #include <QImage>
 #include <QtMath>
 
 #include "colormapwidgets.hpp"
 #include "colormap.hpp"
 
+
+/* References */
 
 static QString brewerlike_reference = QString("Relevant paper: "
         "M. Wijffelaars, R. Vliegen, J. J. van Wijk, E-J. van der Linden, "
@@ -43,6 +47,11 @@ static QString cubehelix_reference = QString("Relevant paper: "
         "D. A. Green, "
         "<a href=\"http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/\">A colour scheme for the display of astronomical intensity</a>, "
         "Bulletin of the Astronomical Society of India 39(2), June 2011.");
+
+static QString moreland_reference = QString("Relevant paper: "
+        "K. Moreland, "
+        "<a href=\"http://www.kennethmoreland.com/color-maps/\">Diverging Color Maps for Scientific Visualization</a>, "
+        "Proc. Int. Symp. Visual Computing, December 2009."); // DOI 10.1007/978-3-642-10520-3_9.
 
 /* ColorMapCombinedSliderSpinBox */
 
@@ -595,6 +604,125 @@ void ColorMapCubeHelixWidget::parameters(int& n, float& hue,
 }
 
 void ColorMapCubeHelixWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+ColorMapMorelandDivergingWidget::ColorMapMorelandDivergingWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* color0_label = new QLabel("First color:");
+    layout->addWidget(color0_label, 2, 0);
+    _color0_button = new QPushButton;
+    layout->addWidget(_color0_button, 2, 1, 1, 3);
+
+    QLabel* color1_label = new QLabel("Last color:");
+    layout->addWidget(color1_label, 3, 0);
+    _color1_button = new QPushButton;
+    layout->addWidget(_color1_button, 3, 1, 1, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 4, 0, 1, 4);
+    layout->setRowStretch(4, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_color0_button, SIGNAL(clicked(bool)), this, SLOT(chooseColor0()));
+    connect(_color1_button, SIGNAL(clicked(bool)), this, SLOT(chooseColor1()));
+    reset();
+}
+
+ColorMapMorelandDivergingWidget::~ColorMapMorelandDivergingWidget()
+{
+}
+
+static void setButtonColor(QPushButton* button, const QColor& color)
+{
+    QPixmap pixmap(button->iconSize());
+    pixmap.fill(color);
+    button->setIcon(QIcon(pixmap));
+}
+
+static QColor getButtonColor(QPushButton* button)
+{
+    return button->icon().pixmap(1, 1).toImage().pixel(0, 0);
+}
+
+void ColorMapMorelandDivergingWidget::chooseColor0()
+{
+    QColor c = QColorDialog::getColor(getButtonColor(_color0_button), this);
+    if (c.isValid()) {
+        setButtonColor(_color0_button, c);
+        update();
+    }
+}
+
+void ColorMapMorelandDivergingWidget::chooseColor1()
+{
+    QColor c = QColorDialog::getColor(getButtonColor(_color1_button), this);
+    if (c.isValid()) {
+        setButtonColor(_color1_button, c);
+        update();
+    }
+}
+
+void ColorMapMorelandDivergingWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    setButtonColor(_color0_button, QColor(
+                ColorMap::MorelandDivergingDefaultR0,
+                ColorMap::MorelandDivergingDefaultG0,
+                ColorMap::MorelandDivergingDefaultB0));
+    setButtonColor(_color1_button, QColor(
+                ColorMap::MorelandDivergingDefaultR1,
+                ColorMap::MorelandDivergingDefaultG1,
+                ColorMap::MorelandDivergingDefaultB1));
+    _update_lock = false;
+    update();
+}
+
+QVector<QColor> ColorMapMorelandDivergingWidget::colorMap() const
+{
+    int n;
+    unsigned char r0, g0, b0, r1, g1, b1;
+    parameters(n, r0, g0, b0, r1, g1, b1);
+    QVector<unsigned char> colormap(3 * n);
+    ColorMap::MorelandDiverging(n, colormap.data(), r0, g0, b0, r1, g1, b1);
+    return toQColor(colormap);
+}
+
+QString ColorMapMorelandDivergingWidget::reference() const
+{
+    return moreland_reference;
+}
+
+void ColorMapMorelandDivergingWidget::parameters(int& n,
+        unsigned char& r0, unsigned char& g0, unsigned char& b0,
+        unsigned char& r1, unsigned char& g1, unsigned char& b1) const
+{
+    n = _n_spinbox->value();
+    QColor c0 = getButtonColor(_color0_button);
+    r0 = c0.red();
+    g0 = c0.green();
+    b0 = c0.blue();
+    QColor c1 = getButtonColor(_color1_button);
+    r1 = c1.red();
+    g1 = c1.green();
+    b1 = c1.blue();
+}
+
+void ColorMapMorelandDivergingWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();

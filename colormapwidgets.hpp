@@ -30,7 +30,7 @@
 class QSpinBox;
 class QSlider;
 class QDoubleSpinBox;
-class QTabWidget;
+class QPushButton;
 
 
 // Internal helper class for a slider/spinbox combination
@@ -182,6 +182,31 @@ public:
     QString reference() const override;
     void parameters(int& n, float& hue, float& rotations,
             float& saturation, float& gamma) const;
+};
+
+class ColorMapMorelandDivergingWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    QPushButton* _color0_button;
+    QPushButton* _color1_button;
+private slots:
+    void chooseColor0();
+    void chooseColor1();
+    void update();
+
+public:
+    ColorMapMorelandDivergingWidget();
+    ~ColorMapMorelandDivergingWidget();
+
+    void reset() override;
+    QVector<QColor> colorMap() const override;
+    QString reference() const override;
+    void parameters(int& n,
+            unsigned char& r0, unsigned char& g0, unsigned char& b0,
+            unsigned char& r1, unsigned char& g1, unsigned char& b1) const;
 };
 
 #endif

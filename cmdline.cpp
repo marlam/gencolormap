@@ -37,7 +37,8 @@ enum type {
     brewer_sequential = 0,
     brewer_diverging = 1,
     brewer_qualitative = 2,
-    cubehelix = 3
+    cubehelix = 3,
+    morelanddiverging = 4
 };
 
 int main(int argc, char* argv[])
@@ -54,6 +55,10 @@ int main(int argc, char* argv[])
     float warmth = -1.0f;
     float rotations = NAN;
     float gamma = -1.0f;
+    bool have_color0 = false;
+    unsigned char color0[3];
+    bool have_color1 = false;
+    unsigned char color1[3];
     struct option options[] = {
         { "version",    no_argument,       0, 'v' },
         { "help",       no_argument,       0, 'H' },
@@ -67,11 +72,13 @@ int main(int argc, char* argv[])
         { "warmth",     required_argument, 0, 'w' },
         { "rotations",  required_argument, 0, 'r' },
         { "gamma",      required_argument, 0, 'g' },
+        { "color0",     required_argument, 0, 'A' },
+        { "color1",     required_argument, 0, 'O' },
         { 0, 0, 0, 0 }
     };
 
     for (;;) {
-        int c = getopt_long(argc, argv, "vHt:n:h:d:c:s:b:w:r:g:", options, NULL);
+        int c = getopt_long(argc, argv, "vHt:n:h:d:c:s:b:w:r:g:A:O:", options, NULL);
         if (c == -1)
             break;
         switch (c) {
@@ -86,6 +93,7 @@ int main(int argc, char* argv[])
                     : strcmp(optarg, "brewer-diverging") == 0 ? brewer_diverging
                     : strcmp(optarg, "brewer-qualitative") == 0 ? brewer_qualitative
                     : strcmp(optarg, "cubehelix") == 0 ? cubehelix
+                    : strcmp(optarg, "morelanddiverging") == 0 ? morelanddiverging
                     : -2);
             break;
         case 'n':
@@ -114,6 +122,14 @@ int main(int argc, char* argv[])
             break;
         case 'g':
             gamma = atof(optarg);
+            break;
+        case 'A':
+            std::sscanf(optarg, "%hhu,%hhu,%hhu", color0 + 0, color0 + 1, color0 + 2);
+            have_color0 = true;
+            break;
+        case 'O':
+            std::sscanf(optarg, "%hhu,%hhu,%hhu", color1 + 0, color1 + 1, color1 + 2);
+            have_color1 = true;
             break;
         default:
             return 1;
@@ -148,6 +164,10 @@ int main(int argc, char* argv[])
                 "    [-r|--rotations=R]            Set number of rotations, in (-infty,infty)\n"
                 "    [-s|--saturation=S]           Set saturation, in [0,1]\n"
                 "    [-g|--gamma=G]                Set gamma correction, in (0,infty)\n"
+                "  MorelandDiverging color maps:\n"
+                "    -t|--type=morelanddiverging   Generate a Moreland diverging color map\n"
+                "    [-A|--color0=sr,sg,sb         Set the first color as sRGB values in [0,255]\n"
+                "    [-O|--color1=sr,sg,sb         Set the last color as sRGB values in [0,255]\n"
                 "Generates a color map and prints it to standard output as sRGB triplets.\n"
                 "Report bugs to <martin.lambers@uni-siegen.de>.\n", argv[0]);
         return 0;
@@ -219,6 +239,20 @@ int main(int argc, char* argv[])
         if (type == cubehelix)
             gamma = ColorMap::CubeHelixDefaultGamma;
     }
+    if (!have_color0) {
+        if (type == morelanddiverging) {
+            color0[0] = ColorMap::MorelandDivergingDefaultR0;
+            color0[1] = ColorMap::MorelandDivergingDefaultG0;
+            color0[2] = ColorMap::MorelandDivergingDefaultB0;
+        }
+    }
+    if (!have_color1) {
+        if (type == morelanddiverging) {
+            color1[0] = ColorMap::MorelandDivergingDefaultR1;
+            color1[1] = ColorMap::MorelandDivergingDefaultG1;
+            color1[2] = ColorMap::MorelandDivergingDefaultB1;
+        }
+    }
 
     std::vector<unsigned char> colormap(3 * n);
     switch (type) {
@@ -233,6 +267,11 @@ int main(int argc, char* argv[])
         break;
     case cubehelix:
         ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);
+        break;
+    case morelanddiverging:
+        ColorMap::MorelandDiverging(n, &(colormap[0]),
+                color0[0], color0[1], color0[2],
+                color1[0], color1[1], color1[2]);
         break;
     }
 

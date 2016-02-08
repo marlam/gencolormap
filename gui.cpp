@@ -47,20 +47,23 @@ GUI::GUI()
     _brewerdiv_widget = new ColorMapBrewerDivergingWidget;
     _brewerqual_widget = new ColorMapBrewerQualitativeWidget;
     _cubehelix_widget = new ColorMapCubeHelixWidget;
+    _morelanddiv_widget = new ColorMapMorelandDivergingWidget;
     connect(_brewerseq_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_brewerdiv_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_brewerqual_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_cubehelix_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+    connect(_morelanddiv_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
 
     QWidget *widget = new QWidget;
     widget->setMinimumWidth(384 * qApp->devicePixelRatio());
     QGridLayout *layout = new QGridLayout;
 
     _tab_widget = new QTabWidget();
-    _tab_widget->addTab(_brewerseq_widget,  "Brewer-like Sequential");
-    _tab_widget->addTab(_brewerdiv_widget,  "Brewer-like Diverging");
-    _tab_widget->addTab(_brewerqual_widget, "Brewer-like Qualitative");
-    _tab_widget->addTab(_cubehelix_widget,  "CubeHelix");
+    _tab_widget->addTab(_brewerseq_widget,   "Brewer-like Sequential");
+    _tab_widget->addTab(_brewerdiv_widget,   "Brewer-like Diverging");
+    _tab_widget->addTab(_brewerqual_widget,  "Brewer-like Qualitative");
+    _tab_widget->addTab(_cubehelix_widget,   "CubeHelix");
+    _tab_widget->addTab(_morelanddiv_widget, "Moreland Diverging");
     connect(_tab_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
     layout->addWidget(_tab_widget, 0, 0);
     layout->addItem(new QSpacerItem(0, 0), 1, 0);

@@ -51,6 +51,22 @@ static float clamp(float x, float lo, float hi)
     return std::min(std::max(x, lo), hi);
 }
 
+static float hue_diff(float h0, float h1)
+{
+    float t = std::fabs(h1 - h0);
+    return (t < pi ? t : twopi - t);
+}
+
+static float uchar_to_float(unsigned char x)
+{
+    return x / 255.0f;
+}
+
+static unsigned char float_to_uchar(float x)
+{
+    return std::round(x * 255.0f);
+}
+
 /* XYZ and related color spaces helper functions and values */
 
 static float u_prime(float x, float y, float z)
@@ -126,6 +142,42 @@ static void xyz_to_luv(float x, float y, float z, float* l, float* u, float* v)
     }
     *u = 13.0f * (*l) * (u_prime(x, y, z) - d65_u_prime);
     *v = 13.0f * (*l) * (v_prime(x, y, z) - d65_v_prime);
+}
+
+/* Color space conversion: LAB <-> XYZ */
+
+static float lab_invf(float t)
+{
+    if (t > 6.0f / 29.0f)
+        return t * t * t;
+    else
+        return (3.0f * 6.0f * 6.0f) / (29.0f * 29.0f) * (t - 4.0f / 29.0f);
+}
+
+static void lab_to_xyz(float l, float a, float b, float* x, float* y, float* z)
+{
+    float t = (l + 16.0f) / 116.0f;
+    *x = d65_x * lab_invf(t + a / 500.0f);
+    *y = d65_y * lab_invf(t);
+    *z = d65_z * lab_invf(t - b / 200.0f);
+}
+
+static float lab_f(float t)
+{
+    if (t > (6.0f * 6.0f * 6.0f) / (29.0f * 29.0f * 29.0f))
+        return std::cbrt(t);
+    else
+        return (29.0f * 29.0f) / (3.0f * 6.0f * 6.0f) * t + 4.0f / 29.0f;
+}
+
+static void xyz_to_lab(float x, float y, float z, float* l, float* a, float* b)
+{
+    float fx = lab_f(x / d65_x);
+    float fy = lab_f(y / d65_y);
+    float fz = lab_f(z / d65_z);
+    *l = 116.0f * fy - 16.0f;
+    *a = 500.0f * (fx - fy);
+    *b = 200.0f * (fy - fz);
 }
 
 /* Color space conversion: RGB <-> XYZ */
@@ -361,12 +413,12 @@ static void convert_colormap_entry(LUVColor color, unsigned char* srgb)
     xyz_to_rgb(x, y, z, &r, &g, &b);
     float sr, sg, sb;
     rgb_to_srgb(r, g, b, &sr, &sg, &sb);
-    srgb[0] = std::round(sr * 255.0f);
-    srgb[1] = std::round(sg * 255.0f);
-    srgb[2] = std::round(sb * 255.0f);
+    srgb[0] = float_to_uchar(sr);
+    srgb[1] = float_to_uchar(sg);
+    srgb[2] = float_to_uchar(sb);
 }
 
-/* Public functions: Brewer-like color maps */
+/* Brewer-like color maps */
 
 float BrewerSequentialDefaultContrastForSmallN(int n)
 {
@@ -444,12 +496,6 @@ void BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence
     }
 }
 
-static float HueDiff(float h0, float h1)
-{
-    float t = std::fabs(h1 - h0);
-    return (t < pi ? t : twopi - t);
-}
-
 void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergence,
         float contrast, float saturation, float brightness)
 {
@@ -484,7 +530,7 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         float ch = std::fmod(twopi * (eps + t * r), twopi);
-        float alpha = HueDiff(ch, yh) / pi;
+        float alpha = hue_diff(ch, yh) / pi;
         float cl = (1.0f - alpha) * l0 + alpha * l1;
         float cs = std::min(Smax(cl, ch), saturation * rs);
         LUVColor c;
@@ -494,7 +540,7 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
     }
 }
 
-/* Public functions: CubeHelix */
+/* CubeHelix */
 
 int CubeHelix(int n, unsigned char* colormap, float hue,
         float rot, float saturation, float gamma)
@@ -534,11 +580,108 @@ int CubeHelix(int n, unsigned char* colormap, float hue,
         }
         if (clipped)
             clippings++;
-        colormap[3 * i + 0] = r * 255.0f;
-        colormap[3 * i + 1] = g * 255.0f;
-        colormap[3 * i + 2] = b * 255.0f;
+        colormap[3 * i + 0] = float_to_uchar(r);
+        colormap[3 * i + 1] = float_to_uchar(g);
+        colormap[3 * i + 2] = float_to_uchar(b);
     }
     return clippings;
+}
+
+/* MorelandDiverging */
+
+static void lab_to_msh(float l, float a, float b, float* m, float* s, float* h)
+{
+    *m = std::sqrt(l * l + a * a + b * b);
+    *s = (*m > 0.001f) ? std::acos(l / (*m)) : 0.0f;
+    *h = (*s > 0.001f) ? std::atan2(b, a) : 0.0f;
+}
+
+static void msh_to_lab(float m, float s, float h, float* l, float* a, float* b)
+{
+    *l = m * std::cos(s);
+    *a = m * std::sin(s) * std::cos(h);
+    *b = m * std::sin(s) * std::sin(h);
+}
+
+static void srgb_to_msh(unsigned char sr, unsigned char sg, unsigned char sb, float* m, float* s, float *h)
+{
+    float lr, lg, lb;
+    srgb_to_rgb(uchar_to_float(sr), uchar_to_float(sg), uchar_to_float(sb), &lr, &lg, &lb);
+    float x, y, z;
+    rgb_to_xyz(lr, lg, lb, &x, &y, &z);
+    float l, a, b;
+    xyz_to_lab(x, y, z, &l, &a, &b);
+    lab_to_msh(l, a, b, m, s, h);
+}
+
+static void msh_to_srgb(float m, float s, float h, unsigned char* sr, unsigned char* sg, unsigned char* sb)
+{
+    float l, a, b;
+    msh_to_lab(m, s, h, &l, &a, &b);
+    float x, y, z;
+    lab_to_xyz(l, a, b, &x, &y, &z);
+    float lr, lg, lb;
+    xyz_to_rgb(x, y, z, &lr, &lg, &lb);
+    float fsr, fsg, fsb;
+    rgb_to_srgb(lr, lg, lb, &fsr, &fsg, &fsb);
+    *sr = float_to_uchar(fsr);
+    *sg = float_to_uchar(fsg);
+    *sb = float_to_uchar(fsb);
+}
+
+static float adjust_hue(float m, float s, float h, float unsaturated_m)
+{
+    if (m >= unsaturated_m - 0.1f) {
+        return h;
+    } else {
+        float hue_spin = s * std::sqrt(unsaturated_m * unsaturated_m - m * m)
+            / (m * std::sin(s));
+        if (h > -pi / 3.0f)
+            return h + hue_spin;
+        else
+            return h - hue_spin;
+    }
+}
+
+void MorelandDiverging(int n, unsigned char* colormap,
+        unsigned char sr0, unsigned char sg0, unsigned char sb0,
+        unsigned char sr1, unsigned char sg1, unsigned char sb1)
+{
+    float om0, os0, oh0, om1, os1, oh1;
+    srgb_to_msh(sr0, sg0, sb0, &om0, &os0, &oh0);
+    srgb_to_msh(sr1, sg1, sb1, &om1, &os1, &oh1);
+    bool place_white = (os0 >= 0.05f && os1 >= 0.05f && hue_diff(oh0, oh1) > pi / 3.0f);
+    float mmid = std::max(std::max(om0, om1), 88.0f);
+
+    for (int i = 0; i < n; i++) {
+        float m0 = om0, s0 = os0, h0 = oh0;
+        float m1 = om1, s1 = os1, h1 = oh1;
+        float t = i / (n - 1.0f);
+        if (place_white) {
+            if (t < 0.5f) {
+                m1 = mmid;
+                s1 = 0.0f;
+                h1 = 0.0f;
+                t *= 2.0f;
+            } else {
+                m0 = mmid;
+                s0 = 0.0f;
+                h0 = 0.0f;
+                t = 2.0f * t - 1.0f;
+            }
+        }
+        if (s0 < 0.05f && s1 >= 0.05f) {
+            h0 = adjust_hue(m1, s1, h1, m0);
+        } else if (s0 >= 0.05f && s1 < 0.05f) {
+            h1 = adjust_hue(m0, s0, h0, m1);
+        }
+
+        float m = (1.0f - t) * m0 + t * m1;
+        float s = (1.0f - t) * s0 + t * s1;
+        float h = (1.0f - t) * h0 + t * h1;
+
+        msh_to_srgb(m, s, h, colormap + 3 * i + 0, colormap + 3 * i + 1, colormap + 3 * i + 2);
+    }
 }
 
 }
