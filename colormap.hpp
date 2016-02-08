@@ -132,12 +132,12 @@ int CubeHelix(int n, unsigned char* colormap,
 
 // Create a MorelandDiverging colormap with n colors. Specify the two endpoints
 // of the colormap as sRGB colors; all intermediate colors will be generated.
-const unsigned char MorelandDivergingDefaultR0 = 59;
-const unsigned char MorelandDivergingDefaultG0 = 76;
-const unsigned char MorelandDivergingDefaultB0 = 192;
-const unsigned char MorelandDivergingDefaultR1 = 180;
-const unsigned char MorelandDivergingDefaultG1 = 4;
-const unsigned char MorelandDivergingDefaultB1 = 38;
+const unsigned char MorelandDivergingDefaultR0 = 180;
+const unsigned char MorelandDivergingDefaultG0 = 4;
+const unsigned char MorelandDivergingDefaultB0 = 38;
+const unsigned char MorelandDivergingDefaultR1 = 59;
+const unsigned char MorelandDivergingDefaultG1 = 76;
+const unsigned char MorelandDivergingDefaultB1 = 192;
 
 void MorelandDiverging(int n, unsigned char* colormap,
         unsigned char sr0 = MorelandDivergingDefaultR0,
