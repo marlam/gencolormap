@@ -160,6 +160,74 @@ public:
             float& contrast, float& saturation, float& brightness) const;
 };
 
+class ColorMapIsoluminantSequentialWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _luminance_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+private slots:
+    void update();
+
+public:
+    ColorMapIsoluminantSequentialWidget();
+    ~ColorMapIsoluminantSequentialWidget();
+
+    void reset() override;
+    QVector<QColor> colorMap() const override;
+    QString reference() const override;
+    void parameters(int& n, float& luminance, float& saturation, float& hue) const;
+};
+
+class ColorMapIsoluminantDivergingWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _luminance_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _divergence_changer;
+private slots:
+    void update();
+
+public:
+    ColorMapIsoluminantDivergingWidget();
+    ~ColorMapIsoluminantDivergingWidget();
+
+    void reset() override;
+    QVector<QColor> colorMap() const override;
+    QString reference() const override;
+    void parameters(int& n, float& luminance, float& saturation, float& hue, float& divergence) const;
+};
+
+class ColorMapIsoluminantQualitativeWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _luminance_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _divergence_changer;
+private slots:
+    void update();
+
+public:
+    ColorMapIsoluminantQualitativeWidget();
+    ~ColorMapIsoluminantQualitativeWidget();
+
+    void reset() override;
+    QVector<QColor> colorMap() const override;
+    QString reference() const override;
+    void parameters(int& n, float& luminance, float& saturation, float& hue, float& divergence) const;
+};
+
 class ColorMapCubeHelixWidget : public ColorMapWidget
 {
 Q_OBJECT
@@ -184,7 +252,7 @@ public:
             float& saturation, float& gamma) const;
 };
 
-class ColorMapMorelandDivergingWidget : public ColorMapWidget
+class ColorMapMorelandWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -198,8 +266,8 @@ private slots:
     void update();
 
 public:
-    ColorMapMorelandDivergingWidget();
-    ~ColorMapMorelandDivergingWidget();
+    ColorMapMorelandWidget();
+    ~ColorMapMorelandWidget();
 
     void reset() override;
     QVector<QColor> colorMap() const override;
@@ -209,7 +277,7 @@ public:
             unsigned char& r1, unsigned char& g1, unsigned char& b1) const;
 };
 
-class ColorMapMcNamesSequentialWidget : public ColorMapWidget
+class ColorMapMcNamesWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -220,8 +288,8 @@ private slots:
     void update();
 
 public:
-    ColorMapMcNamesSequentialWidget();
-    ~ColorMapMcNamesSequentialWidget();
+    ColorMapMcNamesWidget();
+    ~ColorMapMcNamesWidget();
 
     void reset() override;
     QVector<QColor> colorMap() const override;

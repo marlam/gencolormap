@@ -540,6 +540,62 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
     }
 }
 
+/* Isoluminant */
+
+static void lch_to_colormap(float l, float c, float h,
+        int i, unsigned char* colormap)
+{
+    float u, v;
+    lch_to_luv(c, h, &u, &v);
+    float x, y, z;
+    luv_to_xyz(l, u, v, &x, &y, &z);
+    float r, g, b;
+    xyz_to_rgb(x, y, z, &r, &g, &b);
+    float sr, sg, sb;
+    rgb_to_srgb(r, g, b, &sr, &sg, &sb);
+    colormap[3 * i + 0] = float_to_uchar(sr);
+    colormap[3 * i + 1] = float_to_uchar(sg);
+    colormap[3 * i + 2] = float_to_uchar(sb);
+}
+
+void IsoluminantSequential(int n, unsigned char* colormap,
+        float luminance, float saturation, float hue)
+{
+    const float l = luminance * 100.0f;
+    const float h = hue;
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        float s = saturation * 5.0f * (1.0f - t);
+        float c = lch_chroma(l, s);
+        lch_to_colormap(l, c, h, i, colormap);
+    }
+}
+
+void IsoluminantDiverging(int n, unsigned char* colormap,
+        float luminance, float saturation, float hue, float divergence)
+{
+    const float l = luminance * 100.0f;
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
+        float c = lch_chroma(l, s);
+        float h = (t <= 0.5f ? hue : hue + divergence);
+        lch_to_colormap(l, c, h, i, colormap);
+    }
+}
+
+void IsoluminantQualitative(int n, unsigned char* colormap,
+        float luminance, float saturation, float hue, float divergence)
+{
+    const float l = luminance * 100.0f;
+    const float c = lch_chroma(l, saturation * 5.0f);
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        float h = hue + t * divergence;
+        lch_to_colormap(l, c, h, i, colormap);
+    }
+}
+
 /* CubeHelix */
 
 int CubeHelix(int n, unsigned char* colormap, float hue,
@@ -587,7 +643,7 @@ int CubeHelix(int n, unsigned char* colormap, float hue,
     return clippings;
 }
 
-/* MorelandDiverging */
+/* Moreland */
 
 static void lab_to_msh(float l, float a, float b, float* m, float* s, float* h)
 {
@@ -643,7 +699,7 @@ static float adjust_hue(float m, float s, float h, float unsaturated_m)
     }
 }
 
-void MorelandDiverging(int n, unsigned char* colormap,
+void Moreland(int n, unsigned char* colormap,
         unsigned char sr0, unsigned char sg0, unsigned char sb0,
         unsigned char sr1, unsigned char sg1, unsigned char sb1)
 {
@@ -716,7 +772,7 @@ static float windowfunc(float t)
 #endif
 }
 
-void McNamesSequential(int n, unsigned char* colormap, float periods)
+void McNames(int n, unsigned char* colormap, float periods)
 {
     static const float sqrt3 = std::sqrt(3.0f);
     static const float a12 = std::asin(1.0f / sqrt3);

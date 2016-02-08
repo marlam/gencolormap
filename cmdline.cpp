@@ -34,12 +34,15 @@ extern int optind;
 #include "colormap.hpp"
 
 enum type {
-    brewer_sequential = 0,
-    brewer_diverging = 1,
-    brewer_qualitative = 2,
-    cubehelix = 3,
-    morelanddiverging = 4,
-    mcnamessequential = 5
+    brewer_seq = 0,
+    brewer_div = 1,
+    brewer_qual = 2,
+    isolum_seq = 3,
+    isolum_div = 4,
+    isolum_qual = 5,
+    cubehelix = 6,
+    moreland = 7,
+    mcnames = 8
 };
 
 int main(int argc, char* argv[])
@@ -54,6 +57,7 @@ int main(int argc, char* argv[])
     float saturation = -1.0f;
     float brightness = -1.0f;
     float warmth = -1.0f;
+    float luminance = -1.0f;
     float rotations = NAN;
     float gamma = -1.0f;
     bool have_color0 = false;
@@ -72,6 +76,7 @@ int main(int argc, char* argv[])
         { "saturation", required_argument, 0, 's' },
         { "brightness", required_argument, 0, 'b' },
         { "warmth",     required_argument, 0, 'w' },
+        { "luminance",  required_argument, 0, 'l' },
         { "rotations",  required_argument, 0, 'r' },
         { "gamma",      required_argument, 0, 'g' },
         { "color0",     required_argument, 0, 'A' },
@@ -81,7 +86,7 @@ int main(int argc, char* argv[])
     };
 
     for (;;) {
-        int c = getopt_long(argc, argv, "vHt:n:h:d:c:s:b:w:r:g:A:O:p:", options, NULL);
+        int c = getopt_long(argc, argv, "vHt:n:h:d:c:s:b:w:l:r:g:A:O:p:", options, NULL);
         if (c == -1)
             break;
         switch (c) {
@@ -92,12 +97,15 @@ int main(int argc, char* argv[])
             print_help = true;
             break;
         case 't':
-            type = (strcmp(optarg, "brewer-sequential") == 0 ? brewer_sequential
-                    : strcmp(optarg, "brewer-diverging") == 0 ? brewer_diverging
-                    : strcmp(optarg, "brewer-qualitative") == 0 ? brewer_qualitative
+            type = (strcmp(optarg, "brewer-sequential") == 0 ? brewer_seq
+                    : strcmp(optarg, "brewer-diverging") == 0 ? brewer_div
+                    : strcmp(optarg, "brewer-qualitative") == 0 ? brewer_qual
+                    : strcmp(optarg, "isoluminant-sequential") == 0 ? isolum_seq
+                    : strcmp(optarg, "isoluminant-divergent") == 0 ? isolum_div
+                    : strcmp(optarg, "isoluminant-qualitative") == 0 ? isolum_qual
                     : strcmp(optarg, "cubehelix") == 0 ? cubehelix
-                    : strcmp(optarg, "morelanddiverging") == 0 ? morelanddiverging
-                    : strcmp(optarg, "mcnamessequential") == 0 ? mcnamessequential
+                    : strcmp(optarg, "moreland") == 0 ? moreland
+                    : strcmp(optarg, "mcnames") == 0 ? mcnames
                     : -2);
             break;
         case 'n':
@@ -120,6 +128,9 @@ int main(int argc, char* argv[])
             break;
         case 'w':
             warmth = atof(optarg);
+            break;
+        case 'l':
+            luminance = atof(optarg);
             break;
         case 'r':
             rotations = atof(optarg);
@@ -155,29 +166,37 @@ int main(int argc, char* argv[])
     if (print_help) {
         printf("Usage: %s\n"
                 "  Common options, required for all types:\n"
-                "    -n|--n=N                      Set number of colors in the map\n"
+                "    -n|--n=N                         Set number of colors in the map\n"
                 "  Brewer-like color maps:\n"
-                "    -t|--type=brewer-sequential   Generate a sequential color map\n"
-                "    -t|--type=brewer-diverging    Generate a diverging color map\n"
-                "    -t|--type=brewer-qualitative  Generate a qualitative color map\n"
-                "    [-h|--hue=H]                  Set default hue in [0,360] degrees\n"
-                "    [-c|--contrast=C]             Set contrast in [0,1]\n"
-                "    [-s|--saturation=S]           Set saturation in [0,1]\n"
-                "    [-b|--brightness=B]           Set brightness in [0,1]\n"
-                "    [-w|--warmth=W]               Set warmth in [0,1] for seq. and div. maps\n"
-                "    [-d|--divergence=D]           Set divergence for div. and qual. maps\n"
+                "    -t|--type=brewer-sequential       Generate a sequential color map\n"
+                "    -t|--type=brewer-diverging        Generate a diverging color map\n"
+                "    -t|--type=brewer-qualitative      Generate a qualitative color map\n"
+                "    [-h|--hue=H]                      Set default hue in [0,360] degrees\n"
+                "    [-c|--contrast=C]                 Set contrast in [0,1]\n"
+                "    [-s|--saturation=S]               Set saturation in [0,1]\n"
+                "    [-b|--brightness=B]               Set brightness in [0,1]\n"
+                "    [-w|--warmth=W]                   Set warmth in [0,1] for seq. and div. maps\n"
+                "    [-d|--divergence=D]               Set divergence in deg. for div. and qual. maps\n"
+                "  Isoluminant color maps:\n"
+                "    -t|--type=isoluminant-sequential  Generate a sequential color map\n"
+                "    -t|--type=isoluminant-diverging   Generate a diverging color map\n"
+                "    -t|--type=isoluminant-qualitative Generate a qualitative color map\n"
+                "    [-l|--luminance=L]                Set luminance in [0,1]\n"
+                "    [-s|--saturation=S]               Set saturation in [0,1]\n"
+                "    [-h|--hue=H]                      Set default hue in [0,360] degrees\n"
+                "    [-d|--divergence=D]               Set divergence in deg. for div. and qual. maps\n"
                 "  CubeHelix color maps:\n"
-                "    -t|--type=cubehelix           Generate a CubeHelix color map\n"
-                "    [-r|--rotations=R]            Set number of rotations, in (-infty,infty)\n"
-                "    [-s|--saturation=S]           Set saturation, in [0,1]\n"
-                "    [-g|--gamma=G]                Set gamma correction, in (0,infty)\n"
+                "    -t|--type=cubehelix               Generate a CubeHelix color map\n"
+                "    [-r|--rotations=R]                Set number of rotations, in (-infty,infty)\n"
+                "    [-s|--saturation=S]               Set saturation, in [0,1]\n"
+                "    [-g|--gamma=G]                    Set gamma correction, in (0,infty)\n"
                 "  Moreland diverging color maps:\n"
-                "    -t|--type=morelanddiverging   Generate a Moreland diverging color map\n"
-                "    [-A|--color0=sr,sg,sb         Set the first color as sRGB values in [0,255]\n"
-                "    [-O|--color1=sr,sg,sb         Set the last color as sRGB values in [0,255]\n"
+                "    -t|--type=moreland                Generate a Moreland diverging color map\n"
+                "    [-A|--color0=sr,sg,sb             Set the first color as sRGB values in [0,255]\n"
+                "    [-O|--color1=sr,sg,sb             Set the last color as sRGB values in [0,255]\n"
                 "  McNames sequential color maps:\n"
-                "    -t|--type=mcnamessequential   Generate a McNames sequential color map\n"
-                "    [-p|--periods=p]              Set the number of periods in (0, infty)\n"
+                "    -t|--type=mcnames                 Generate a McNames sequential color map\n"
+                "    [-p|--periods=P]                  Set the number of periods in (0, infty)\n"
                 "Generates a color map and prints it to standard output as sRGB triplets.\n"
                 "Report bugs to <martin.lambers@uni-siegen.de>.\n", argv[0]);
         return 0;
@@ -192,54 +211,78 @@ int main(int argc, char* argv[])
         return 1;
     }
     if (hue < 0.0f) {
-        if (type == brewer_sequential)
+        if (type == brewer_seq)
             hue = ColorMap::BrewerSequentialDefaultHue;
-        else if (type == brewer_diverging)
+        else if (type == brewer_div)
             hue = ColorMap::BrewerDivergingDefaultHue;
-        else if (type == brewer_qualitative)
+        else if (type == brewer_qual)
             hue = ColorMap::BrewerQualitativeDefaultHue;
+        else if (type == isolum_seq)
+            hue = ColorMap::IsoluminantSequentialDefaultHue;
+        else if (type == isolum_div)
+            hue = ColorMap::IsoluminantDivergingDefaultHue;
+        else if (type == isolum_qual)
+            hue = ColorMap::IsoluminantQualitativeDefaultHue;
         else if (type == cubehelix)
             hue = ColorMap::CubeHelixDefaultHue;
     }
     if (divergence < 0.0f) {
-        if (type == brewer_diverging)
+        if (type == brewer_div)
             divergence = ColorMap::BrewerDivergingDefaultDivergence;
-        else if (type == brewer_qualitative)
+        else if (type == brewer_qual)
             divergence = ColorMap::BrewerQualitativeDefaultDivergence;
+        else if (type == isolum_div)
+            divergence = ColorMap::IsoluminantDivergingDefaultDivergence;
+        else if (type == isolum_qual)
+            divergence = ColorMap::IsoluminantQualitativeDefaultDivergence;
     }
     if (contrast < 0.0f) {
-        if (type == brewer_sequential)
+        if (type == brewer_seq)
             contrast = (n <= 9 ? ColorMap::BrewerSequentialDefaultContrastForSmallN(n)
                     : ColorMap::BrewerSequentialDefaultContrast);
-        else if (type == brewer_diverging)
+        else if (type == brewer_div)
             contrast = (n <= 9 ? ColorMap::BrewerDivergingDefaultContrastForSmallN(n)
                     : ColorMap::BrewerDivergingDefaultContrast);
-        else if (type == brewer_qualitative)
+        else if (type == brewer_qual)
             contrast = ColorMap::BrewerQualitativeDefaultContrast;
     }
     if (saturation < 0.0f) {
-        if (type == brewer_sequential)
+        if (type == brewer_seq)
             saturation = ColorMap::BrewerSequentialDefaultSaturation;
-        else if (type == brewer_diverging)
+        else if (type == brewer_div)
             saturation = ColorMap::BrewerDivergingDefaultSaturation;
-        else if (type == brewer_qualitative)
+        else if (type == brewer_qual)
             saturation = ColorMap::BrewerQualitativeDefaultSaturation;
+        else if (type == isolum_seq)
+            saturation = ColorMap::IsoluminantSequentialDefaultSaturation;
+        else if (type == isolum_div)
+            saturation = ColorMap::IsoluminantDivergingDefaultSaturation;
+        else if (type == isolum_qual)
+            saturation = ColorMap::IsoluminantQualitativeDefaultSaturation;
         else if (type == cubehelix)
             saturation = ColorMap::CubeHelixDefaultSaturation;
     }
     if (brightness < 0.0f) {
-        if (type == brewer_sequential)
+        if (type == brewer_seq)
             brightness = ColorMap::BrewerSequentialDefaultBrightness;
-        else if (type == brewer_diverging)
+        else if (type == brewer_div)
             brightness = ColorMap::BrewerDivergingDefaultBrightness;
-        else if (type == brewer_qualitative)
+        else if (type == brewer_qual)
             brightness = ColorMap::BrewerQualitativeDefaultBrightness;
     }
     if (warmth < 0.0f) {
-        if (type == brewer_sequential)
-            brightness = ColorMap::BrewerSequentialDefaultWarmth;
-        else if (type == brewer_diverging)
-            brightness = ColorMap::BrewerDivergingDefaultWarmth;
+        if (type == brewer_seq)
+            warmth = ColorMap::BrewerSequentialDefaultWarmth;
+        else if (type == brewer_div)
+            warmth = ColorMap::BrewerDivergingDefaultWarmth;
+    }
+    if (luminance < 0.0f) {
+        if (type == isolum_seq)
+            luminance = ColorMap::IsoluminantSequentialDefaultLuminance;
+        else if (type == isolum_div)
+            luminance = ColorMap::IsoluminantDivergingDefaultLuminance;
+        else if (type == isolum_qual)
+            luminance = ColorMap::IsoluminantQualitativeDefaultLuminance;
     }
     if (std::isnan(rotations)) {
         if (type == cubehelix)
@@ -250,45 +293,54 @@ int main(int argc, char* argv[])
             gamma = ColorMap::CubeHelixDefaultGamma;
     }
     if (!have_color0) {
-        if (type == morelanddiverging) {
-            color0[0] = ColorMap::MorelandDivergingDefaultR0;
-            color0[1] = ColorMap::MorelandDivergingDefaultG0;
-            color0[2] = ColorMap::MorelandDivergingDefaultB0;
+        if (type == moreland) {
+            color0[0] = ColorMap::MorelandDefaultR0;
+            color0[1] = ColorMap::MorelandDefaultG0;
+            color0[2] = ColorMap::MorelandDefaultB0;
         }
     }
     if (!have_color1) {
-        if (type == morelanddiverging) {
-            color1[0] = ColorMap::MorelandDivergingDefaultR1;
-            color1[1] = ColorMap::MorelandDivergingDefaultG1;
-            color1[2] = ColorMap::MorelandDivergingDefaultB1;
+        if (type == moreland) {
+            color1[0] = ColorMap::MorelandDefaultR1;
+            color1[1] = ColorMap::MorelandDefaultG1;
+            color1[2] = ColorMap::MorelandDefaultB1;
         }
     }
     if (std::isnan(periods)) {
-        if (type == mcnamessequential)
-            periods = ColorMap::McNamesSequentialDefaultPeriods;
+        if (type == mcnames)
+            periods = ColorMap::McNamesDefaultPeriods;
     }
 
     std::vector<unsigned char> colormap(3 * n);
     switch (type) {
-    case brewer_sequential:
+    case brewer_seq:
         ColorMap::BrewerSequential(n, &(colormap[0]), hue, contrast, saturation, brightness, warmth);
         break;
-    case brewer_diverging:
+    case brewer_div:
         ColorMap::BrewerDiverging(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness, warmth);
         break;
-    case brewer_qualitative:
+    case brewer_qual:
         ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
+        break;
+    case isolum_seq:
+        ColorMap::IsoluminantSequential(n, &(colormap[0]), luminance, saturation, hue);
+        break;
+    case isolum_div:
+        ColorMap::IsoluminantDiverging(n, &(colormap[0]), luminance, saturation, hue, divergence);
+        break;
+    case isolum_qual:
+        ColorMap::IsoluminantQualitative(n, &(colormap[0]), luminance, saturation, hue, divergence);
         break;
     case cubehelix:
         ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);
         break;
-    case morelanddiverging:
-        ColorMap::MorelandDiverging(n, &(colormap[0]),
+    case moreland:
+        ColorMap::Moreland(n, &(colormap[0]),
                 color0[0], color0[1], color0[2],
                 color1[0], color1[1], color1[2]);
         break;
-    case mcnamessequential:
-        ColorMap::McNamesSequential(n, &(colormap[0]), periods);
+    case mcnames:
+        ColorMap::McNames(n, &(colormap[0]), periods);
         break;
     }
 

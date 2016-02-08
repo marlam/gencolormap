@@ -101,6 +101,50 @@ void BrewerQualitative(int n, unsigned char* colormap,
         float brightness = BrewerQualitativeDefaultBrightness);
 
 /*
+ * Isoluminant color maps.
+ *
+ * These are useful for coloring surfaces because their constant luminance
+ * allows non-interfering combination with shading.
+ */
+
+// Create a sequential isoluminant color map with n colors.
+
+const float IsoluminantSequentialDefaultLuminance = 0.5f;
+const float IsoluminantSequentialDefaultSaturation = 0.5f;
+const float IsoluminantSequentialDefaultHue = 0.0f;
+
+void IsoluminantSequential(int n, unsigned char* colormap,
+        float luminance = IsoluminantSequentialDefaultLuminance,
+        float saturation = IsoluminantSequentialDefaultSaturation,
+        float hue = IsoluminantSequentialDefaultHue);
+
+// Create a diverging isoluminant color map with n colors.
+
+const float IsoluminantDivergingDefaultLuminance = 0.5f;
+const float IsoluminantDivergingDefaultSaturation = 0.5f;
+const float IsoluminantDivergingDefaultHue = 0.0f;
+const float IsoluminantDivergingDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+
+void IsoluminantDiverging(int n, unsigned char* colormap,
+        float luminance = IsoluminantDivergingDefaultLuminance,
+        float saturation = IsoluminantDivergingDefaultSaturation,
+        float hue = IsoluminantDivergingDefaultHue,
+        float divergence = IsoluminantDivergingDefaultDivergence);
+
+// Create a qualitative isoluminant color map with n colors.
+
+const float IsoluminantQualitativeDefaultLuminance = 0.5f;
+const float IsoluminantQualitativeDefaultSaturation = 0.35f;
+const float IsoluminantQualitativeDefaultHue = 0.0f;
+const float IsoluminantQualitativeDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+
+void IsoluminantQualitative(int n, unsigned char* colormap,
+        float luminance = IsoluminantQualitativeDefaultLuminance,
+        float saturation = IsoluminantQualitativeDefaultSaturation,
+        float hue = IsoluminantQualitativeDefaultHue,
+        float divergence = IsoluminantQualitativeDefaultDivergence);
+
+/*
  * CubeHelix color maps, as described in
  * Green, D. A., 2011, A colour scheme for the display of astronomical intensity
  * images, Bulletin of the Astronomical Society of India, 39, 289.
@@ -125,42 +169,44 @@ int CubeHelix(int n, unsigned char* colormap,
         float gamma = CubeHelixDefaultGamma);
 
 /*
- * MorelandDiverging color maps, as described in
+ * Moreland color maps, as described in
  * K. Moreland, Diverging Color Maps for Scientific Visualization, Proc. Int.
  * Symp. Visual Computing, December 2009, DOI 10.1007/978-3-642-10520-3_9.
  */
 
-// Create a MorelandDiverging colormap with n colors. Specify the two endpoints
+// Create a Moreland colormap with n colors. Specify the two endpoints
 // of the colormap as sRGB colors; all intermediate colors will be generated.
-const unsigned char MorelandDivergingDefaultR0 = 180;
-const unsigned char MorelandDivergingDefaultG0 = 4;
-const unsigned char MorelandDivergingDefaultB0 = 38;
-const unsigned char MorelandDivergingDefaultR1 = 59;
-const unsigned char MorelandDivergingDefaultG1 = 76;
-const unsigned char MorelandDivergingDefaultB1 = 192;
 
-void MorelandDiverging(int n, unsigned char* colormap,
-        unsigned char sr0 = MorelandDivergingDefaultR0,
-        unsigned char sg0 = MorelandDivergingDefaultG0,
-        unsigned char sb0 = MorelandDivergingDefaultB0,
-        unsigned char sr1 = MorelandDivergingDefaultR1,
-        unsigned char sg1 = MorelandDivergingDefaultG1,
-        unsigned char sb1 = MorelandDivergingDefaultB1);
+const unsigned char MorelandDefaultR0 = 180;
+const unsigned char MorelandDefaultG0 = 4;
+const unsigned char MorelandDefaultB0 = 38;
+const unsigned char MorelandDefaultR1 = 59;
+const unsigned char MorelandDefaultG1 = 76;
+const unsigned char MorelandDefaultB1 = 192;
+
+void Moreland(int n, unsigned char* colormap,
+        unsigned char sr0 = MorelandDefaultR0,
+        unsigned char sg0 = MorelandDefaultG0,
+        unsigned char sb0 = MorelandDefaultB0,
+        unsigned char sr1 = MorelandDefaultR1,
+        unsigned char sg1 = MorelandDefaultG1,
+        unsigned char sb1 = MorelandDefaultB1);
 
 /*
- * McNamesSequential color maps, as described in
+ * McNames color maps, as described in
  * J. McNames, An Effective Color Scale for Simultaneous Color and Gray-Scale Publications,
  * IEEE Signal Processing Magazine 23(1), January 2006, DOI 10.1109/MSP.2006.1593340.
  *
  * Note: Use CubeHelix instead! The McNames color maps are perceptually not linear in luminance!
  */
 
-// Create a McNamesSequential colormap with n colors. Specify the number of
+// Create a McNames colormap with n colors. Specify the number of
 // periods.
-const float McNamesSequentialDefaultPeriods = 2.0f;
 
-void McNamesSequential(int n, unsigned char* colormap,
-        float periods = McNamesSequentialDefaultPeriods);
+const float McNamesDefaultPeriods = 2.0f;
+
+void McNames(int n, unsigned char* colormap,
+        float periods = McNamesDefaultPeriods);
 
 }
 
