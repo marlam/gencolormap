@@ -67,25 +67,61 @@ static unsigned char float_to_uchar(float x)
     return std::round(x * 255.0f);
 }
 
+/* A color triplet class without assumptions about the color space */
+
+class triplet {
+public:
+    struct {
+        union { float x, l,       m, r; };
+        union { float y, a, u, c, s, g; };
+        union { float z, b, v, h      ; };
+    };
+
+    triplet() {}
+    triplet(float t0, float t1, float t2) : x(t0), y(t1), z(t2) {}
+    triplet(const triplet& t) : x(t.x), y(t.y), z(t.z) {}
+};
+
+triplet operator+(triplet t0, triplet t1)
+{
+    return triplet(t0.x + t1.x, t0.y + t1.y, t0.z + t1.z);
+}
+
+triplet operator*(float s, triplet t)
+{
+    return triplet(s * t.x, s * t.y, s * t.z);
+}
+
 /* XYZ and related color spaces helper functions and values */
 
-static float u_prime(float x, float y, float z)
+static float u_prime(triplet xyz)
 {
-    return 4.0f * x / (x + 15.0f * y + 3.0f * z);
+    return 4.0f * xyz.x / (xyz.x + 15.0f * xyz.y + 3.0f * xyz.z);
 }
 
-static float v_prime(float x, float y, float z)
+static float v_prime(triplet xyz)
 {
-    return 9.0f * y / (x + 15.0f * y + 3.0f * z);
+    return 9.0f * xyz.y / (xyz.x + 15.0f * xyz.y + 3.0f * xyz.z);
 }
 
-static const float d65_x =  95.047f;
-static const float d65_y = 100.000f;
-static const float d65_z = 108.883f;
-static const float d65_u_prime = u_prime(d65_x, d65_y, d65_z);
-static const float d65_v_prime = v_prime(d65_x, d65_y, d65_z);
+static const triplet d65_xyz = triplet(95.047f, 100.000f, 108.883f);
+static const float d65_u_prime = u_prime(d65_xyz);
+static const float d65_v_prime = v_prime(d65_xyz);
 
 /* Color space conversion: LCH <-> LUV */
+
+static triplet lch_to_luv(triplet lch)
+{
+    return triplet(lch.l, lch.c * std::cos(lch.h), lch.c * std::sin(lch.h));
+}
+
+static triplet luv_to_lch(triplet luv)
+{
+    triplet lch(luv.l, std::hypot(luv.u, luv.v), std::atan2(luv.v, luv.u));
+    if (lch.h < 0.0f)
+        lch.h += twopi;
+    return lch;
+}
 
 static float lch_saturation(float l, float c)
 {
@@ -97,51 +133,41 @@ static float lch_chroma(float l, float s)
     return s * l;
 }
 
-static void lch_to_luv(float c, float h, float* u, float* v)
-{
-    *u = c * std::cos(h);
-    *v = c * std::sin(h);
-}
-
-static void luv_to_lch(float u, float v, float* c, float* h)
-{
-    *c = std::hypot(u, v);
-    *h = std::atan2(v, u);
-    if (*h < 0.0f)
-        *h += twopi;
-}
-
-static float luv_saturation(float l, float u, float v)
-{
-    return lch_saturation(l, std::hypot(u, v));
-}
-
 /* Color space conversion: LUV <-> XYZ */
 
-static void luv_to_xyz(float l, float u, float v, float* x, float* y, float* z)
+static triplet luv_to_xyz(triplet luv)
 {
-    float u_prime = u / (13.0f * l) + d65_u_prime;
-    float v_prime = v / (13.0f * l) + d65_v_prime;
-    if (l <= 8.0f) {
-        *y = d65_y * l * (3.0f * 3.0f * 3.0f / (29.0f * 29.0f * 29.0f));
+    triplet xyz;
+    float u_prime = luv.u / (13.0f * luv.l) + d65_u_prime;
+    float v_prime = luv.v / (13.0f * luv.l) + d65_v_prime;
+    if (luv.l <= 8.0f) {
+        xyz.y = d65_xyz.y * luv.l * (3.0f * 3.0f * 3.0f / (29.0f * 29.0f * 29.0f));
     } else {
-        float tmp = (l + 16.0f) / 116.0f;
-        *y = d65_y * tmp * tmp * tmp;
+        float tmp = (luv.l + 16.0f) / 116.0f;
+        xyz.y = d65_xyz.y * tmp * tmp * tmp;
     }
-    *x = (*y) * (9.0f * u_prime) / (4.0f * v_prime);
-    *z = (*y) * (12.0f - 3.0f * u_prime - 20.0f * v_prime) / (4.0f * v_prime);
+    xyz.x = xyz.y * (9.0f * u_prime) / (4.0f * v_prime);
+    xyz.z = xyz.y * (12.0f - 3.0f * u_prime - 20.0f * v_prime) / (4.0f * v_prime);
+    return xyz;
 }
 
-static void xyz_to_luv(float x, float y, float z, float* l, float* u, float* v)
+static triplet xyz_to_luv(triplet xyz)
 {
-    float y_ratio = y / d65_y;
+    triplet luv;
+    float y_ratio = xyz.y / d65_xyz.y;
     if (y_ratio <= (6.0f * 6.0f * 6.0f) / (29.0f * 29.0f * 29.0f)) {
-        *l = (29.0f * 29.0f * 29.0f) / (3.0f * 3.0f * 3.0f) * y_ratio;
+        luv.l = (29.0f * 29.0f * 29.0f) / (3.0f * 3.0f * 3.0f) * y_ratio;
     } else {
-        *l = 116.0f * std::cbrt(y_ratio) - 16.0f;
+        luv.l = 116.0f * std::cbrt(y_ratio) - 16.0f;
     }
-    *u = 13.0f * (*l) * (u_prime(x, y, z) - d65_u_prime);
-    *v = 13.0f * (*l) * (v_prime(x, y, z) - d65_v_prime);
+    luv.u = 13.0f * luv.l * (u_prime(xyz) - d65_u_prime);
+    luv.v = 13.0f * luv.l * (v_prime(xyz) - d65_v_prime);
+    return luv;
+}
+
+static float luv_saturation(triplet luv)
+{
+    return lch_saturation(luv.l, std::hypot(luv.u, luv.v));
 }
 
 /* Color space conversion: LAB <-> XYZ */
@@ -154,12 +180,12 @@ static float lab_invf(float t)
         return (3.0f * 6.0f * 6.0f) / (29.0f * 29.0f) * (t - 4.0f / 29.0f);
 }
 
-static void lab_to_xyz(float l, float a, float b, float* x, float* y, float* z)
+static triplet lab_to_xyz(triplet lab)
 {
-    float t = (l + 16.0f) / 116.0f;
-    *x = d65_x * lab_invf(t + a / 500.0f);
-    *y = d65_y * lab_invf(t);
-    *z = d65_z * lab_invf(t - b / 200.0f);
+    float t = (lab.l + 16.0f) / 116.0f;
+    return triplet(d65_xyz.x * lab_invf(t + lab.a / 500.0f),
+                   d65_xyz.y * lab_invf(t),
+                   d65_xyz.z * lab_invf(t - lab.b / 200.0f));
 }
 
 static float lab_f(float t)
@@ -170,30 +196,34 @@ static float lab_f(float t)
         return (29.0f * 29.0f) / (3.0f * 6.0f * 6.0f) * t + 4.0f / 29.0f;
 }
 
-static void xyz_to_lab(float x, float y, float z, float* l, float* a, float* b)
+static triplet xyz_to_lab(triplet xyz)
 {
-    float fx = lab_f(x / d65_x);
-    float fy = lab_f(y / d65_y);
-    float fz = lab_f(z / d65_z);
-    *l = 116.0f * fy - 16.0f;
-    *a = 500.0f * (fx - fy);
-    *b = 200.0f * (fy - fz);
+    triplet fxyz = triplet(lab_f(xyz.x / d65_xyz.x), lab_f(xyz.y / d65_xyz.y), lab_f(xyz.z / d65_xyz.z));
+    return triplet(116.0f * fxyz.y - 16.0f, 500.0f * (fxyz.x - fxyz.y), 200.0f * (fxyz.y - fxyz.z));
 }
 
 /* Color space conversion: RGB <-> XYZ */
 
-static void rgb_to_xyz(float r, float g, float b, float* x, float* y, float *z)
+static triplet rgb_to_xyz(triplet rgb)
 {
-    *x = (0.4124f * r + 0.3576f * g + 0.1805f * b) * 100.0f;
-    *y = (0.2126f * r + 0.7152f * g + 0.0722f * b) * 100.0f;
-    *z = (0.0193f * r + 0.1192f * g + 0.9505f * b) * 100.0f;
+    return 100.0f * triplet(
+            (0.4124f * rgb.r + 0.3576f * rgb.g + 0.1805f * rgb.b),
+            (0.2126f * rgb.r + 0.7152f * rgb.g + 0.0722f * rgb.b),
+            (0.0193f * rgb.r + 0.1192f * rgb.g + 0.9505f * rgb.b));
 }
 
-static void xyz_to_rgb(float x, float y, float z, float* r, float* g, float* b)
+static triplet xyz_to_rgb(triplet xyz, bool clamping = true)
 {
-    *r = clamp((+3.2406255f * x - 1.5372080f * y - 0.4986286f * z) / 100.0f, 0.0f, 1.0f);
-    *g = clamp((-0.9689307f * x + 1.8757561f * y + 0.0415175f * z) / 100.0f, 0.0f, 1.0f);
-    *b = clamp((+0.0557101f * x - 0.2040211f * y + 1.0569959f * z) / 100.0f, 0.0f, 1.0f);
+    triplet rgb = 0.01f * triplet(
+            (+3.2406255f * xyz.x - 1.5372080f * xyz.y - 0.4986286f * xyz.z),
+            (-0.9689307f * xyz.x + 1.8757561f * xyz.y + 0.0415175f * xyz.z),
+            (+0.0557101f * xyz.x - 0.2040211f * xyz.y + 1.0569959f * xyz.z));
+    if (clamping) {
+        rgb.r = clamp(rgb.r, 0.0f, 1.0f);
+        rgb.g = clamp(rgb.g, 0.0f, 1.0f);
+        rgb.b = clamp(rgb.b, 0.0f, 1.0f);
+    }
+    return rgb;
 }
 
 /* Color space conversion: RGB <-> sRGB */
@@ -203,11 +233,9 @@ static float rgb_to_srgb_helper(float x)
     return (x <= 0.0031308f ? (x * 12.92f) : (1.055f * std::pow(x, 1.0f / 2.4f) - 0.055f));
 }
 
-static void rgb_to_srgb(float r, float g, float b, float* sr, float* sg, float* sb)
+static triplet rgb_to_srgb(triplet rgb)
 {
-    *sr = rgb_to_srgb_helper(r);
-    *sg = rgb_to_srgb_helper(g);
-    *sb = rgb_to_srgb_helper(b);
+    return triplet(rgb_to_srgb_helper(rgb.r), rgb_to_srgb_helper(rgb.g), rgb_to_srgb_helper(rgb.b));
 }
 
 static float srgb_to_rgb_helper(float x)
@@ -215,84 +243,56 @@ static float srgb_to_rgb_helper(float x)
     return (x <= 0.04045f ? (x / 12.92f) : std::pow((x + 0.055f) / 1.055f, 2.4f));
 }
 
-static void srgb_to_rgb(float sr, float sg, float sb, float* r, float* g, float* b)
+static triplet srgb_to_rgb(triplet srgb)
 {
-    *r = srgb_to_rgb_helper(sr);
-    *g = srgb_to_rgb_helper(sg);
-    *b = srgb_to_rgb_helper(sb);
+    return triplet(srgb_to_rgb_helper(srgb.r), srgb_to_rgb_helper(srgb.g), srgb_to_rgb_helper(srgb.b));
 }
 
-/* Helpers for LUV colors */
+/* Various helpers */
 
-typedef struct {
-    float l;
-    float u;
-    float v;
-} LUVColor;
-
-LUVColor operator+(LUVColor a, LUVColor b)
+static float srgb_to_lch_hue(triplet srgb)
 {
-    LUVColor c = { .l = a.l + b.l, .u = a.u + b.u, .v = a.v + b.v };
-    return c;
-}
-
-LUVColor operator*(float a, LUVColor b)
-{
-    LUVColor c = { .l = a * b.l, .u = a * b.u, .v = a * b.v };
-    return c;
-}
-
-static float srgb_to_lch_hue(float sr, float sg, float sb)
-{
-    float r, g, b;
-    srgb_to_rgb(sr, sg, sb, &r, &g, &b);
-    float x, y, z;
-    rgb_to_xyz(r, g, b, &x, &y, &z);
-    float l, u, v;
-    xyz_to_luv(x, y, z, &l, &u, &v);
-    float c, h;
-    luv_to_lch(u, v, &c, &h);
-    return h;
+    return luv_to_lch(xyz_to_luv(rgb_to_xyz(srgb_to_rgb(srgb)))).h;
 }
 
 // Compute most saturated color that fits into the sRGB
 // cube for the given LCH hue value. This is the core
-// of the paper.
-static LUVColor most_saturated_in_srgb(float hue)
+// of the Wijffelaars paper.
+static triplet most_saturated_in_srgb(float lch_hue)
 {
     /* Static values, only computed once */
     static float h[] = {
-        srgb_to_lch_hue(1, 0, 0),
-        srgb_to_lch_hue(1, 1, 0),
-        srgb_to_lch_hue(0, 1, 0),
-        srgb_to_lch_hue(0, 1, 1),
-        srgb_to_lch_hue(0, 0, 1),
-        srgb_to_lch_hue(1, 0, 1)
+        srgb_to_lch_hue(triplet(1, 0, 0)),
+        srgb_to_lch_hue(triplet(1, 1, 0)),
+        srgb_to_lch_hue(triplet(0, 1, 0)),
+        srgb_to_lch_hue(triplet(0, 1, 1)),
+        srgb_to_lch_hue(triplet(0, 0, 1)),
+        srgb_to_lch_hue(triplet(1, 0, 1))
     };
 
     /* RGB values and variable pointers to them */
     int i, j, k;
-    if (hue < h[0]) {
+    if (lch_hue < h[0]) {
         i = 2;
         j = 1;
         k = 0;
-    } else if (hue < h[1]) {
+    } else if (lch_hue < h[1]) {
         i = 1;
         j = 2;
         k = 0;
-    } else if (hue < h[2]) {
+    } else if (lch_hue < h[2]) {
         i = 0;
         j = 2;
         k = 1;
-    } else if (hue < h[3]) {
+    } else if (lch_hue < h[3]) {
         i = 2;
         j = 0;
         k = 1;
-    } else if (hue < h[4]) {
+    } else if (lch_hue < h[4]) {
         i = 1;
         j = 0;
         k = 2;
-    } else if (hue < h[5]) {
+    } else if (lch_hue < h[5]) {
         i = 0;
         j = 1;
         k = 2;
@@ -309,8 +309,8 @@ static LUVColor most_saturated_in_srgb(float hue)
         { 0.2126f, 0.7152f, 0.0722f },
         { 0.0193f, 0.1192f, 0.9505f }
     };
-    float alpha = -std::sin(hue);
-    float beta = std::cos(hue);
+    float alpha = -std::sin(lch_hue);
+    float beta = std::cos(lch_hue);
     float T = alpha * d65_u_prime + beta * d65_v_prime;
     srgb[j] = 0.0f;
     srgb[k] = 1.0f;
@@ -319,39 +319,26 @@ static LUVColor most_saturated_in_srgb(float hue)
     srgb[i] = rgb_to_srgb_helper(clamp(- q0 / q1, 0.0f, 1.0f));
 
     /* Convert back to LUV */
-    float r, g, b;
-    srgb_to_rgb(srgb[0], srgb[1], srgb[2], &r, &g, &b);
-    float x, y, z;
-    rgb_to_xyz(r, g, b, &x, &y, &z);
-    float l, u, v;
-    xyz_to_luv(x, y, z, &l, &u, &v);
-    LUVColor color = { .l = l, .u = u, .v = v };
-    return color;
+    return xyz_to_luv(rgb_to_xyz(srgb_to_rgb(triplet(srgb[0], srgb[1], srgb[2]))));
 }
 
-static float Smax(float l, float h)
+static float s_max(float l, float h)
 {
-    LUVColor pmid = most_saturated_in_srgb(h);
-    LUVColor pend = { .l = 0.0f, .u = 0.0f, .v = 0.0f };
+    triplet pmid = most_saturated_in_srgb(h);
+    triplet pend = triplet(0.0f, 0.0f, 0.0f);
     if (l > pmid.l)
         pend.l = 100.0f;
     float alpha = (pend.l - l) / (pend.l - pmid.l);
-    float pmids = luv_saturation(pmid.l, pmid.u, pmid.v);
-    float pends = luv_saturation(pend.l, pend.u, pend.v);
+    float pmids = luv_saturation(pmid);
+    float pends = luv_saturation(pend);
     return alpha * (pmids - pends) + pends;
 }
 
-static LUVColor get_bright_point()
+static triplet get_bright_point()
 {
-    static LUVColor pb = { .l = -1.0f, .u = -1.0f, .v = -1.0f };
+    static triplet pb(-1.0f, -1.0f, -1.0f);
     if (pb.l < 0.0f) {
-        float x, y, z;
-        rgb_to_xyz(1, 1, 0, &x, &y, &z);
-        float l, u, v;
-        xyz_to_luv(x, y, z, &l, &u, &v);
-        pb.l = l;
-        pb.u = u;
-        pb.v = v;
+        pb = xyz_to_luv(rgb_to_xyz(triplet(1.0f, 1.0f, 0.0f)));
     }
     return pb;
 }
@@ -363,59 +350,52 @@ static float mix_hue(float alpha, float h0, float h1)
 }
 
 static void get_color_points(float hue, float saturation, float warmth,
-        LUVColor pb, float pb_hue, float pb_saturation,
-        LUVColor* p0, LUVColor* p1, LUVColor* p2,
-        LUVColor* q0, LUVColor* q1, LUVColor* q2)
+        triplet pb, float pb_hue, float pb_saturation,
+        triplet* p0, triplet* p1, triplet* p2,
+        triplet* q0, triplet* q1, triplet* q2)
 {
-    p0->l = 0.0f;
-    lch_to_luv(0.0f, hue, &(p0->u), &(p0->v));
+    *p0 = lch_to_luv(triplet(0.0f, 0.0f, hue));
     *p1 = most_saturated_in_srgb(hue);
-    float p2l = (1.0f - warmth) * 100.0f + warmth * pb.l;
-    float p2h = mix_hue(warmth, hue, pb_hue);
-    float p2c = lch_chroma(p2l, std::min(Smax(p2l, p2h), warmth * saturation * pb_saturation));
-    p2->l = p2l;
-    lch_to_luv(p2c, p2h, &(p2->u), &(p2->v));
+    triplet p2_lch;
+    p2_lch.l = (1.0f - warmth) * 100.0f + warmth * pb.l;
+    p2_lch.h = mix_hue(warmth, hue, pb_hue);
+    p2_lch.c = lch_chroma(p2_lch.l, std::min(s_max(p2_lch.l, p2_lch.h), warmth * saturation * pb_saturation));
+    *p2 = lch_to_luv(p2_lch);
     *q0 = (1.0f - saturation) * (*p0) + saturation * (*p1);
     *q2 = (1.0f - saturation) * (*p2) + saturation * (*p1);
     *q1 = 0.5f * ((*q0) + (*q2));
 }
 
-static LUVColor B(LUVColor b0, LUVColor b1, LUVColor b2, float t)
+static triplet b(triplet b0, triplet b1, triplet b2, float t)
 {
     float a = (1.0f - t) * (1.0f - t);
     float b = 2.0f * (1.0f - t) * t;
     float c = t * t;
-    LUVColor color = a * b0 + b * b1 + c * b2;
-    return color;
+    return a * b0 + b * b1 + c * b2;
 }
 
-static float invB(float b0, float b1, float b2, float v)
+static float inv_b(float b0, float b1, float b2, float v)
 {
     return (b0 - b1 + std::sqrt(std::max(b1 * b1 - b0 * b2 + (b0 - 2.0f * b1 + b2) * v, 0.0f)))
         / (b0 - 2.0f * b1 + b2);
 }
 
-static LUVColor get_colormap_entry(float t,
-        LUVColor p0, LUVColor p2,
-        LUVColor q0, LUVColor q1, LUVColor q2,
+static triplet get_colormap_entry(float t,
+        triplet p0, triplet p2,
+        triplet q0, triplet q1, triplet q2,
         float contrast, float brightness)
 {
     float l = 125 - 125 * std::pow(0.2f, (1.0f - contrast) * brightness + t * contrast);
-    float T = (l <= q1.l ? 0.5f * invB(p0.l, q0.l, q1.l, l) : 0.5f * invB(q1.l, q2.l, p2.l, l) + 0.5f);
-    return (T <= 0.5f ? B(p0, q0, q1, 2.0f * T) : B(q1, q2, p2, 2.0f * (T - 0.5f)));
+    float T = (l <= q1.l ? 0.5f * inv_b(p0.l, q0.l, q1.l, l) : 0.5f * inv_b(q1.l, q2.l, p2.l, l) + 0.5f);
+    return (T <= 0.5f ? b(p0, q0, q1, 2.0f * T) : b(q1, q2, p2, 2.0f * (T - 0.5f)));
 }
 
-static void convert_colormap_entry(LUVColor color, unsigned char* srgb)
+static void luv_to_colormap(triplet luv, unsigned char* colormap)
 {
-    float x, y, z;
-    luv_to_xyz(color.l, color.u, color.v, &x, &y, &z);
-    float r, g, b;
-    xyz_to_rgb(x, y, z, &r, &g, &b);
-    float sr, sg, sb;
-    rgb_to_srgb(r, g, b, &sr, &sg, &sb);
-    srgb[0] = float_to_uchar(sr);
-    srgb[1] = float_to_uchar(sg);
-    srgb[2] = float_to_uchar(sb);
+    triplet srgb = rgb_to_srgb(xyz_to_rgb(luv_to_xyz(luv)));
+    colormap[0] = float_to_uchar(srgb.r);
+    colormap[1] = float_to_uchar(srgb.g);
+    colormap[2] = float_to_uchar(srgb.b);
 }
 
 /* Brewer-like color maps */
@@ -428,17 +408,16 @@ float BrewerSequentialDefaultContrastForSmallN(int n)
 void BrewerSequential(int n, unsigned char* colormap, float hue,
         float contrast, float saturation, float brightness, float warmth)
 {
-    LUVColor pb, p0, p1, p2, q0, q1, q2;
+    triplet pb, p0, p1, p2, q0, q1, q2;
     pb = get_bright_point();
-    float pbc, pbh, pbs;
-    luv_to_lch(pb.u, pb.v, &pbc, &pbh);
-    pbs = lch_saturation(pb.l, pbc);
-    get_color_points(hue, saturation, warmth, pb, pbh, pbs, &p0, &p1, &p2, &q0, &q1, &q2);
+    triplet pb_lch = luv_to_lch(pb);
+    float pbs = lch_saturation(pb_lch.l, pb_lch.c);
+    get_color_points(hue, saturation, warmth, pb, pb_lch.h, pbs, &p0, &p1, &p2, &q0, &q1, &q2);
 
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
-        LUVColor c = get_colormap_entry(t, p0, p2, q0, q1, q2, contrast, brightness);
-        convert_colormap_entry(c, colormap + 3 * i);
+        triplet c = get_colormap_entry(t, p0, p2, q0, q1, q2, contrast, brightness);
+        luv_to_colormap(c, colormap + 3 * i);
     }
 }
 
@@ -454,30 +433,29 @@ void BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence
     if (hue1 >= twopi)
         hue1 -= twopi;
 
-    LUVColor pb;
-    LUVColor p00, p01, p02, q00, q01, q02;
-    LUVColor p10, p11, p12, q10, q11, q12;
+    triplet pb;
+    triplet p00, p01, p02, q00, q01, q02;
+    triplet p10, p11, p12, q10, q11, q12;
     pb = get_bright_point();
-    float pbc, pbh, pbs;
-    luv_to_lch(pb.u, pb.v, &pbc, &pbh);
-    pbs = lch_saturation(pb.l, pbc);
-    get_color_points(hue,  saturation, warmth, pb, pbh, pbs, &p00, &p01, &p02, &q00, &q01, &q02);
-    get_color_points(hue1, saturation, warmth, pb, pbh, pbs, &p10, &p11, &p12, &q10, &q11, &q12);
+    triplet pb_lch = luv_to_lch(pb);
+    float pbs = lch_saturation(pb_lch.l, pb_lch.c);
+    get_color_points(hue,  saturation, warmth, pb, pb_lch.h, pbs, &p00, &p01, &p02, &q00, &q01, &q02);
+    get_color_points(hue1, saturation, warmth, pb, pb_lch.h, pbs, &p10, &p11, &p12, &q10, &q11, &q12);
 
     for (int i = 0; i < n; i++) {
-        LUVColor c;
+        triplet c;
         if (n % 2 == 1 && i == n / 2) {
             // compute neutral color in the middle of the map
-            LUVColor c0 = get_colormap_entry(1.0f, p00, p02, q00, q01, q02, contrast, brightness);
-            LUVColor c1 = get_colormap_entry(1.0f, p10, p12, q10, q11, q12, contrast, brightness);
+            triplet c0 = get_colormap_entry(1.0f, p00, p02, q00, q01, q02, contrast, brightness);
+            triplet c1 = get_colormap_entry(1.0f, p10, p12, q10, q11, q12, contrast, brightness);
             if (n <= 9) {
                 // for discrete color maps, use an extra neutral color
-                float c0s = luv_saturation(c0.l, c0.u, c0.v);
-                float c1s = luv_saturation(c1.l, c1.u, c1.v);
+                float c0s = luv_saturation(c0);
+                float c1s = luv_saturation(c1);
                 float sn = 0.5f * (c0s + c1s) * warmth;
                 c.l = 0.5f * (c0.l + c1.l);
-                float cc = lch_chroma(c.l, std::min(Smax(c.l, pbh), sn));
-                lch_to_luv(cc, pbh, &(c.u), &(c.v));
+                float cc = lch_chroma(c.l, std::min(s_max(c.l, pb_lch.h), sn));
+                c = lch_to_luv(triplet(c.l, cc, pb_lch.h));
             } else {
                 // for continuous color maps, use an average, since the extra neutral color looks bad
                 c = 0.5f * (c0 + c1);
@@ -492,7 +470,7 @@ void BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence
                 c = get_colormap_entry(tt, p10, p12, q10, q11, q12, contrast, brightness);
             }
         }
-        convert_colormap_entry(c, colormap + 3 * i);
+        luv_to_colormap(c, colormap + 3 * i);
     }
 }
 
@@ -500,99 +478,84 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
         float contrast, float saturation, float brightness)
 {
     // Get all information about yellow
-    static float yl = -1.0f, yh = -1.0f;
-    if (yl < 0.0f) {
-        float yx, yy, yz;
-        rgb_to_xyz(1, 1, 0, &yx, &yy, &yz);
-        float yu, yv;
-        xyz_to_luv(yx, yy, yz, &yl, &yu, &yv);
-        float yc;
-        luv_to_lch(yu, yv, &yc, &yh);
+    static triplet ylch(-1.0f, -1.0f, -1.0f);
+    if (ylch.l < 0.0f) {
+        ylch = luv_to_lch(xyz_to_luv(rgb_to_xyz(triplet(1.0f, 1.0f, 0.0f))));
     }
 
     // Get saturation of red (maximum possible saturation)
     static float rs = -1.0f;
     if (rs < 0.0f) {
-        float rx, ry, rz;
-        rgb_to_xyz(1, 0, 0, &rx, &ry, &rz);
-        float rl, ru, rv;
-        xyz_to_luv(rx, ry, rz, &rl, &ru, &rv);
-        rs = luv_saturation(rl, ru, rv);
+        triplet rluv = xyz_to_luv(rgb_to_xyz(triplet(1.0f, 0.0f, 0.0f)));
+        rs = luv_saturation(rluv);
     }
 
     // Derive parameters of the method
     float eps = hue / twopi;
     float r = divergence / twopi;
-    float l0 = brightness * yl;
+    float l0 = brightness * ylch.l;
     float l1 = (1.0f - contrast) * l0;
 
     // Generate colors
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         float ch = std::fmod(twopi * (eps + t * r), twopi);
-        float alpha = hue_diff(ch, yh) / pi;
+        float alpha = hue_diff(ch, ylch.h) / pi;
         float cl = (1.0f - alpha) * l0 + alpha * l1;
-        float cs = std::min(Smax(cl, ch), saturation * rs);
-        LUVColor c;
-        c.l = cl;
-        lch_to_luv(lch_chroma(cl, cs), ch, &(c.u), &(c.v));
-        convert_colormap_entry(c, colormap + 3 * i);
+        float cs = std::min(s_max(cl, ch), saturation * rs);
+        triplet c = lch_to_luv(triplet(cl, lch_chroma(cl, cs), ch));
+        luv_to_colormap(c, colormap + 3 * i);
     }
 }
 
 /* Isoluminant */
 
-static void lch_to_colormap(float l, float c, float h,
-        int i, unsigned char* colormap)
+static void lch_to_colormap(triplet lch, unsigned char* colormap)
 {
-    float u, v;
-    lch_to_luv(c, h, &u, &v);
-    float x, y, z;
-    luv_to_xyz(l, u, v, &x, &y, &z);
-    float r, g, b;
-    xyz_to_rgb(x, y, z, &r, &g, &b);
-    float sr, sg, sb;
-    rgb_to_srgb(r, g, b, &sr, &sg, &sb);
-    colormap[3 * i + 0] = float_to_uchar(sr);
-    colormap[3 * i + 1] = float_to_uchar(sg);
-    colormap[3 * i + 2] = float_to_uchar(sb);
+    triplet srgb = rgb_to_srgb(xyz_to_rgb(luv_to_xyz(lch_to_luv(lch))));
+    colormap[0] = float_to_uchar(srgb.r);
+    colormap[1] = float_to_uchar(srgb.g);
+    colormap[2] = float_to_uchar(srgb.b);
 }
 
 void IsoluminantSequential(int n, unsigned char* colormap,
         float luminance, float saturation, float hue)
 {
-    const float l = luminance * 100.0f;
-    const float h = hue;
+    triplet lch;
+    lch.l = luminance * 100.0f;
+    lch.h = hue;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         float s = saturation * 5.0f * (1.0f - t);
-        float c = lch_chroma(l, s);
-        lch_to_colormap(l, c, h, i, colormap);
+        lch.c = lch_chroma(lch.l, s);
+        lch_to_colormap(lch, colormap + 3 * i);
     }
 }
 
 void IsoluminantDiverging(int n, unsigned char* colormap,
         float luminance, float saturation, float hue, float divergence)
 {
-    const float l = luminance * 100.0f;
+    triplet lch;
+    lch.l = luminance * 100.0f;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
-        float c = lch_chroma(l, s);
-        float h = (t <= 0.5f ? hue : hue + divergence);
-        lch_to_colormap(l, c, h, i, colormap);
+        lch.c = lch_chroma(lch.l, s);
+        lch.h = (t <= 0.5f ? hue : hue + divergence);
+        lch_to_colormap(lch, colormap + 3 * i);
     }
 }
 
 void IsoluminantQualitative(int n, unsigned char* colormap,
         float luminance, float saturation, float hue, float divergence)
 {
-    const float l = luminance * 100.0f;
-    const float c = lch_chroma(l, saturation * 5.0f);
+    triplet lch;
+    lch.l = luminance * 100.0f;
+    lch.c = lch_chroma(lch.l, saturation * 5.0f);
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
-        float h = hue + t * divergence;
-        lch_to_colormap(l, c, h, i, colormap);
+        lch.h = hue + t * divergence;
+        lch_to_colormap(lch, colormap + 3 * i);
     }
 }
 
@@ -645,57 +608,34 @@ int CubeHelix(int n, unsigned char* colormap, float hue,
 
 /* Moreland */
 
-static void lab_to_msh(float l, float a, float b, float* m, float* s, float* h)
+static triplet lab_to_msh(triplet lab)
 {
-    *m = std::sqrt(l * l + a * a + b * b);
-    *s = (*m > 0.001f) ? std::acos(l / (*m)) : 0.0f;
-    *h = (*s > 0.001f) ? std::atan2(b, a) : 0.0f;
+    triplet msh;
+    msh.m = std::sqrt(lab.l * lab.l + lab.a * lab.a + lab.b * lab.b);
+    msh.s = (msh.m > 0.001f) ? std::acos(lab.l / msh.m) : 0.0f;
+    msh.h = (msh.s > 0.001f) ? std::atan2(lab.b, lab.a) : 0.0f;
+    return msh;
 }
 
-static void msh_to_lab(float m, float s, float h, float* l, float* a, float* b)
+static triplet msh_to_lab(triplet msh)
 {
-    *l = m * std::cos(s);
-    *a = m * std::sin(s) * std::cos(h);
-    *b = m * std::sin(s) * std::sin(h);
+    return triplet(
+            msh.m * std::cos(msh.s),
+            msh.m * std::sin(msh.s) * std::cos(msh.h),
+            msh.m * std::sin(msh.s) * std::sin(msh.h));
 }
 
-static void srgb_to_msh(unsigned char sr, unsigned char sg, unsigned char sb, float* m, float* s, float *h)
+static float adjust_hue(triplet msh, float unsaturated_m)
 {
-    float lr, lg, lb;
-    srgb_to_rgb(uchar_to_float(sr), uchar_to_float(sg), uchar_to_float(sb), &lr, &lg, &lb);
-    float x, y, z;
-    rgb_to_xyz(lr, lg, lb, &x, &y, &z);
-    float l, a, b;
-    xyz_to_lab(x, y, z, &l, &a, &b);
-    lab_to_msh(l, a, b, m, s, h);
-}
-
-static void msh_to_srgb(float m, float s, float h, unsigned char* sr, unsigned char* sg, unsigned char* sb)
-{
-    float l, a, b;
-    msh_to_lab(m, s, h, &l, &a, &b);
-    float x, y, z;
-    lab_to_xyz(l, a, b, &x, &y, &z);
-    float lr, lg, lb;
-    xyz_to_rgb(x, y, z, &lr, &lg, &lb);
-    float fsr, fsg, fsb;
-    rgb_to_srgb(lr, lg, lb, &fsr, &fsg, &fsb);
-    *sr = float_to_uchar(fsr);
-    *sg = float_to_uchar(fsg);
-    *sb = float_to_uchar(fsb);
-}
-
-static float adjust_hue(float m, float s, float h, float unsaturated_m)
-{
-    if (m >= unsaturated_m - 0.1f) {
-        return h;
+    if (msh.m >= unsaturated_m - 0.1f) {
+        return msh.h;
     } else {
-        float hue_spin = s * std::sqrt(unsaturated_m * unsaturated_m - m * m)
-            / (m * std::sin(s));
-        if (h > -pi / 3.0f)
-            return h + hue_spin;
+        float hue_spin = msh.s * std::sqrt(unsaturated_m * unsaturated_m - msh.m * msh.m)
+            / (msh.m * std::sin(msh.s));
+        if (msh.h > -pi / 3.0f)
+            return msh.h + hue_spin;
         else
-            return h - hue_spin;
+            return msh.h - hue_spin;
     }
 }
 
@@ -703,40 +643,40 @@ void Moreland(int n, unsigned char* colormap,
         unsigned char sr0, unsigned char sg0, unsigned char sb0,
         unsigned char sr1, unsigned char sg1, unsigned char sb1)
 {
-    float om0, os0, oh0, om1, os1, oh1;
-    srgb_to_msh(sr0, sg0, sb0, &om0, &os0, &oh0);
-    srgb_to_msh(sr1, sg1, sb1, &om1, &os1, &oh1);
-    bool place_white = (os0 >= 0.05f && os1 >= 0.05f && hue_diff(oh0, oh1) > pi / 3.0f);
-    float mmid = std::max(std::max(om0, om1), 88.0f);
+    triplet omsh0 = lab_to_msh(xyz_to_lab(rgb_to_xyz(srgb_to_rgb(triplet(
+                            uchar_to_float(sr0), uchar_to_float(sg0), uchar_to_float(sb0))))));
+    triplet omsh1 = lab_to_msh(xyz_to_lab(rgb_to_xyz(srgb_to_rgb(triplet(
+                            uchar_to_float(sr1), uchar_to_float(sg1), uchar_to_float(sb1))))));
+    bool place_white = (omsh0.s >= 0.05f && omsh1.s >= 0.05f && hue_diff(omsh0.h, omsh1.h) > pi / 3.0f);
+    float mmid = std::max(std::max(omsh0.m, omsh1.m), 88.0f);
 
     for (int i = 0; i < n; i++) {
-        float m0 = om0, s0 = os0, h0 = oh0;
-        float m1 = om1, s1 = os1, h1 = oh1;
+        triplet msh0 = omsh0;
+        triplet msh1 = omsh1;
         float t = i / (n - 1.0f);
         if (place_white) {
             if (t < 0.5f) {
-                m1 = mmid;
-                s1 = 0.0f;
-                h1 = 0.0f;
+                msh1.m = mmid;
+                msh1.s = 0.0f;
+                msh1.h = 0.0f;
                 t *= 2.0f;
             } else {
-                m0 = mmid;
-                s0 = 0.0f;
-                h0 = 0.0f;
+                msh0.m = mmid;
+                msh0.s = 0.0f;
+                msh0.h = 0.0f;
                 t = 2.0f * t - 1.0f;
             }
         }
-        if (s0 < 0.05f && s1 >= 0.05f) {
-            h0 = adjust_hue(m1, s1, h1, m0);
-        } else if (s0 >= 0.05f && s1 < 0.05f) {
-            h1 = adjust_hue(m0, s0, h0, m1);
+        if (msh0.s < 0.05f && msh1.s >= 0.05f) {
+            msh0.h = adjust_hue(msh1, msh0.m);
+        } else if (msh0.s >= 0.05f && msh1.s < 0.05f) {
+            msh1.h = adjust_hue(msh0, msh1.m);
         }
-
-        float m = (1.0f - t) * m0 + t * m1;
-        float s = (1.0f - t) * s0 + t * s1;
-        float h = (1.0f - t) * h0 + t * h1;
-
-        msh_to_srgb(m, s, h, colormap + 3 * i + 0, colormap + 3 * i + 1, colormap + 3 * i + 2);
+        triplet msh = (1.0f - t) * msh0 + t * msh1;
+        triplet srgb = rgb_to_srgb(xyz_to_rgb(lab_to_xyz(msh_to_lab(msh))));
+        colormap[3 * i + 0] = float_to_uchar(srgb.r);
+        colormap[3 * i + 1] = float_to_uchar(srgb.g);
+        colormap[3 * i + 2] = float_to_uchar(srgb.b);
     }
 }
 
