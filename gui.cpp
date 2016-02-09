@@ -194,7 +194,7 @@ void GUI::edit_copy_as_txt()
     QVector<QColor> colormap = currentWidget()->colorMap();
     QString string;
     QTextStream stream(&string);
-    for (int i = 0; i < colormap.size() / 3; i++) {
+    for (int i = 0; i < colormap.size(); i++) {
         stream << colormap[i].red()   << ", "
                << colormap[i].green() << ", "
                << colormap[i].blue()  << endl;
