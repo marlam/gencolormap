@@ -74,7 +74,7 @@ GUI::GUI()
     _category_seq_widget = new QTabWidget();
     _category_seq_widget->addTab(_brewerseq_widget, "Brewer-like");
     _category_seq_widget->addTab(_isolumseq_widget, "Isoluminant");
-    //_category_seq_widget->addTab(_blackbody_widget, "Black Body");
+    _category_seq_widget->addTab(_blackbody_widget, "Black Body");
     _category_seq_widget->addTab(_unirainbow_widget, "Uniform Rainbow");
     _category_seq_widget->addTab(_cubehelix_widget, "CubeHelix");
     //_category_seq_widget->addTab(_mcnames_widget, "McNames");

@@ -257,6 +257,7 @@ private:
     QSpinBox* _n_spinbox;
     ColorMapCombinedSliderSpinBox* _temperature_changer;
     ColorMapCombinedSliderSpinBox* _range_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
 private slots:
     void update();
 
@@ -267,7 +268,7 @@ public:
     void reset() override;
     QVector<QColor> colorMap() const override;
     QString reference() const override;
-    void parameters(int& n, float& temperature, float& range) const;
+    void parameters(int& n, float& temperature, float& range, float& saturation) const;
 };
 
 class ColorMapCubeHelixWidget : public ColorMapWidget

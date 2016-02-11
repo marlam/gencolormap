@@ -203,11 +203,12 @@ int main(int argc, char* argv[])
                 "    -t|--type=uniformrainbow          Generate a uniform rainbow color map\n"
                 "    [-h|--hue=H]                      Set start hue in [0,360] degrees\n"
                 "    [-r|--rotations=R]                Set number of rotations, in (-infty,infty)\n"
-                "    [-s|--saturation=S]               Set saturation, in [0,1]\n"
+                "    [-s|--saturation=S]               Set saturation, in [0,5]\n"
                 "  Black Body color maps:\n"
                 "    -t|--type=blackbody               Generate a Black Body color map\n"
                 "    [-T|--temperature=T]              Start temperature of the map in Kelvin\n"
                 "    [-R|--range=R]                    Range of temperatures of the map in Kelvin\n"
+                "    [-s|--saturation=S]               Set saturation, in [0,5]\n"
                 "  CubeHelix color maps:\n"
                 "    -t|--type=cubehelix               Generate a CubeHelix color map\n"
                 "    [-h|--hue=H]                      Set start hue in [0,180] degrees\n"
@@ -285,6 +286,8 @@ int main(int argc, char* argv[])
             saturation = ColorMap::IsoluminantQualitativeDefaultSaturation;
         else if (type == unirainbow)
             saturation = ColorMap::UniformRainbowDefaultSaturation;
+        else if (type == blackbody)
+            saturation = ColorMap::BlackBodyDefaultSaturation;
         else if (type == cubehelix)
             saturation = ColorMap::CubeHelixDefaultSaturation;
     }
@@ -371,7 +374,7 @@ int main(int argc, char* argv[])
         ColorMap::UniformRainbow(n, &(colormap[0]), hue, rotations, saturation);
         break;
     case blackbody:
-        ColorMap::BlackBody(n, &(colormap[0]), temperature, range);
+        ColorMap::BlackBody(n, &(colormap[0]), temperature, range, saturation);
         break;
     case cubehelix:
         ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);

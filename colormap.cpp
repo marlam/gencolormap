@@ -743,7 +743,7 @@ static triplet color_matching_function(int lambda /* in nanometers */)
     return xyz;
 }
 
-void BlackBody(int n, unsigned char* colormap, float temperature, float range)
+void BlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
 {
     for (int i = 0; i < n; i++) {
         float fract = i / (n - 1.0f);
@@ -760,9 +760,10 @@ void BlackBody(int n, unsigned char* colormap, float temperature, float range)
             //xyz = xyz + s * radiosity * color_matching_function_approx(l);
             xyz = xyz + s * radiosity * color_matching_function(lambda);
         }
-        triplet luv = xyz_to_luv(adjust_y(xyz, 10.0f));
-        luv.l = 0.2f + fract * 99.8f;
-        luv_to_colormap(luv, colormap + 3 * i);
+        triplet lch = luv_to_lch(xyz_to_luv(adjust_y(xyz, 10.0f)));
+        lch.l = fract * 100.0f;
+        lch.c = lch_chroma(lch.l, (1.0f - fract) * saturation);
+        lch_to_colormap(lch, colormap + 3 * i);
     }
 }
 

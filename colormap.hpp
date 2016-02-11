@@ -159,23 +159,25 @@ void UniformRainbow(int n, unsigned char* colormap,
         float saturation = UniformRainbowDefaultSaturation);
 
 /*
- * Black Body color maps, based on the chromaticity (hue and saturation) of a black body
- * at increading temperatures. The luminance is linearly increasing.
+ * Black Body color maps, based on the hue of a black body at increading
+ * temperatures, but with linearly increasing lightness and chromaticity.
  *
  * Parameters are the temperature at the lower end of the map, and the range of
  * temperatures in the map. (The temperature at the higher end of the map is the
- * sum of the two).
+ * sum of the two). Furthermore, the saturation can be adjusted, but high
+ * saturations will lead to color clipping.
  */
 
-// The defaults are chosen so that we start at a red that is representable in
-// sRGB and arrive at a chromaticity that is very close to the D65 white point
-// (6500 K) so that we get a good white at the end of the color map.
-const float BlackBodyDefaultTemperature = 500.0f;
-const float BlackBodyDefaultRange = 6000.0;
+// The defaults are chosen so that we start at red and arrive the D65 white point
+// (6500 K), thus excluding the blue colors that occur at higher temperatures.
+const float BlackBodyDefaultTemperature = 250.0f;
+const float BlackBodyDefaultRange = 6250.0f;
+const float BlackBodyDefaultSaturation = 2.5f;
 
 void BlackBody(int n, unsigned char* colormap,
         float temperature = BlackBodyDefaultTemperature,
-        float range = BlackBodyDefaultRange);
+        float range = BlackBodyDefaultRange,
+        float saturation = BlackBodyDefaultSaturation);
 
 /*
  * CubeHelix color maps, as described in

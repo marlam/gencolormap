@@ -922,26 +922,33 @@ ColorMapBlackBodyWidget::ColorMapBlackBodyWidget() :
     _n_spinbox->setSingleStep(1);
     layout->addWidget(_n_spinbox, 1, 1, 1, 3);
 
-    QLabel* temperature_label = new QLabel("Temperature:");
+    QLabel* temperature_label = new QLabel("Temperature (K):");
     layout->addWidget(temperature_label, 2, 0);
-    _temperature_changer = new ColorMapCombinedSliderSpinBox(250.0f, 15000.0f, 100.0f);
+    _temperature_changer = new ColorMapCombinedSliderSpinBox(250.0f, 20000.0f, 100.0f);
     layout->addWidget(_temperature_changer->slider, 2, 1, 1, 2);
     layout->addWidget(_temperature_changer->spinbox, 2, 3);
 
-    QLabel* range_label = new QLabel("Range:");
+    QLabel* range_label = new QLabel("Range (K):");
     layout->addWidget(range_label, 3, 0);
-    _range_changer = new ColorMapCombinedSliderSpinBox(1000.0f, 15000.0f, 100.0f);
+    _range_changer = new ColorMapCombinedSliderSpinBox(0.0f, 20000.0f, 100.0f);
     layout->addWidget(_range_changer->slider, 3, 1, 1, 2);
     layout->addWidget(_range_changer->spinbox, 3, 3);
 
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 4, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0.0f, 5.0f, 0.1f);
+    layout->addWidget(_saturation_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 4, 3);
+
     layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 4, 0, 1, 4);
-    layout->setRowStretch(4, 1);
+    layout->addItem(new QSpacerItem(0, 0), 5, 0, 1, 4);
+    layout->setRowStretch(5, 1);
     setLayout(layout);
 
     connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
     connect(_temperature_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     reset();
 }
 
@@ -955,6 +962,7 @@ void ColorMapBlackBodyWidget::reset()
     _n_spinbox->setValue(256);
     _temperature_changer->setValue(ColorMap::BlackBodyDefaultTemperature);
     _range_changer->setValue(ColorMap::BlackBodyDefaultRange);
+    _saturation_changer->setValue(ColorMap::BlackBodyDefaultSaturation);
     _update_lock = false;
     update();
 }
@@ -962,10 +970,10 @@ void ColorMapBlackBodyWidget::reset()
 QVector<QColor> ColorMapBlackBodyWidget::colorMap() const
 {
     int n;
-    float t, r;
-    parameters(n, t, r);
+    float t, r, s;
+    parameters(n, t, r, s);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::BlackBody(n, colormap.data(), t, r);
+    ColorMap::BlackBody(n, colormap.data(), t, r, s);
     return toQColor(colormap);
 }
 
@@ -974,11 +982,12 @@ QString ColorMapBlackBodyWidget::reference() const
     return blackbody_reference;
 }
 
-void ColorMapBlackBodyWidget::parameters(int& n, float& temperature, float& range) const
+void ColorMapBlackBodyWidget::parameters(int& n, float& temperature, float& range, float& saturation) const
 {
     n = _n_spinbox->value();
     temperature = _temperature_changer->value();
     range = _range_changer->value();
+    saturation = _saturation_changer->value();
 }
 
 void ColorMapBlackBodyWidget::update()
