@@ -43,11 +43,26 @@ static QString brewerlike_reference = QString("Relevant paper: "
         "<a href=\"http://dx.doi.org/10.1111/j.1467-8659.2008.01203.x\">Generating Color Palettes using Intuitive Parameters</a>, "
         "Computer Graphics Forum 27(3), May 2008.");
 
-static QString isoluminant_reference = QString("");
+static QString isoluminant_seq_reference = QString(
+        "Constant lightness, constant hue, linearly decreasing saturation. "
+        "Computed in CIELUV color space (LCH variant).");
 
-static QString uniformrainbow_reference = QString("");
+static QString isoluminant_div_reference = QString(
+        "Constant lightness, constant hue in each half, linearly decreasing saturation towards the middle. "
+        "Computed in CIELUV color space (LCH variant).");
 
-static QString blackbody_reference = QString("");
+static QString isoluminant_qual_reference = QString(
+        "Constant lightness, constant saturation, evenly distributed hue. "
+        "Computed in CIELUV color space (LCH variant).");
+
+static QString uniformrainbow_reference = QString(
+        "Linearly increasing lightness, linearly decreasing saturation, rotating hue. "
+        "Computed in CIELUV color space (LCH variant).");
+
+static QString blackbody_reference = QString(
+        "Linearly increasing lightness, linearly decreasing saturation, hues taken from "
+        "a physically plausible model of black body radiation in the given range of temperatures. "
+        "Computed in CIELUV color space (LCH variant).");
 
 static QString cubehelix_reference = QString("Relevant paper: "
         "D. A. Green, "
@@ -608,7 +623,7 @@ QVector<QColor> ColorMapIsoluminantSequentialWidget::colorMap() const
 
 QString ColorMapIsoluminantSequentialWidget::reference() const
 {
-    return isoluminant_reference;
+    return isoluminant_seq_reference;
 }
 
 void ColorMapIsoluminantSequentialWidget::parameters(int& n, float& luminance, float& saturation, float& hue) const
@@ -704,7 +719,7 @@ QVector<QColor> ColorMapIsoluminantDivergingWidget::colorMap() const
 
 QString ColorMapIsoluminantDivergingWidget::reference() const
 {
-    return isoluminant_reference;
+    return isoluminant_div_reference;
 }
 
 void ColorMapIsoluminantDivergingWidget::parameters(int& n, float& luminance, float& saturation, float& hue, float& divergence) const
@@ -802,7 +817,7 @@ QVector<QColor> ColorMapIsoluminantQualitativeWidget::colorMap() const
 
 QString ColorMapIsoluminantQualitativeWidget::reference() const
 {
-    return isoluminant_reference;
+    return isoluminant_qual_reference;
 }
 
 void ColorMapIsoluminantQualitativeWidget::parameters(int& n, float& luminance, float& saturation, float& hue) const
