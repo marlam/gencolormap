@@ -143,6 +143,22 @@ void IsoluminantQualitative(int n, unsigned char* colormap,
         float hue = IsoluminantQualitativeDefaultHue);
 
 /*
+ * Perceptually uniform rainbow.
+ *
+ * These are similar to CubeHelix, but are constructed in LCH color space
+ * to achieve better perceptual uniformity.
+ */
+
+const float UniformRainbowDefaultHue = 0.0f;
+const float UniformRainbowDefaultRotations = -1.5f;
+const float UniformRainbowDefaultSaturation = 1.2f;
+
+void UniformRainbow(int n, unsigned char* colormap,
+        float hue = UniformRainbowDefaultHue,
+        float rotations = UniformRainbowDefaultRotations,
+        float saturation = UniformRainbowDefaultSaturation);
+
+/*
  * Black Body color maps, based on the chromaticity (hue and saturation) of a black body
  * at increading temperatures. The luminance is linearly increasing.
  *

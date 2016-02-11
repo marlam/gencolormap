@@ -45,6 +45,8 @@ static QString brewerlike_reference = QString("Relevant paper: "
 
 static QString isoluminant_reference = QString("");
 
+static QString uniformrainbow_reference = QString("");
+
 static QString blackbody_reference = QString("");
 
 static QString cubehelix_reference = QString("Relevant paper: "
@@ -812,6 +814,95 @@ void ColorMapIsoluminantQualitativeWidget::parameters(int& n, float& luminance, 
 }
 
 void ColorMapIsoluminantQualitativeWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+/* ColorMapUniformRainbowWidget */
+
+ColorMapUniformRainbowWidget::ColorMapUniformRainbowWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 2, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 2, 3);
+
+    QLabel* rotations_label = new QLabel("Rotations:");
+    layout->addWidget(rotations_label, 3, 0);
+    _rotations_changer = new ColorMapCombinedSliderSpinBox(-5.0f, +5.0f, 0.1f);
+    layout->addWidget(_rotations_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_rotations_changer->spinbox, 3, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 4, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0.0f, 5.0f, 0.1f);
+    layout->addWidget(_saturation_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 4, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 5, 0, 1, 4);
+    layout->setRowStretch(5, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_rotations_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapUniformRainbowWidget::~ColorMapUniformRainbowWidget()
+{
+}
+
+void ColorMapUniformRainbowWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::UniformRainbowDefaultHue));
+    _rotations_changer->setValue(ColorMap::UniformRainbowDefaultRotations);
+    _saturation_changer->setValue(ColorMap::UniformRainbowDefaultSaturation);
+    _update_lock = false;
+    update();
+}
+
+QVector<QColor> ColorMapUniformRainbowWidget::colorMap() const
+{
+    int n;
+    float h, r, s;
+    parameters(n, h, r, s);
+    QVector<unsigned char> colormap(3 * n);
+    ColorMap::UniformRainbow(n, colormap.data(), h, r, s);
+    return toQColor(colormap);
+}
+
+QString ColorMapUniformRainbowWidget::reference() const
+{
+    return uniformrainbow_reference;
+}
+
+void ColorMapUniformRainbowWidget::parameters(int& n, float& hue,
+        float& rotations, float& saturation) const
+{
+    n = _n_spinbox->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    rotations = _rotations_changer->value();
+    saturation = _saturation_changer->value();
+}
+
+void ColorMapUniformRainbowWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();

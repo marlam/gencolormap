@@ -34,16 +34,17 @@ extern int optind;
 #include "colormap.hpp"
 
 enum type {
-    brewer_seq = 0,
-    brewer_div = 1,
-    brewer_qual = 2,
-    isolum_seq = 3,
-    isolum_div = 4,
-    isolum_qual = 5,
-    blackbody = 6,
-    cubehelix = 7,
-    moreland = 8,
-    mcnames = 9
+    brewer_seq,
+    brewer_div,
+    brewer_qual,
+    isolum_seq,
+    isolum_div,
+    isolum_qual,
+    unirainbow,
+    blackbody,
+    cubehelix,
+    moreland,
+    mcnames
 };
 
 int main(int argc, char* argv[])
@@ -59,9 +60,9 @@ int main(int argc, char* argv[])
     float brightness = -1.0f;
     float warmth = -1.0f;
     float luminance = -1.0f;
+    float rotations = NAN;
     float temperature = -1.0f;
     float range = -1.0f;
-    float rotations = NAN;
     float gamma = -1.0f;
     bool have_color0 = false;
     unsigned char color0[3];
@@ -80,9 +81,9 @@ int main(int argc, char* argv[])
         { "brightness",  required_argument, 0, 'b' },
         { "warmth",      required_argument, 0, 'w' },
         { "luminance",   required_argument, 0, 'l' },
+        { "rotations",   required_argument, 0, 'r' },
         { "temperature", required_argument, 0, 'T' },
         { "range",       required_argument, 0, 'R' },
-        { "rotations",   required_argument, 0, 'r' },
         { "gamma",       required_argument, 0, 'g' },
         { "color0",      required_argument, 0, 'A' },
         { "color1",      required_argument, 0, 'O' },
@@ -108,6 +109,7 @@ int main(int argc, char* argv[])
                     : strcmp(optarg, "isoluminant-sequential") == 0 ? isolum_seq
                     : strcmp(optarg, "isoluminant-divergent") == 0 ? isolum_div
                     : strcmp(optarg, "isoluminant-qualitative") == 0 ? isolum_qual
+                    : strcmp(optarg, "uniformrainbow") == 0 ? unirainbow
                     : strcmp(optarg, "blackbody") == 0 ? blackbody
                     : strcmp(optarg, "cubehelix") == 0 ? cubehelix
                     : strcmp(optarg, "moreland") == 0 ? moreland
@@ -138,14 +140,14 @@ int main(int argc, char* argv[])
         case 'l':
             luminance = atof(optarg);
             break;
+        case 'r':
+            rotations = atof(optarg);
+            break;
         case 'T':
             temperature = atof(optarg);
             break;
         case 'R':
             range = atof(optarg);
-            break;
-        case 'r':
-            rotations = atof(optarg);
             break;
         case 'g':
             gamma = atof(optarg);
@@ -197,12 +199,18 @@ int main(int argc, char* argv[])
                 "    [-s|--saturation=S]               Set saturation in [0,1]\n"
                 "    [-h|--hue=H]                      Set default hue in [0,360] degrees\n"
                 "    [-d|--divergence=D]               Set divergence in deg. for div. and qual. maps\n"
+                "  Uniform Rainbow color maps:\n"
+                "    -t|--type=uniformrainbow          Generate a uniform rainbow color map\n"
+                "    [-h|--hue=H]                      Set start hue in [0,360] degrees\n"
+                "    [-r|--rotations=R]                Set number of rotations, in (-infty,infty)\n"
+                "    [-s|--saturation=S]               Set saturation, in [0,1]\n"
                 "  Black Body color maps:\n"
                 "    -t|--type=blackbody               Generate a Black Body color map\n"
                 "    [-T|--temperature=T]              Start temperature of the map in Kelvin\n"
                 "    [-R|--range=R]                    Range of temperatures of the map in Kelvin\n"
                 "  CubeHelix color maps:\n"
                 "    -t|--type=cubehelix               Generate a CubeHelix color map\n"
+                "    [-h|--hue=H]                      Set start hue in [0,180] degrees\n"
                 "    [-r|--rotations=R]                Set number of rotations, in (-infty,infty)\n"
                 "    [-s|--saturation=S]               Set saturation, in [0,1]\n"
                 "    [-g|--gamma=G]                    Set gamma correction, in (0,infty)\n"
@@ -239,6 +247,8 @@ int main(int argc, char* argv[])
             hue = ColorMap::IsoluminantDivergingDefaultHue;
         else if (type == isolum_qual)
             hue = ColorMap::IsoluminantQualitativeDefaultHue;
+        else if (type == unirainbow)
+            hue = ColorMap::UniformRainbowDefaultHue;
         else if (type == cubehelix)
             hue = ColorMap::CubeHelixDefaultHue;
     }
@@ -273,6 +283,8 @@ int main(int argc, char* argv[])
             saturation = ColorMap::IsoluminantDivergingDefaultSaturation;
         else if (type == isolum_qual)
             saturation = ColorMap::IsoluminantQualitativeDefaultSaturation;
+        else if (type == unirainbow)
+            saturation = ColorMap::UniformRainbowDefaultSaturation;
         else if (type == cubehelix)
             saturation = ColorMap::CubeHelixDefaultSaturation;
     }
@@ -298,6 +310,12 @@ int main(int argc, char* argv[])
         else if (type == isolum_qual)
             luminance = ColorMap::IsoluminantQualitativeDefaultLuminance;
     }
+    if (std::isnan(rotations)) {
+        if (type == unirainbow)
+            rotations = ColorMap::UniformRainbowDefaultRotations;
+        else if (type == cubehelix)
+            rotations = ColorMap::CubeHelixDefaultRotations;
+    }
     if (temperature < 0.0f) {
         if (type == blackbody)
             temperature = ColorMap::BlackBodyDefaultTemperature;
@@ -305,10 +323,6 @@ int main(int argc, char* argv[])
     if (range < 0.0f) {
         if (type == blackbody)
             range = ColorMap::BlackBodyDefaultRange;
-    }
-    if (std::isnan(rotations)) {
-        if (type == cubehelix)
-            rotations = ColorMap::CubeHelixDefaultRotations;
     }
     if (gamma < 0.0f) {
         if (type == cubehelix)
@@ -352,6 +366,9 @@ int main(int argc, char* argv[])
         break;
     case isolum_qual:
         ColorMap::IsoluminantQualitative(n, &(colormap[0]), luminance, saturation, hue);
+        break;
+    case unirainbow:
+        ColorMap::UniformRainbow(n, &(colormap[0]), hue, rotations, saturation);
         break;
     case blackbody:
         ColorMap::BlackBody(n, &(colormap[0]), temperature, range);

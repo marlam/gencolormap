@@ -33,6 +33,7 @@ class ColorMapBrewerQualitativeWidget;
 class ColorMapIsoluminantSequentialWidget;
 class ColorMapIsoluminantDivergingWidget;
 class ColorMapIsoluminantQualitativeWidget;
+class ColorMapUniformRainbowWidget;
 class ColorMapBlackBodyWidget;
 class ColorMapCubeHelixWidget;
 class ColorMapMorelandWidget;
@@ -56,6 +57,7 @@ private:
     ColorMapIsoluminantSequentialWidget* _isolumseq_widget;
     ColorMapIsoluminantDivergingWidget* _isolumdiv_widget;
     ColorMapIsoluminantQualitativeWidget* _isolumqual_widget;
+    ColorMapUniformRainbowWidget* _unirainbow_widget;
     ColorMapBlackBodyWidget* _blackbody_widget;
     ColorMapCubeHelixWidget* _cubehelix_widget;
     ColorMapMorelandWidget* _moreland_widget;

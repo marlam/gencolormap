@@ -596,6 +596,20 @@ void IsoluminantQualitative(int n, unsigned char* colormap,
     }
 }
 
+/* UniformRainbow */
+
+void UniformRainbow(int n, unsigned char* colormap, float hue, float rotations, float saturation)
+{
+    triplet luv, lch;
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        lch.l = t * 100.0f;
+        lch.c = lch_chroma(lch.l, (1.0f - t) * saturation);
+        lch.h = hue + t * rotations * twopi;
+        lch_to_colormap(lch, colormap + 3 * i);
+    }
+}
+
 /* BlackBody */
 
 static float plancks_law(float temperature, float lambda)

@@ -227,6 +227,28 @@ public:
     void parameters(int& n, float& luminance, float& saturation, float& hue) const;
 };
 
+class ColorMapUniformRainbowWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _rotations_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
+private slots:
+    void update();
+
+public:
+    ColorMapUniformRainbowWidget();
+    ~ColorMapUniformRainbowWidget();
+
+    void reset() override;
+    QVector<QColor> colorMap() const override;
+    QString reference() const override;
+    void parameters(int& n, float& hue, float& rotations, float& saturation) const;
+};
+
 class ColorMapBlackBodyWidget : public ColorMapWidget
 {
 Q_OBJECT
