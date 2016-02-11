@@ -228,6 +228,27 @@ public:
     void parameters(int& n, float& luminance, float& saturation, float& hue, float& divergence) const;
 };
 
+class ColorMapBlackBodyWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _temperature_changer;
+    ColorMapCombinedSliderSpinBox* _range_changer;
+private slots:
+    void update();
+
+public:
+    ColorMapBlackBodyWidget();
+    ~ColorMapBlackBodyWidget();
+
+    void reset() override;
+    QVector<QColor> colorMap() const override;
+    QString reference() const override;
+    void parameters(int& n, float& temperature, float& range) const;
+};
+
 class ColorMapCubeHelixWidget : public ColorMapWidget
 {
 Q_OBJECT

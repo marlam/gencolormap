@@ -49,6 +49,7 @@ GUI::GUI()
     _isolumseq_widget = new ColorMapIsoluminantSequentialWidget;
     _isolumdiv_widget = new ColorMapIsoluminantDivergingWidget;
     _isolumqual_widget = new ColorMapIsoluminantQualitativeWidget;
+    _blackbody_widget = new ColorMapBlackBodyWidget;
     _cubehelix_widget = new ColorMapCubeHelixWidget;
     _moreland_widget = new ColorMapMorelandWidget;
     _mcnames_widget = new ColorMapMcNamesWidget;
@@ -58,6 +59,7 @@ GUI::GUI()
     connect(_isolumseq_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_isolumdiv_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_isolumqual_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+    connect(_blackbody_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_cubehelix_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_moreland_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_mcnames_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
@@ -70,6 +72,7 @@ GUI::GUI()
     _category_seq_widget = new QTabWidget();
     _category_seq_widget->addTab(_brewerseq_widget, "Brewer-like");
     _category_seq_widget->addTab(_isolumseq_widget, "Isoluminant");
+    //_category_seq_widget->addTab(_blackbody_widget, "Black Body");
     _category_seq_widget->addTab(_cubehelix_widget, "CubeHelix");
     //_category_seq_widget->addTab(_mcnames_widget, "McNames");
     connect(_category_seq_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));

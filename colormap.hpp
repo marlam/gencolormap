@@ -145,6 +145,25 @@ void IsoluminantQualitative(int n, unsigned char* colormap,
         float divergence = IsoluminantQualitativeDefaultDivergence);
 
 /*
+ * Black Body color maps, based on the chromaticity (hue and saturation) of a black body
+ * at increading temperatures. The luminance is linearly increasing.
+ *
+ * Parameters are the temperature at the lower end of the map, and the range of
+ * temperatures in the map. (The temperature at the higher end of the map is the
+ * sum of the two).
+ */
+
+// The defaults are chosen so that we start at a red that is representable in
+// sRGB and arrive at a chromaticity that is very close to the D65 white point
+// (6500 K) so that we get a good white at the end of the color map.
+const float BlackBodyDefaultTemperature = 500.0f;
+const float BlackBodyDefaultRange = 6000.0;
+
+void BlackBody(int n, unsigned char* colormap,
+        float temperature = BlackBodyDefaultTemperature,
+        float range = BlackBodyDefaultRange);
+
+/*
  * CubeHelix color maps, as described in
  * Green, D. A., 2011, A colour scheme for the display of astronomical intensity
  * images, Bulletin of the Astronomical Society of India, 39, 289.

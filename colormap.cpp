@@ -108,6 +108,17 @@ static const triplet d65_xyz = triplet(95.047f, 100.000f, 108.883f);
 static const float d65_u_prime = u_prime(d65_xyz);
 static const float d65_v_prime = v_prime(d65_xyz);
 
+static triplet adjust_y(triplet xyz, float new_y)
+{
+    float sum = xyz.x + xyz.y + xyz.z;
+    // keep old chromaticity in terms of x, y
+    float x = xyz.x / sum;
+    float y = xyz.y / sum;
+    // apply new luminance
+    float r = new_y / y;
+    return triplet(r * x, new_y, r * (1.0f - x - y));
+}
+
 /* Color space conversion: LCH <-> LUV */
 
 static triplet lch_to_luv(triplet lch)
@@ -212,16 +223,37 @@ static triplet rgb_to_xyz(triplet rgb)
             (0.0193f * rgb.r + 0.1192f * rgb.g + 0.9505f * rgb.b));
 }
 
-static triplet xyz_to_rgb(triplet xyz, bool clamping = true)
+static triplet xyz_to_rgb(triplet xyz, bool constrain = true, bool* constrained = NULL)
 {
     triplet rgb = 0.01f * triplet(
             (+3.2406255f * xyz.x - 1.5372080f * xyz.y - 0.4986286f * xyz.z),
             (-0.9689307f * xyz.x + 1.8757561f * xyz.y + 0.0415175f * xyz.z),
             (+0.0557101f * xyz.x - 0.2040211f * xyz.y + 1.0569959f * xyz.z));
-    if (clamping) {
-        rgb.r = clamp(rgb.r, 0.0f, 1.0f);
-        rgb.g = clamp(rgb.g, 0.0f, 1.0f);
-        rgb.b = clamp(rgb.b, 0.0f, 1.0f);
+    if (constrain) {
+        float mini = std::min(rgb.r, std::min(rgb.g, rgb.b));
+        if (mini < 0.0f) {
+            rgb.r -= mini;
+            rgb.g -= mini;
+            rgb.b -= mini;
+            if (constrained)
+                *constrained = true;
+        }
+        float maxi = std::max(rgb.r, std::max(rgb.g, rgb.b));
+        if (maxi > 1.0f) {
+            rgb.r -= maxi - 1.0f;
+            rgb.g -= maxi - 1.0f;
+            rgb.b -= maxi - 1.0f;
+            if (constrained)
+                *constrained = true;
+        }
+        if (rgb.r < 0.0f || rgb.g < 0.0f || rgb.b < 0.0f
+                || rgb.r > 1.0f || rgb.g > 1.0f || rgb.b > 1.0f) {
+            rgb.r = clamp(rgb.r, 0.0f, 1.0f);
+            rgb.g = clamp(rgb.g, 0.0f, 1.0f);
+            rgb.b = clamp(rgb.b, 0.0f, 1.0f);
+            if (constrained)
+                *constrained = true;
+        }
     }
     return rgb;
 }
@@ -246,6 +278,26 @@ static float srgb_to_rgb_helper(float x)
 static triplet srgb_to_rgb(triplet srgb)
 {
     return triplet(srgb_to_rgb_helper(srgb.r), srgb_to_rgb_helper(srgb.g), srgb_to_rgb_helper(srgb.b));
+}
+
+/* Helpers for the conversion to colormap entries */
+
+static void xyz_to_colormap(triplet xyz, unsigned char* colormap)
+{
+    triplet srgb = rgb_to_srgb(xyz_to_rgb(xyz));
+    colormap[0] = float_to_uchar(srgb.r);
+    colormap[1] = float_to_uchar(srgb.g);
+    colormap[2] = float_to_uchar(srgb.b);
+}
+
+static void luv_to_colormap(triplet luv, unsigned char* colormap)
+{
+    xyz_to_colormap(luv_to_xyz(luv), colormap);
+}
+
+static void lch_to_colormap(triplet lch, unsigned char* colormap)
+{
+    luv_to_colormap(lch_to_luv(lch), colormap);
 }
 
 /* Various helpers */
@@ -390,14 +442,6 @@ static triplet get_colormap_entry(float t,
     return (T <= 0.5f ? b(p0, q0, q1, 2.0f * T) : b(q1, q2, p2, 2.0f * (T - 0.5f)));
 }
 
-static void luv_to_colormap(triplet luv, unsigned char* colormap)
-{
-    triplet srgb = rgb_to_srgb(xyz_to_rgb(luv_to_xyz(luv)));
-    colormap[0] = float_to_uchar(srgb.r);
-    colormap[1] = float_to_uchar(srgb.g);
-    colormap[2] = float_to_uchar(srgb.b);
-}
-
 /* Brewer-like color maps */
 
 float BrewerSequentialDefaultContrastForSmallN(int n)
@@ -510,14 +554,6 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
 
 /* Isoluminant */
 
-static void lch_to_colormap(triplet lch, unsigned char* colormap)
-{
-    triplet srgb = rgb_to_srgb(xyz_to_rgb(luv_to_xyz(lch_to_luv(lch))));
-    colormap[0] = float_to_uchar(srgb.r);
-    colormap[1] = float_to_uchar(srgb.g);
-    colormap[2] = float_to_uchar(srgb.b);
-}
-
 void IsoluminantSequential(int n, unsigned char* colormap,
         float luminance, float saturation, float hue)
 {
@@ -556,6 +592,162 @@ void IsoluminantQualitative(int n, unsigned char* colormap,
         float t = i / (n - 1.0f);
         lch.h = hue + t * divergence;
         lch_to_colormap(lch, colormap + 3 * i);
+    }
+}
+
+/* BlackBody */
+
+static float plancks_law(float temperature, float lambda)
+{
+    const float c = 299792458.0f;     // speed of light in vacuum
+    //const float c = 299700000.0f;     // speed of visible light in air
+    const float h = 6.626070041e-34f; // Planck's constant
+    const float k = 1.38064853e-23f;  // Boltzmann constant
+    return 2.0f * h * c * c * std::pow(lambda, -5.0f)
+        / (std::exp(h * c / (lambda * k * temperature)) - 1.0f);
+
+}
+
+#if 0
+static float sqr(float x) { return x * x; }
+static triplet color_matching_function_approx(float lambda)
+{
+    // Analytic approximation of the CIE 1964 10 deg standard observer CMF.
+    // Taken from the paper "Simple Analytic Approximations to the CIE XYZ
+    // Color Matching Functions" by Wyman, Sloan, Shirley, JCGT 2(2), 2013.
+    lambda *= 1e9f; // convert to nanometers
+    triplet xyz;
+    xyz.x = 0.398f * std::exp(-1250.0f * sqr(std::log((lambda + 570.1f) / 1014.0f)))
+          + 1.132f * std::exp(-234.0f  * sqr(std::log((1338.0f - lambda) / 743.5f)));
+    xyz.y = 1.011f * std::exp(-0.5f    * sqr((lambda - 556.1f) / 46.14f));
+    xyz.z = 2.060f * std::exp(-32.0f   * sqr(std::log((lambda - 265.8f) / 180.4f)));
+    return xyz;
+}
+#endif
+
+static triplet color_matching_function(int lambda /* in nanometers */)
+{
+    // Tables in 5nm resolution for the CIE 1931 2 deg Standard Observer CMF,
+    // from lambda=380 to lambda=780. Obtained from
+    // http://www.cie.co.at/publ/abst/datatables15_2004/CIE_sel_colorimetric_tables.xls
+    // on 2016-02-10.
+    static const triplet cmf_xyz[] = {
+        triplet(0.001368, 0.000039, 0.006450),
+        triplet(0.002236, 0.000064, 0.010550),
+        triplet(0.004243, 0.000120, 0.020050),
+        triplet(0.007650, 0.000217, 0.036210),
+        triplet(0.014310, 0.000396, 0.067850),
+        triplet(0.023190, 0.000640, 0.110200),
+        triplet(0.043510, 0.001210, 0.207400),
+        triplet(0.077630, 0.002180, 0.371300),
+        triplet(0.134380, 0.004000, 0.645600),
+        triplet(0.214770, 0.007300, 1.039050),
+        triplet(0.283900, 0.011600, 1.385600),
+        triplet(0.328500, 0.016840, 1.622960),
+        triplet(0.348280, 0.023000, 1.747060),
+        triplet(0.348060, 0.029800, 1.782600),
+        triplet(0.336200, 0.038000, 1.772110),
+        triplet(0.318700, 0.048000, 1.744100),
+        triplet(0.290800, 0.060000, 1.669200),
+        triplet(0.251100, 0.073900, 1.528100),
+        triplet(0.195360, 0.090980, 1.287640),
+        triplet(0.142100, 0.112600, 1.041900),
+        triplet(0.095640, 0.139020, 0.812950),
+        triplet(0.057950, 0.169300, 0.616200),
+        triplet(0.032010, 0.208020, 0.465180),
+        triplet(0.014700, 0.258600, 0.353300),
+        triplet(0.004900, 0.323000, 0.272000),
+        triplet(0.002400, 0.407300, 0.212300),
+        triplet(0.009300, 0.503000, 0.158200),
+        triplet(0.029100, 0.608200, 0.111700),
+        triplet(0.063270, 0.710000, 0.078250),
+        triplet(0.109600, 0.793200, 0.057250),
+        triplet(0.165500, 0.862000, 0.042160),
+        triplet(0.225750, 0.914850, 0.029840),
+        triplet(0.290400, 0.954000, 0.020300),
+        triplet(0.359700, 0.980300, 0.013400),
+        triplet(0.433450, 0.994950, 0.008750),
+        triplet(0.512050, 1.000000, 0.005750),
+        triplet(0.594500, 0.995000, 0.003900),
+        triplet(0.678400, 0.978600, 0.002750),
+        triplet(0.762100, 0.952000, 0.002100),
+        triplet(0.842500, 0.915400, 0.001800),
+        triplet(0.916300, 0.870000, 0.001650),
+        triplet(0.978600, 0.816300, 0.001400),
+        triplet(1.026300, 0.757000, 0.001100),
+        triplet(1.056700, 0.694900, 0.001000),
+        triplet(1.062200, 0.631000, 0.000800),
+        triplet(1.045600, 0.566800, 0.000600),
+        triplet(1.002600, 0.503000, 0.000340),
+        triplet(0.938400, 0.441200, 0.000240),
+        triplet(0.854450, 0.381000, 0.000190),
+        triplet(0.751400, 0.321000, 0.000100),
+        triplet(0.642400, 0.265000, 0.000050),
+        triplet(0.541900, 0.217000, 0.000030),
+        triplet(0.447900, 0.175000, 0.000020),
+        triplet(0.360800, 0.138200, 0.000010),
+        triplet(0.283500, 0.107000, 0.000000),
+        triplet(0.218700, 0.081600, 0.000000),
+        triplet(0.164900, 0.061000, 0.000000),
+        triplet(0.121200, 0.044580, 0.000000),
+        triplet(0.087400, 0.032000, 0.000000),
+        triplet(0.063600, 0.023200, 0.000000),
+        triplet(0.046770, 0.017000, 0.000000),
+        triplet(0.032900, 0.011920, 0.000000),
+        triplet(0.022700, 0.008210, 0.000000),
+        triplet(0.015840, 0.005723, 0.000000),
+        triplet(0.011359, 0.004102, 0.000000),
+        triplet(0.008111, 0.002929, 0.000000),
+        triplet(0.005790, 0.002091, 0.000000),
+        triplet(0.004109, 0.001484, 0.000000),
+        triplet(0.002899, 0.001047, 0.000000),
+        triplet(0.002049, 0.000740, 0.000000),
+        triplet(0.001440, 0.000520, 0.000000),
+        triplet(0.001000, 0.000361, 0.000000),
+        triplet(0.000690, 0.000249, 0.000000),
+        triplet(0.000476, 0.000172, 0.000000),
+        triplet(0.000332, 0.000120, 0.000000),
+        triplet(0.000235, 0.000085, 0.000000),
+        triplet(0.000166, 0.000060, 0.000000),
+        triplet(0.000117, 0.000042, 0.000000),
+        triplet(0.000083, 0.000030, 0.000000),
+        triplet(0.000059, 0.000021, 0.000000),
+        triplet(0.000042, 0.000015, 0.000000),
+    };
+    triplet xyz(0, 0, 0);
+    if (lambda >= 380 && lambda <= 780) {
+        int i = (lambda - 380) / 5;
+        xyz = cmf_xyz[i];
+        if (lambda % 5 != 0) {
+            int i1 = i + 1;
+            triplet xyz1 = cmf_xyz[i1];
+            float alpha = (lambda % 5) / 5.0f;
+            xyz = (1.0f - alpha) * xyz + alpha * xyz1;
+        }
+    }
+    return xyz;
+}
+
+void BlackBody(int n, unsigned char* colormap, float temperature, float range)
+{
+    for (int i = 0; i < n; i++) {
+        float fract = i / (n - 1.0f);
+        // Black body temperature for this color map entry
+        float t = temperature + fract * range;
+        // Integrate radiance over the visible spectrum; according
+        // to literature, sampling at 10nm intervals is enough.
+        triplet xyz(0, 0, 0);
+        int stepsize = 5;
+        float s = stepsize * 1e-9f; // stepsize in meters
+        for (int lambda = 360; lambda <= 830; lambda += stepsize) {
+            float l = lambda * 1e-9f; // lambda in in meters
+            float radiosity = pi * plancks_law(t, l);
+            //xyz = xyz + s * radiosity * color_matching_function_approx(l);
+            xyz = xyz + s * radiosity * color_matching_function(lambda);
+        }
+        triplet luv = xyz_to_luv(adjust_y(xyz, 10.0f));
+        luv.l = 0.2f + fract * 99.8f;
+        luv_to_colormap(luv, colormap + 3 * i);
     }
 }
 

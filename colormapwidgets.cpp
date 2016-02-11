@@ -45,6 +45,8 @@ static QString brewerlike_reference = QString("Relevant paper: "
 
 static QString isoluminant_reference = QString("");
 
+static QString blackbody_reference = QString("");
+
 static QString cubehelix_reference = QString("Relevant paper: "
         "D. A. Green, "
         "<a href=\"http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/\">A colour scheme for the display of astronomical intensity</a>, "
@@ -810,6 +812,85 @@ void ColorMapIsoluminantQualitativeWidget::parameters(int& n, float& luminance, 
 }
 
 void ColorMapIsoluminantQualitativeWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+/* ColorMapBlackBodyWidget */
+
+ColorMapBlackBodyWidget::ColorMapBlackBodyWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 10240);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* temperature_label = new QLabel("Temperature:");
+    layout->addWidget(temperature_label, 2, 0);
+    _temperature_changer = new ColorMapCombinedSliderSpinBox(250.0f, 15000.0f, 100.0f);
+    layout->addWidget(_temperature_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_temperature_changer->spinbox, 2, 3);
+
+    QLabel* range_label = new QLabel("Range:");
+    layout->addWidget(range_label, 3, 0);
+    _range_changer = new ColorMapCombinedSliderSpinBox(1000.0f, 15000.0f, 100.0f);
+    layout->addWidget(_range_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_range_changer->spinbox, 3, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 4, 0, 1, 4);
+    layout->setRowStretch(4, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_temperature_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapBlackBodyWidget::~ColorMapBlackBodyWidget()
+{
+}
+
+void ColorMapBlackBodyWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _temperature_changer->setValue(ColorMap::BlackBodyDefaultTemperature);
+    _range_changer->setValue(ColorMap::BlackBodyDefaultRange);
+    _update_lock = false;
+    update();
+}
+
+QVector<QColor> ColorMapBlackBodyWidget::colorMap() const
+{
+    int n;
+    float t, r;
+    parameters(n, t, r);
+    QVector<unsigned char> colormap(3 * n);
+    ColorMap::BlackBody(n, colormap.data(), t, r);
+    return toQColor(colormap);
+}
+
+QString ColorMapBlackBodyWidget::reference() const
+{
+    return blackbody_reference;
+}
+
+void ColorMapBlackBodyWidget::parameters(int& n, float& temperature, float& range) const
+{
+    n = _n_spinbox->value();
+    temperature = _temperature_changer->value();
+    range = _range_changer->value();
+}
+
+void ColorMapBlackBodyWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
