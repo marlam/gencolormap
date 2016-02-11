@@ -111,7 +111,7 @@ void BrewerQualitative(int n, unsigned char* colormap,
 
 const float IsoluminantSequentialDefaultLuminance = 0.5f;
 const float IsoluminantSequentialDefaultSaturation = 0.5f;
-const float IsoluminantSequentialDefaultHue = 0.0f;
+const float IsoluminantSequentialDefaultHue = 0.349065850399f; // 20 deg
 
 void IsoluminantSequential(int n, unsigned char* colormap,
         float luminance = IsoluminantSequentialDefaultLuminance,
@@ -122,7 +122,7 @@ void IsoluminantSequential(int n, unsigned char* colormap,
 
 const float IsoluminantDivergingDefaultLuminance = 0.5f;
 const float IsoluminantDivergingDefaultSaturation = 0.5f;
-const float IsoluminantDivergingDefaultHue = 0.0f;
+const float IsoluminantDivergingDefaultHue = 0.349065850399f; // 20 deg
 const float IsoluminantDivergingDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
 void IsoluminantDiverging(int n, unsigned char* colormap,
