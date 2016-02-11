@@ -249,8 +249,6 @@ int main(int argc, char* argv[])
             divergence = ColorMap::BrewerQualitativeDefaultDivergence;
         else if (type == isolum_div)
             divergence = ColorMap::IsoluminantDivergingDefaultDivergence;
-        else if (type == isolum_qual)
-            divergence = ColorMap::IsoluminantQualitativeDefaultDivergence;
     }
     if (contrast < 0.0f) {
         if (type == brewer_seq)
@@ -353,7 +351,7 @@ int main(int argc, char* argv[])
         ColorMap::IsoluminantDiverging(n, &(colormap[0]), luminance, saturation, hue, divergence);
         break;
     case isolum_qual:
-        ColorMap::IsoluminantQualitative(n, &(colormap[0]), luminance, saturation, hue, divergence);
+        ColorMap::IsoluminantQualitative(n, &(colormap[0]), luminance, saturation, hue);
         break;
     case blackbody:
         ColorMap::BlackBody(n, &(colormap[0]), temperature, range);

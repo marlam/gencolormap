@@ -754,9 +754,12 @@ ColorMapIsoluminantQualitativeWidget::ColorMapIsoluminantQualitativeWidget() :
 
     QLabel* divergence_label = new QLabel("Divergence:");
     layout->addWidget(divergence_label, 5, 0);
-    _divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(_divergence_changer->slider, 5, 1, 1, 2);
-    layout->addWidget(_divergence_changer->spinbox, 5, 3);
+    ColorMapCombinedSliderSpinBox* divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(divergence_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(divergence_changer->spinbox, 5, 3);
+    hideWidgetButPreserveSize(divergence_label);
+    hideWidgetButPreserveSize(divergence_changer->slider);
+    hideWidgetButPreserveSize(divergence_changer->spinbox);
 
     layout->setColumnStretch(1, 1);
     layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
@@ -767,7 +770,6 @@ ColorMapIsoluminantQualitativeWidget::ColorMapIsoluminantQualitativeWidget() :
     connect(_luminance_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     reset();
 }
 
@@ -782,7 +784,6 @@ void ColorMapIsoluminantQualitativeWidget::reset()
     _luminance_changer->setValue(ColorMap::IsoluminantQualitativeDefaultLuminance);
     _saturation_changer->setValue(ColorMap::IsoluminantQualitativeDefaultSaturation);
     _hue_changer->setValue(qRadiansToDegrees(ColorMap::IsoluminantQualitativeDefaultHue));
-    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::IsoluminantQualitativeDefaultDivergence));
     _update_lock = false;
     update();
 }
@@ -790,10 +791,10 @@ void ColorMapIsoluminantQualitativeWidget::reset()
 QVector<QColor> ColorMapIsoluminantQualitativeWidget::colorMap() const
 {
     int n;
-    float l, s, h, d;
-    parameters(n, l, s, h, d);
+    float l, s, h;
+    parameters(n, l, s, h);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::IsoluminantQualitative(n, colormap.data(), l, s, h, d);
+    ColorMap::IsoluminantQualitative(n, colormap.data(), l, s, h);
     return toQColor(colormap);
 }
 
@@ -802,13 +803,12 @@ QString ColorMapIsoluminantQualitativeWidget::reference() const
     return isoluminant_reference;
 }
 
-void ColorMapIsoluminantQualitativeWidget::parameters(int& n, float& luminance, float& saturation, float& hue, float& divergence) const
+void ColorMapIsoluminantQualitativeWidget::parameters(int& n, float& luminance, float& saturation, float& hue) const
 {
     n = _n_spinbox->value();
     luminance = _luminance_changer->value();
     saturation = _saturation_changer->value();
     hue = qDegreesToRadians(_hue_changer->value());
-    divergence = qDegreesToRadians(_divergence_changer->value());
 }
 
 void ColorMapIsoluminantQualitativeWidget::update()

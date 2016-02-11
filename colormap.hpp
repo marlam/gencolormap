@@ -133,16 +133,14 @@ void IsoluminantDiverging(int n, unsigned char* colormap,
 
 // Create a qualitative isoluminant color map with n colors.
 
-const float IsoluminantQualitativeDefaultLuminance = 0.5f;
+const float IsoluminantQualitativeDefaultLuminance = 0.55f;
 const float IsoluminantQualitativeDefaultSaturation = 0.35f;
-const float IsoluminantQualitativeDefaultHue = 0.0f;
-const float IsoluminantQualitativeDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+const float IsoluminantQualitativeDefaultHue = 0.0;
 
 void IsoluminantQualitative(int n, unsigned char* colormap,
         float luminance = IsoluminantQualitativeDefaultLuminance,
         float saturation = IsoluminantQualitativeDefaultSaturation,
-        float hue = IsoluminantQualitativeDefaultHue,
-        float divergence = IsoluminantQualitativeDefaultDivergence);
+        float hue = IsoluminantQualitativeDefaultHue);
 
 /*
  * Black Body color maps, based on the chromaticity (hue and saturation) of a black body

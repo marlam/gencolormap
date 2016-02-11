@@ -214,7 +214,6 @@ private:
     ColorMapCombinedSliderSpinBox* _luminance_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
     ColorMapCombinedSliderSpinBox* _hue_changer;
-    ColorMapCombinedSliderSpinBox* _divergence_changer;
 private slots:
     void update();
 
@@ -225,7 +224,7 @@ public:
     void reset() override;
     QVector<QColor> colorMap() const override;
     QString reference() const override;
-    void parameters(int& n, float& luminance, float& saturation, float& hue, float& divergence) const;
+    void parameters(int& n, float& luminance, float& saturation, float& hue) const;
 };
 
 class ColorMapBlackBodyWidget : public ColorMapWidget

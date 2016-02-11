@@ -583,8 +583,9 @@ void IsoluminantDiverging(int n, unsigned char* colormap,
 }
 
 void IsoluminantQualitative(int n, unsigned char* colormap,
-        float luminance, float saturation, float hue, float divergence)
+        float luminance, float saturation, float hue)
 {
+    float divergence = twopi * (n - 1.0f) / n;
     triplet lch;
     lch.l = luminance * 100.0f;
     lch.c = lch_chroma(lch.l, saturation * 5.0f);
