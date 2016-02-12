@@ -164,7 +164,7 @@ int PLSequentialBlackBody(int n, unsigned char* colormap,
 
 // Varying lightness
 
-const float PLDivergingLightnessDefaultLightness = 0.1f;
+const float PLDivergingLightnessDefaultLightness = 0.05f;
 const float PLDivergingLightnessDefaultSaturation = 0.45f;
 const float PLDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
