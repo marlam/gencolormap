@@ -117,7 +117,7 @@ int BrewerQualitative(int n, unsigned char* colormap,
 
 // Varying lightness
 
-const float PLSequentialLightnessDefaultSaturation = 0.5f;
+const float PLSequentialLightnessDefaultSaturation = 0.45f;
 const float PLSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
 
 int PLSequentialLightness(int n, unsigned char* colormap,
@@ -127,7 +127,7 @@ int PLSequentialLightness(int n, unsigned char* colormap,
 // Varying saturation
 
 const float PLSequentialSaturationDefaultLightness = 0.5f;
-const float PLSequentialSaturationDefaultSaturation = 0.5f;
+const float PLSequentialSaturationDefaultSaturation = 0.45f;
 const float PLSequentialSaturationDefaultHue = 0.349065850399f; // 20 deg
 
 int PLSequentialSaturation(int n, unsigned char* colormap,
@@ -139,7 +139,7 @@ int PLSequentialSaturation(int n, unsigned char* colormap,
 
 const float PLSequentialRainbowDefaultHue = 0.0f;
 const float PLSequentialRainbowDefaultRotations = -1.5f;
-const float PLSequentialRainbowDefaultSaturation = 1.2f;
+const float PLSequentialRainbowDefaultSaturation = 1.1f;
 
 int PLSequentialRainbow(int n, unsigned char* colormap,
         float hue = PLSequentialRainbowDefaultHue,
@@ -153,7 +153,7 @@ int PLSequentialRainbow(int n, unsigned char* colormap,
 // temperatures.
 const float PLSequentialBlackBodyDefaultTemperature = 250.0f;
 const float PLSequentialBlackBodyDefaultRange = 6250.0f;
-const float PLSequentialBlackBodyDefaultSaturation = 2.5f;
+const float PLSequentialBlackBodyDefaultSaturation = 2.3f;
 
 int PLSequentialBlackBody(int n, unsigned char* colormap,
         float temperature = PLSequentialBlackBodyDefaultTemperature,
@@ -165,7 +165,7 @@ int PLSequentialBlackBody(int n, unsigned char* colormap,
 // Varying lightness
 
 const float PLDivergingLightnessDefaultLightness = 0.1f;
-const float PLDivergingLightnessDefaultSaturation = 0.5f;
+const float PLDivergingLightnessDefaultSaturation = 0.45f;
 const float PLDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
@@ -178,7 +178,7 @@ int PLDivergingLightness(int n, unsigned char* colormap,
 // Varying saturation
 
 const float PLDivergingSaturationDefaultLightness = 0.5f;
-const float PLDivergingSaturationDefaultSaturation = 0.5f;
+const float PLDivergingSaturationDefaultSaturation = 0.45f;
 const float PLDivergingSaturationDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingSaturationDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
@@ -191,7 +191,7 @@ int PLDivergingSaturation(int n, unsigned char* colormap,
 /* Qualitative perceptually linear maps */
 
 const float PLQualitativeHueDefaultLightness = 0.55f;
-const float PLQualitativeHueDefaultSaturation = 0.35f;
+const float PLQualitativeHueDefaultSaturation = 0.22f;
 const float PLQualitativeHueDefaultHue = 0.0f;
 
 int PLQualitativeHue(int n, unsigned char* colormap,
