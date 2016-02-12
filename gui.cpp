@@ -71,7 +71,7 @@ GUI::GUI()
     connect(_mcnames_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
 
     QWidget *widget = new QWidget;
-    widget->setMinimumWidth(384 * qApp->devicePixelRatio());
+    widget->setMinimumWidth(512 * qApp->devicePixelRatio());
     QGridLayout *layout = new QGridLayout;
 
     _category_widget = new QTabWidget();
