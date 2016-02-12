@@ -109,7 +109,7 @@ GUI::GUI()
 
     _colormap_label = new QLabel();
     _colormap_label->setScaledContents(true);
-    layout->addWidget(_colormap_label, 0, 1, 3, 1);
+    layout->addWidget(_colormap_label, 0, 1, 4, 1);
 
     layout->setColumnStretch(0, 1);
     layout->setRowStretch(1, 1);
