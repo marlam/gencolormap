@@ -99,20 +99,20 @@ GUI::GUI()
     _category_widget->addTab(_category_qual_widget, "Qualitative");
     connect(_category_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
     layout->addWidget(_category_widget, 0, 0);
-    _clipped_label = new QLabel("");
-    layout->addWidget(_clipped_label, 1, 0);
-    layout->addItem(new QSpacerItem(0, 0), 2, 0);
     _reference_label = new QLabel(_brewerseq_widget->reference());
     _reference_label->setWordWrap(true);
     _reference_label->setOpenExternalLinks(true);
-    layout->addWidget(_reference_label, 3, 0);
+    layout->addWidget(_reference_label, 1, 0);
+    layout->addItem(new QSpacerItem(0, 0), 2, 0);
+    _clipped_label = new QLabel("");
+    layout->addWidget(_clipped_label, 3, 0);
 
     _colormap_label = new QLabel();
     _colormap_label->setScaledContents(true);
     layout->addWidget(_colormap_label, 0, 1, 4, 1);
 
     layout->setColumnStretch(0, 1);
-    layout->setRowStretch(1, 1);
+    layout->setRowStretch(2, 1);
     widget->setLayout(layout);
     setCentralWidget(widget);
 
