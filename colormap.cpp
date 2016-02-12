@@ -62,9 +62,22 @@ static float uchar_to_float(unsigned char x)
     return x / 255.0f;
 }
 
-static unsigned char float_to_uchar(float x)
+static unsigned char float_to_uchar(float x, bool* clipped = NULL)
 {
-    return std::round(x * 255.0f);
+    int v = x * 255.0f;
+    if (v < 0) {
+        v = 0;
+        if (clipped)
+            *clipped = true;
+    } else if (v > 255) {
+        v = 255;
+        if (clipped)
+            *clipped = true;
+    } else {
+        if (clipped)
+            *clipped = false;
+    }
+    return v;
 }
 
 /* A color triplet class without assumptions about the color space */
@@ -233,28 +246,6 @@ static triplet xyz_to_rgb(triplet xyz)
 
 /* Color space conversion: RGB <-> sRGB */
 
-static triplet clip_rgb(triplet rgb, bool* clipped = NULL)
-{
-    if (clipped)
-        *clipped = false;
-    if (rgb.r < 0.0f || rgb.r > 1.0f) {
-        rgb.r = clamp(rgb.r, 0.0f, 1.0f);
-        if (clipped)
-            *clipped = true;
-    }
-    if (rgb.g < 0.0f || rgb.g > 1.0f) {
-        rgb.g = clamp(rgb.g, 0.0f, 1.0f);
-        if (clipped)
-            *clipped = true;
-    }
-    if (rgb.b < 0.0f || rgb.b > 1.0f) {
-        rgb.b = clamp(rgb.b, 0.0f, 1.0f);
-        if (clipped)
-            *clipped = true;
-    }
-    return rgb;
-}
-
 static float rgb_to_srgb_helper(float x)
 {
     return (x <= 0.0031308f ? (x * 12.92f) : (1.055f * std::pow(x, 1.0f / 2.4f) - 0.055f));
@@ -279,12 +270,12 @@ static triplet srgb_to_rgb(triplet srgb)
 
 static bool xyz_to_colormap(triplet xyz, unsigned char* colormap)
 {
-    bool clipped;
-    triplet srgb = rgb_to_srgb(clip_rgb(xyz_to_rgb(xyz), &clipped));
-    colormap[0] = float_to_uchar(srgb.r);
-    colormap[1] = float_to_uchar(srgb.g);
-    colormap[2] = float_to_uchar(srgb.b);
-    return clipped;
+    bool clipped[3];
+    triplet srgb = rgb_to_srgb(xyz_to_rgb(xyz));
+    colormap[0] = float_to_uchar(srgb.r, clipped + 0);
+    colormap[1] = float_to_uchar(srgb.g, clipped + 1);
+    colormap[2] = float_to_uchar(srgb.b, clipped + 2);
+    return clipped[0] || clipped[1] || clipped[2];
 }
 
 static bool luv_to_colormap(triplet luv, unsigned char* colormap)
@@ -572,7 +563,7 @@ int PLSequentialLightness(int n, unsigned char* colormap, float saturation, floa
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
-        lch.l = t * 100.0f;
+        lch.l = std::max(0.01f, t * 100.0f);
         lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
@@ -584,7 +575,7 @@ int PLSequentialSaturation(int n, unsigned char* colormap,
         float lightness, float saturation, float hue)
 {
     triplet lch;
-    lch.l = lightness * 100.0f;
+    lch.l = std::max(0.01f, lightness * 100.0f);
     lch.h = hue;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
@@ -602,7 +593,7 @@ int PLSequentialRainbow(int n, unsigned char* colormap, float hue, float rotatio
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
-        lch.l = t * 100.0f;
+        lch.l = std::max(0.01f, t * 100.0f);
         lch.c = lch_chroma(lch.l, (1.0f - t) * saturation);
         lch.h = hue + t * rotations * twopi;
         if (lch_to_colormap(lch, colormap + 3 * i))
@@ -761,7 +752,7 @@ int PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, flo
             xyz = xyz + s * radiosity * color_matching_function(lambda);
         }
         triplet lch = luv_to_lch(xyz_to_luv(adjust_y(xyz, 10.0f)));
-        lch.l = fract * 100.0f;
+        lch.l = std::max(0.01f, fract * 100.0f);
         lch.c = lch_chroma(lch.l, (1.0f - fract) * saturation);
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
@@ -775,7 +766,7 @@ int PLDivergingLightness(int n, unsigned char* colormap, float lightness, float 
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
-        lch.l = 100.0f * lightness + 100.0f * (1.0f - lightness) * (t <= 0.5f ? 2.0f * t : 2.0f * (1.0f - t));
+        lch.l = std::max(0.01f, 100.0f * lightness + 100.0f * (1.0f - lightness) * (t <= 0.5f ? 2.0f * t : 2.0f * (1.0f - t)));
         float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
         lch.c = lch_chroma(lch.l, s);
         lch.h = (t <= 0.5f ? hue : hue + divergence);
@@ -789,7 +780,7 @@ int PLDivergingSaturation(int n, unsigned char* colormap,
         float lightness, float saturation, float hue, float divergence)
 {
     triplet lch;
-    lch.l = lightness * 100.0f;
+    lch.l = std::max(0.01f, lightness * 100.0f);
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
@@ -807,7 +798,7 @@ int PLQualitativeHue(int n, unsigned char* colormap,
 {
     float divergence = twopi * (n - 1.0f) / n;
     triplet lch;
-    lch.l = lightness * 100.0f;
+    lch.l = std::max(0.01f, lightness * 100.0f);
     lch.c = lch_chroma(lch.l, saturation * 5.0f);
     int clipped = 0;
     for (int i = 0; i < n; i++) {
@@ -836,13 +827,12 @@ int CubeHelix(int n, unsigned char* colormap, float hue,
                 fract + amp * (-0.14861f * c + 1.78277f * s),
                 fract + amp * (-0.29227f * c - 0.90649f * s),
                 fract + amp * (1.97294f * c));
-        bool clipped_;
-        srgb = clip_rgb(srgb, &clipped_);
-        if (clipped_)
+        bool clipped_[3];
+        colormap[3 * i + 0] = float_to_uchar(srgb.r, clipped_ + 0);
+        colormap[3 * i + 1] = float_to_uchar(srgb.g, clipped_ + 1);
+        colormap[3 * i + 2] = float_to_uchar(srgb.b, clipped_ + 2);
+        if (clipped_[0] || clipped_[1] || clipped_[2])
             clipped++;
-        colormap[3 * i + 0] = float_to_uchar(srgb.r);
-        colormap[3 * i + 1] = float_to_uchar(srgb.g);
-        colormap[3 * i + 2] = float_to_uchar(srgb.b);
     }
     return clipped;
 }
@@ -978,13 +968,12 @@ int McNames(int n, unsigned char* colormap, float periods)
         pol2cart(ag + a23, rd, &r2, &b2);
         g2 = g1;
 
-        bool clipped_;
-        triplet srgb = clip_rgb(triplet(r2, g2, b2), &clipped_);
-        if (clipped_)
+        bool clipped_[3];
+        colormap[3 * i + 0] = float_to_uchar(r2, clipped_ + 0);
+        colormap[3 * i + 1] = float_to_uchar(g2, clipped_ + 1);
+        colormap[3 * i + 2] = float_to_uchar(b2, clipped_ + 2);
+        if (clipped_[0] || clipped_[1] || clipped_[2])
             clipped++;
-        colormap[3 * i + 0] = float_to_uchar(srgb.r);
-        colormap[3 * i + 1] = float_to_uchar(srgb.g);
-        colormap[3 * i + 2] = float_to_uchar(srgb.b);
     }
     return clipped;
 }
