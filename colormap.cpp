@@ -64,7 +64,7 @@ static float uchar_to_float(unsigned char x)
 
 static unsigned char float_to_uchar(float x, bool* clipped = NULL)
 {
-    int v = x * 255.0f;
+    int v = std::round(x * 255.0f);
     if (v < 0) {
         v = 0;
         if (clipped)
