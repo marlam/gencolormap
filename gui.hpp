@@ -70,6 +70,7 @@ private:
     QTabWidget* _category_seq_widget;
     QTabWidget* _category_div_widget;
     QTabWidget* _category_qual_widget;
+    QLabel* _clipped_label;
     QLabel* _reference_label;
     QLabel* _colormap_label;
 

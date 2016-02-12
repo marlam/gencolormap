@@ -364,53 +364,55 @@ int main(int argc, char* argv[])
     }
 
     std::vector<unsigned char> colormap(3 * n);
+    int clipped;
     switch (type) {
     case brewer_seq:
-        ColorMap::BrewerSequential(n, &(colormap[0]), hue, contrast, saturation, brightness, warmth);
+        clipped = ColorMap::BrewerSequential(n, &(colormap[0]), hue, contrast, saturation, brightness, warmth);
         break;
     case brewer_div:
-        ColorMap::BrewerDiverging(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness, warmth);
+        clipped = ColorMap::BrewerDiverging(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness, warmth);
         break;
     case brewer_qual:
-        ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
+        clipped = ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
         break;
     case plseq_lightness:
-        ColorMap::PLSequentialLightness(n, &(colormap[0]), saturation, hue);
+        clipped = ColorMap::PLSequentialLightness(n, &(colormap[0]), saturation, hue);
         break;
     case plseq_saturation:
-        ColorMap::PLSequentialSaturation(n, &(colormap[0]), lightness, saturation, hue);
+        clipped = ColorMap::PLSequentialSaturation(n, &(colormap[0]), lightness, saturation, hue);
         break;
     case plseq_rainbow:
-        ColorMap::PLSequentialRainbow(n, &(colormap[0]), hue, rotations, saturation);
+        clipped = ColorMap::PLSequentialRainbow(n, &(colormap[0]), hue, rotations, saturation);
         break;
     case plseq_blackbody:
-        ColorMap::PLSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
+        clipped = ColorMap::PLSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
         break;
     case pldiv_lightness:
-        ColorMap::PLDivergingLightness(n, &(colormap[0]), lightness, saturation, hue, divergence);
+        clipped = ColorMap::PLDivergingLightness(n, &(colormap[0]), lightness, saturation, hue, divergence);
         break;
     case pldiv_saturation:
-        ColorMap::PLDivergingSaturation(n, &(colormap[0]), lightness, saturation, hue, divergence);
+        clipped = ColorMap::PLDivergingSaturation(n, &(colormap[0]), lightness, saturation, hue, divergence);
         break;
     case plqual_hue:
-        ColorMap::PLQualitativeHue(n, &(colormap[0]), lightness, saturation, hue);
+        clipped = ColorMap::PLQualitativeHue(n, &(colormap[0]), lightness, saturation, hue);
         break;
     case cubehelix:
-        ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);
+        clipped = ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);
         break;
     case moreland:
-        ColorMap::Moreland(n, &(colormap[0]),
+        clipped = ColorMap::Moreland(n, &(colormap[0]),
                 color0[0], color0[1], color0[2],
                 color1[0], color1[1], color1[2]);
         break;
     case mcnames:
-        ColorMap::McNames(n, &(colormap[0]), periods);
+        clipped = ColorMap::McNames(n, &(colormap[0]), periods);
         break;
     }
 
     for (int i = 0; i < n; i++) {
         printf("%d, %d, %d\n", colormap[3 * i + 0], colormap[3 * i + 1], colormap[3 * i + 2]);
     }
+    fprintf(stderr, "%d color(s) were clipped\n", clipped);
 
     return 0;
 }

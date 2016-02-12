@@ -223,42 +223,37 @@ static triplet rgb_to_xyz(triplet rgb)
             (0.0193f * rgb.r + 0.1192f * rgb.g + 0.9505f * rgb.b));
 }
 
-static triplet xyz_to_rgb(triplet xyz, bool constrain = true, bool* constrained = NULL)
+static triplet xyz_to_rgb(triplet xyz)
 {
-    triplet rgb = 0.01f * triplet(
+    return 0.01f * triplet(
             (+3.2406255f * xyz.x - 1.5372080f * xyz.y - 0.4986286f * xyz.z),
             (-0.9689307f * xyz.x + 1.8757561f * xyz.y + 0.0415175f * xyz.z),
             (+0.0557101f * xyz.x - 0.2040211f * xyz.y + 1.0569959f * xyz.z));
-    if (constrain) {
-        float mini = std::min(rgb.r, std::min(rgb.g, rgb.b));
-        if (mini < 0.0f) {
-            rgb.r -= mini;
-            rgb.g -= mini;
-            rgb.b -= mini;
-            if (constrained)
-                *constrained = true;
-        }
-        float maxi = std::max(rgb.r, std::max(rgb.g, rgb.b));
-        if (maxi > 1.0f) {
-            rgb.r -= maxi - 1.0f;
-            rgb.g -= maxi - 1.0f;
-            rgb.b -= maxi - 1.0f;
-            if (constrained)
-                *constrained = true;
-        }
-        if (rgb.r < 0.0f || rgb.g < 0.0f || rgb.b < 0.0f
-                || rgb.r > 1.0f || rgb.g > 1.0f || rgb.b > 1.0f) {
-            rgb.r = clamp(rgb.r, 0.0f, 1.0f);
-            rgb.g = clamp(rgb.g, 0.0f, 1.0f);
-            rgb.b = clamp(rgb.b, 0.0f, 1.0f);
-            if (constrained)
-                *constrained = true;
-        }
-    }
-    return rgb;
 }
 
 /* Color space conversion: RGB <-> sRGB */
+
+static triplet clip_rgb(triplet rgb, bool* clipped = NULL)
+{
+    if (clipped)
+        *clipped = false;
+    if (rgb.r < 0.0f || rgb.r > 1.0f) {
+        rgb.r = clamp(rgb.r, 0.0f, 1.0f);
+        if (clipped)
+            *clipped = true;
+    }
+    if (rgb.g < 0.0f || rgb.g > 1.0f) {
+        rgb.g = clamp(rgb.g, 0.0f, 1.0f);
+        if (clipped)
+            *clipped = true;
+    }
+    if (rgb.b < 0.0f || rgb.b > 1.0f) {
+        rgb.b = clamp(rgb.b, 0.0f, 1.0f);
+        if (clipped)
+            *clipped = true;
+    }
+    return rgb;
+}
 
 static float rgb_to_srgb_helper(float x)
 {
@@ -282,22 +277,29 @@ static triplet srgb_to_rgb(triplet srgb)
 
 /* Helpers for the conversion to colormap entries */
 
-static void xyz_to_colormap(triplet xyz, unsigned char* colormap)
+static bool xyz_to_colormap(triplet xyz, unsigned char* colormap)
 {
-    triplet srgb = rgb_to_srgb(xyz_to_rgb(xyz));
+    bool clipped;
+    triplet srgb = rgb_to_srgb(clip_rgb(xyz_to_rgb(xyz), &clipped));
     colormap[0] = float_to_uchar(srgb.r);
     colormap[1] = float_to_uchar(srgb.g);
     colormap[2] = float_to_uchar(srgb.b);
+    return clipped;
 }
 
-static void luv_to_colormap(triplet luv, unsigned char* colormap)
+static bool luv_to_colormap(triplet luv, unsigned char* colormap)
 {
-    xyz_to_colormap(luv_to_xyz(luv), colormap);
+    return xyz_to_colormap(luv_to_xyz(luv), colormap);
 }
 
-static void lch_to_colormap(triplet lch, unsigned char* colormap)
+static bool lch_to_colormap(triplet lch, unsigned char* colormap)
 {
-    luv_to_colormap(lch_to_luv(lch), colormap);
+    return luv_to_colormap(lch_to_luv(lch), colormap);
+}
+
+static bool lab_to_colormap(triplet lab, unsigned char* colormap)
+{
+    return xyz_to_colormap(lab_to_xyz(lab), colormap);
 }
 
 /* Various helpers */
@@ -449,7 +451,7 @@ float BrewerSequentialDefaultContrastForSmallN(int n)
     return std::min(0.88f, 0.34f + 0.06f * n);
 }
 
-void BrewerSequential(int n, unsigned char* colormap, float hue,
+int BrewerSequential(int n, unsigned char* colormap, float hue,
         float contrast, float saturation, float brightness, float warmth)
 {
     triplet pb, p0, p1, p2, q0, q1, q2;
@@ -458,11 +460,14 @@ void BrewerSequential(int n, unsigned char* colormap, float hue,
     float pbs = lch_saturation(pb_lch.l, pb_lch.c);
     get_color_points(hue, saturation, warmth, pb, pb_lch.h, pbs, &p0, &p1, &p2, &q0, &q1, &q2);
 
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         triplet c = get_colormap_entry(t, p0, p2, q0, q1, q2, contrast, brightness);
-        luv_to_colormap(c, colormap + 3 * i);
+        if (luv_to_colormap(c, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
 float BrewerDivergingDefaultContrastForSmallN(int n)
@@ -470,7 +475,7 @@ float BrewerDivergingDefaultContrastForSmallN(int n)
     return std::min(0.88f, 0.34f + 0.06f * n);
 }
 
-void BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence,
+int BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence,
         float contrast, float saturation, float brightness, float warmth)
 {
     float hue1 = hue + divergence;
@@ -486,6 +491,7 @@ void BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence
     get_color_points(hue,  saturation, warmth, pb, pb_lch.h, pbs, &p00, &p01, &p02, &q00, &q01, &q02);
     get_color_points(hue1, saturation, warmth, pb, pb_lch.h, pbs, &p10, &p11, &p12, &q10, &q11, &q12);
 
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         triplet c;
         if (n % 2 == 1 && i == n / 2) {
@@ -514,11 +520,13 @@ void BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence
                 c = get_colormap_entry(tt, p10, p12, q10, q11, q12, contrast, brightness);
             }
         }
-        luv_to_colormap(c, colormap + 3 * i);
+        if (luv_to_colormap(c, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
-void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergence,
+int BrewerQualitative(int n, unsigned char* colormap, float hue, float divergence,
         float contrast, float saturation, float brightness)
 {
     // Get all information about yellow
@@ -541,6 +549,7 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
     float l1 = (1.0f - contrast) * l0;
 
     // Generate colors
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         float ch = std::fmod(twopi * (eps + t * r), twopi);
@@ -548,47 +557,58 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
         float cl = (1.0f - alpha) * l0 + alpha * l1;
         float cs = std::min(s_max(cl, ch), saturation * rs);
         triplet c = lch_to_luv(triplet(cl, lch_chroma(cl, cs), ch));
-        luv_to_colormap(c, colormap + 3 * i);
+        if (luv_to_colormap(c, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
 /* Perceptually linear (PL) */
 
-void PLSequentialLightness(int n, unsigned char* colormap, float saturation, float hue)
+int PLSequentialLightness(int n, unsigned char* colormap, float saturation, float hue)
 {
     triplet lch;
     lch.h = hue;
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         lch.l = t * 100.0f;
         lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
-        lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
-void PLSequentialSaturation(int n, unsigned char* colormap,
+int PLSequentialSaturation(int n, unsigned char* colormap,
         float lightness, float saturation, float hue)
 {
     triplet lch;
     lch.l = lightness * 100.0f;
     lch.h = hue;
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
-        lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
-void PLSequentialRainbow(int n, unsigned char* colormap, float hue, float rotations, float saturation)
+int PLSequentialRainbow(int n, unsigned char* colormap, float hue, float rotations, float saturation)
 {
-    triplet luv, lch;
+    triplet lch;
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         lch.l = t * 100.0f;
         lch.c = lch_chroma(lch.l, (1.0f - t) * saturation);
         lch.h = hue + t * rotations * twopi;
-        lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
 static float plancks_law(float temperature, float lambda)
@@ -722,8 +742,9 @@ static triplet color_matching_function(int lambda /* in nanometers */)
     return xyz;
 }
 
-void PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
+int PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
 {
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float fract = i / (n - 1.0f);
         // Black body temperature for this color map entry
@@ -742,49 +763,60 @@ void PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, fl
         triplet lch = luv_to_lch(xyz_to_luv(adjust_y(xyz, 10.0f)));
         lch.l = fract * 100.0f;
         lch.c = lch_chroma(lch.l, (1.0f - fract) * saturation);
-        lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
-void PLDivergingLightness(int n, unsigned char* colormap, float lightness, float saturation, float hue, float divergence)
+int PLDivergingLightness(int n, unsigned char* colormap, float lightness, float saturation, float hue, float divergence)
 {
     triplet lch;
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         lch.l = 100.0f * lightness + 100.0f * (1.0f - lightness) * (t <= 0.5f ? 2.0f * t : 2.0f * (1.0f - t));
         float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
         lch.c = lch_chroma(lch.l, s);
         lch.h = (t <= 0.5f ? hue : hue + divergence);
-        lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
-void PLDivergingSaturation(int n, unsigned char* colormap,
+int PLDivergingSaturation(int n, unsigned char* colormap,
         float lightness, float saturation, float hue, float divergence)
 {
     triplet lch;
     lch.l = lightness * 100.0f;
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
         lch.c = lch_chroma(lch.l, s);
         lch.h = (t <= 0.5f ? hue : hue + divergence);
-        lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
-void PLQualitativeHue(int n, unsigned char* colormap,
+int PLQualitativeHue(int n, unsigned char* colormap,
         float lightness, float saturation, float hue)
 {
     float divergence = twopi * (n - 1.0f) / n;
     triplet lch;
     lch.l = lightness * 100.0f;
     lch.c = lch_chroma(lch.l, saturation * 5.0f);
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
         lch.h = hue + t * divergence;
-        lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
 /* CubeHelix */
@@ -792,7 +824,7 @@ void PLQualitativeHue(int n, unsigned char* colormap,
 int CubeHelix(int n, unsigned char* colormap, float hue,
         float rot, float saturation, float gamma)
 {
-    int clippings = 0;
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float fract = i / (n - 1.0f);
         float angle = twopi * (hue / 3.0f + 1.0f + rot * fract);
@@ -800,38 +832,19 @@ int CubeHelix(int n, unsigned char* colormap, float hue,
         float amp = saturation * fract * (1.0f - fract) / 2.0f;
         float s = std::sin(angle);
         float c = std::cos(angle);
-        float r = fract + amp * (-0.14861f * c + 1.78277f * s);
-        float g = fract + amp * (-0.29227f * c - 0.90649f * s);
-        float b = fract + amp * (1.97294f * c);
-        bool clipped = false;
-        if (r < 0.0f) {
-            r = 0.0f;
-            clipped = true;
-        } else if (r > 1.0f) {
-            r = 1.0f;
-            clipped = true;
-        }
-        if (g < 0.0f) {
-            g = 0.0f;
-            clipped = true;
-        } else if (g > 1.0f) {
-            g = 1.0f;
-            clipped = true;
-        }
-        if (b < 0.0f) {
-            b = 0.0f;
-            clipped = true;
-        } else if (b > 1.0f) {
-            b = 1.0f;
-            clipped = true;
-        }
-        if (clipped)
-            clippings++;
-        colormap[3 * i + 0] = float_to_uchar(r);
-        colormap[3 * i + 1] = float_to_uchar(g);
-        colormap[3 * i + 2] = float_to_uchar(b);
+        triplet srgb(
+                fract + amp * (-0.14861f * c + 1.78277f * s),
+                fract + amp * (-0.29227f * c - 0.90649f * s),
+                fract + amp * (1.97294f * c));
+        bool clipped_;
+        srgb = clip_rgb(srgb, &clipped_);
+        if (clipped_)
+            clipped++;
+        colormap[3 * i + 0] = float_to_uchar(srgb.r);
+        colormap[3 * i + 1] = float_to_uchar(srgb.g);
+        colormap[3 * i + 2] = float_to_uchar(srgb.b);
     }
-    return clippings;
+    return clipped;
 }
 
 /* Moreland */
@@ -867,7 +880,7 @@ static float adjust_hue(triplet msh, float unsaturated_m)
     }
 }
 
-void Moreland(int n, unsigned char* colormap,
+int Moreland(int n, unsigned char* colormap,
         unsigned char sr0, unsigned char sg0, unsigned char sb0,
         unsigned char sr1, unsigned char sg1, unsigned char sb1)
 {
@@ -878,6 +891,7 @@ void Moreland(int n, unsigned char* colormap,
     bool place_white = (omsh0.s >= 0.05f && omsh1.s >= 0.05f && hue_diff(omsh0.h, omsh1.h) > pi / 3.0f);
     float mmid = std::max(std::max(omsh0.m, omsh1.m), 88.0f);
 
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         triplet msh0 = omsh0;
         triplet msh1 = omsh1;
@@ -901,11 +915,10 @@ void Moreland(int n, unsigned char* colormap,
             msh1.h = adjust_hue(msh0, msh1.m);
         }
         triplet msh = (1.0f - t) * msh0 + t * msh1;
-        triplet srgb = rgb_to_srgb(xyz_to_rgb(lab_to_xyz(msh_to_lab(msh))));
-        colormap[3 * i + 0] = float_to_uchar(srgb.r);
-        colormap[3 * i + 1] = float_to_uchar(srgb.g);
-        colormap[3 * i + 2] = float_to_uchar(srgb.b);
+        if (lab_to_colormap(msh_to_lab(msh), colormap + 3 * i))
+            clipped++;
     }
+    return clipped;
 }
 
 /* McNames */
@@ -940,12 +953,13 @@ static float windowfunc(float t)
 #endif
 }
 
-void McNames(int n, unsigned char* colormap, float periods)
+int McNames(int n, unsigned char* colormap, float periods)
 {
     static const float sqrt3 = std::sqrt(3.0f);
     static const float a12 = std::asin(1.0f / sqrt3);
     static const float a23 = pi / 4.0f;
 
+    int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = 1.0f - i / (n - 1.0f);
         float w = windowfunc(t);
@@ -964,10 +978,15 @@ void McNames(int n, unsigned char* colormap, float periods)
         pol2cart(ag + a23, rd, &r2, &b2);
         g2 = g1;
 
-        colormap[3 * i + 0] = float_to_uchar(clamp(r2, 0.0f, 1.0f));
-        colormap[3 * i + 1] = float_to_uchar(clamp(g2, 0.0f, 1.0f));
-        colormap[3 * i + 2] = float_to_uchar(clamp(b2, 0.0f, 1.0f));
+        bool clipped_;
+        triplet srgb = clip_rgb(triplet(r2, g2, b2), &clipped_);
+        if (clipped_)
+            clipped++;
+        colormap[3 * i + 0] = float_to_uchar(srgb.r);
+        colormap[3 * i + 1] = float_to_uchar(srgb.g);
+        colormap[3 * i + 2] = float_to_uchar(srgb.b);
     }
+    return clipped;
 }
 
 }

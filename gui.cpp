@@ -99,11 +99,13 @@ GUI::GUI()
     _category_widget->addTab(_category_qual_widget, "Qualitative");
     connect(_category_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
     layout->addWidget(_category_widget, 0, 0);
-    layout->addItem(new QSpacerItem(0, 0), 1, 0);
+    _clipped_label = new QLabel("");
+    layout->addWidget(_clipped_label, 1, 0);
+    layout->addItem(new QSpacerItem(0, 0), 2, 0);
     _reference_label = new QLabel(_brewerseq_widget->reference());
     _reference_label->setWordWrap(true);
     _reference_label->setOpenExternalLinks(true);
-    layout->addWidget(_reference_label, 2, 0);
+    layout->addWidget(_reference_label, 3, 0);
 
     _colormap_label = new QLabel();
     _colormap_label->setScaledContents(true);
@@ -159,7 +161,9 @@ ColorMapWidget* GUI::currentWidget()
 void GUI::update()
 {
     _reference_label->setText(currentWidget()->reference());
-    _colormap_label->setPixmap(QPixmap::fromImage(currentWidget()->colorMapImage(32, _colormap_label->height())));
+    int clipped;
+    _colormap_label->setPixmap(QPixmap::fromImage(currentWidget()->colorMapImage(32, _colormap_label->height(), &clipped)));
+    _clipped_label->setText(QString("Colors clipped: %1").arg(clipped));
 }
 
 void GUI::file_export_png()

@@ -153,9 +153,9 @@ ColorMapWidget::~ColorMapWidget()
 {
 }
 
-QImage ColorMapWidget::colorMapImage(int width, int height)
+QImage ColorMapWidget::colorMapImage(int width, int height, int* clipped)
 {
-    QVector<QColor> colormap = colorMap();
+    QVector<QColor> colormap = colorMap(clipped);
     if (width <= 0)
         width = colormap.size();
     if (height <= 0)
@@ -286,13 +286,15 @@ void ColorMapBrewerSequentialWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapBrewerSequentialWidget::colorMap() const
+QVector<QColor> ColorMapBrewerSequentialWidget::colorMap(int* clipped) const
 {
     int n;
     float h, c, s, b, w;
     parameters(n, h, c, s, b, w);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::BrewerSequential(n, colormap.data(), h, c, s, b, w);
+    int cl = ColorMap::BrewerSequential(n, colormap.data(), h, c, s, b, w);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -401,13 +403,15 @@ void ColorMapBrewerDivergingWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapBrewerDivergingWidget::colorMap() const
+QVector<QColor> ColorMapBrewerDivergingWidget::colorMap(int* clipped) const
 {
     int n;
     float h, d, c, s, b, w;
     parameters(n, h, d, c, s, b, w);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::BrewerDiverging(n, colormap.data(), h, d, c, s, b, w);
+    int cl = ColorMap::BrewerDiverging(n, colormap.data(), h, d, c, s, b, w);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -518,13 +522,15 @@ void ColorMapBrewerQualitativeWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapBrewerQualitativeWidget::colorMap() const
+QVector<QColor> ColorMapBrewerQualitativeWidget::colorMap(int* clipped) const
 {
     int n;
     float h, d, c, s, b;
     parameters(n, h, d, c, s, b);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::BrewerQualitative(n, colormap.data(), h, d, c, s, b);
+    int cl = ColorMap::BrewerQualitative(n, colormap.data(), h, d, c, s, b);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -601,13 +607,15 @@ void ColorMapPLSequentialLightnessWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapPLSequentialLightnessWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialLightnessWidget::colorMap(int* clipped) const
 {
     int n;
     float s, h;
     parameters(n, s, h);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::PLSequentialLightness(n, colormap.data(), s, h);
+    int cl = ColorMap::PLSequentialLightness(n, colormap.data(), s, h);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -688,13 +696,15 @@ void ColorMapPLSequentialSaturationWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapPLSequentialSaturationWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialSaturationWidget::colorMap(int* clipped) const
 {
     int n;
     float l, s, h;
     parameters(n, l, s, h);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::PLSequentialSaturation(n, colormap.data(), l, s, h);
+    int cl = ColorMap::PLSequentialSaturation(n, colormap.data(), l, s, h);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -776,13 +786,15 @@ void ColorMapPLSequentialRainbowWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapPLSequentialRainbowWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialRainbowWidget::colorMap(int* clipped) const
 {
     int n;
     float h, r, s;
     parameters(n, h, r, s);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::PLSequentialRainbow(n, colormap.data(), h, r, s);
+    int cl = ColorMap::PLSequentialRainbow(n, colormap.data(), h, r, s);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -865,13 +877,15 @@ void ColorMapPLSequentialBlackBodyWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapPLSequentialBlackBodyWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialBlackBodyWidget::colorMap(int* clipped) const
 {
     int n;
     float t, r, s;
     parameters(n, t, r, s);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::PLSequentialBlackBody(n, colormap.data(), t, r, s);
+    int cl = ColorMap::PLSequentialBlackBody(n, colormap.data(), t, r, s);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -961,13 +975,15 @@ void ColorMapPLDivergingLightnessWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapPLDivergingLightnessWidget::colorMap() const
+QVector<QColor> ColorMapPLDivergingLightnessWidget::colorMap(int* clipped) const
 {
     int n;
     float l, s, h, d;
     parameters(n, l, s, h, d);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::PLDivergingLightness(n, colormap.data(), l, s, h, d);
+    int cl = ColorMap::PLDivergingLightness(n, colormap.data(), l, s, h, d);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -1058,13 +1074,15 @@ void ColorMapPLDivergingSaturationWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapPLDivergingSaturationWidget::colorMap() const
+QVector<QColor> ColorMapPLDivergingSaturationWidget::colorMap(int* clipped) const
 {
     int n;
     float l, s, h, d;
     parameters(n, l, s, h, d);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::PLDivergingSaturation(n, colormap.data(), l, s, h, d);
+    int cl = ColorMap::PLDivergingSaturation(n, colormap.data(), l, s, h, d);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -1147,13 +1165,15 @@ void ColorMapPLQualitativeHueWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapPLQualitativeHueWidget::colorMap() const
+QVector<QColor> ColorMapPLQualitativeHueWidget::colorMap(int* clipped) const
 {
     int n;
     float l, s, h;
     parameters(n, l, s, h);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::PLQualitativeHue(n, colormap.data(), l, s, h);
+    int cl = ColorMap::PLQualitativeHue(n, colormap.data(), l, s, h);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -1243,13 +1263,15 @@ void ColorMapCubeHelixWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapCubeHelixWidget::colorMap() const
+QVector<QColor> ColorMapCubeHelixWidget::colorMap(int* clipped) const
 {
     int n;
     float h, r, s, g;
     parameters(n, h, r, s, g);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::CubeHelix(n, colormap.data(), h, r, s, g);
+    int cl = ColorMap::CubeHelix(n, colormap.data(), h, r, s, g);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -1359,13 +1381,15 @@ void ColorMapMorelandWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapMorelandWidget::colorMap() const
+QVector<QColor> ColorMapMorelandWidget::colorMap(int* clipped) const
 {
     int n;
     unsigned char r0, g0, b0, r1, g1, b1;
     parameters(n, r0, g0, b0, r1, g1, b1);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::Moreland(n, colormap.data(), r0, g0, b0, r1, g1, b1);
+    int cl = ColorMap::Moreland(n, colormap.data(), r0, g0, b0, r1, g1, b1);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 
@@ -1438,13 +1462,15 @@ void ColorMapMcNamesWidget::reset()
     update();
 }
 
-QVector<QColor> ColorMapMcNamesWidget::colorMap() const
+QVector<QColor> ColorMapMcNamesWidget::colorMap(int* clipped) const
 {
     int n;
     float p;
     parameters(n, p);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::McNames(n, colormap.data(), p);
+    int cl = ColorMap::McNames(n, colormap.data(), p);
+    if (clipped)
+        *clipped = cl;
     return toQColor(colormap);
 }
 

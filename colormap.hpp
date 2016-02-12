@@ -31,6 +31,8 @@
  *   contain.
  * - Allocate memory for you color map (3 * unsigned char for each color entry).
  * - Call the function that generates your color map.
+ *   The return value is always the number of colors that had to be clipped
+ *   to fit into sRGB; you want to keep that number low by adjusting parameters.
  *
  * All colors are represented as unsigned char sRGB triplets, with each value in
  * [0,255].
@@ -54,7 +56,7 @@ const float BrewerSequentialDefaultSaturation = 0.6f;
 const float BrewerSequentialDefaultBrightness = 0.75f;
 const float BrewerSequentialDefaultWarmth = 0.15f;
 
-void BrewerSequential(int n, unsigned char* srgb_colormap,
+int BrewerSequential(int n, unsigned char* srgb_colormap,
         float hue = BrewerSequentialDefaultHue,
         float contrast = BrewerSequentialDefaultContrast,
         float saturation = BrewerSequentialDefaultSaturation,
@@ -74,7 +76,7 @@ const float BrewerDivergingDefaultSaturation = 0.6f;
 const float BrewerDivergingDefaultBrightness = 0.75f;
 const float BrewerDivergingDefaultWarmth = 0.15f;
 
-void BrewerDiverging(int n, unsigned char* srgb_colormap,
+int BrewerDiverging(int n, unsigned char* srgb_colormap,
         float hue = BrewerDivergingDefaultHue,
         float divergence = BrewerDivergingDefaultDivergence,
         float contrast = BrewerDivergingDefaultContrast,
@@ -93,7 +95,7 @@ const float BrewerQualitativeDefaultContrast = 0.5f;
 const float BrewerQualitativeDefaultSaturation = 0.5f;
 const float BrewerQualitativeDefaultBrightness = 0.8f;
 
-void BrewerQualitative(int n, unsigned char* colormap,
+int BrewerQualitative(int n, unsigned char* colormap,
         float hue = BrewerQualitativeDefaultHue,
         float divergence = BrewerQualitativeDefaultDivergence,
         float contrast = BrewerQualitativeDefaultContrast,
@@ -118,7 +120,7 @@ void BrewerQualitative(int n, unsigned char* colormap,
 const float PLSequentialLightnessDefaultSaturation = 0.5f;
 const float PLSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
 
-void PLSequentialLightness(int n, unsigned char* colormap,
+int PLSequentialLightness(int n, unsigned char* colormap,
         float saturation = PLSequentialLightnessDefaultSaturation,
         float hue = PLSequentialLightnessDefaultHue);
 
@@ -128,7 +130,7 @@ const float PLSequentialSaturationDefaultLightness = 0.5f;
 const float PLSequentialSaturationDefaultSaturation = 0.5f;
 const float PLSequentialSaturationDefaultHue = 0.349065850399f; // 20 deg
 
-void PLSequentialSaturation(int n, unsigned char* colormap,
+int PLSequentialSaturation(int n, unsigned char* colormap,
         float lightness = PLSequentialSaturationDefaultLightness,
         float saturation = PLSequentialSaturationDefaultSaturation,
         float hue = PLSequentialSaturationDefaultHue);
@@ -139,7 +141,7 @@ const float PLSequentialRainbowDefaultHue = 0.0f;
 const float PLSequentialRainbowDefaultRotations = -1.5f;
 const float PLSequentialRainbowDefaultSaturation = 1.2f;
 
-void PLSequentialRainbow(int n, unsigned char* colormap,
+int PLSequentialRainbow(int n, unsigned char* colormap,
         float hue = PLSequentialRainbowDefaultHue,
         float rotations = PLSequentialRainbowDefaultRotations,
         float saturation = PLSequentialRainbowDefaultSaturation);
@@ -153,7 +155,7 @@ const float PLSequentialBlackBodyDefaultTemperature = 250.0f;
 const float PLSequentialBlackBodyDefaultRange = 6250.0f;
 const float PLSequentialBlackBodyDefaultSaturation = 2.5f;
 
-void PLSequentialBlackBody(int n, unsigned char* colormap,
+int PLSequentialBlackBody(int n, unsigned char* colormap,
         float temperature = PLSequentialBlackBodyDefaultTemperature,
         float range = PLSequentialBlackBodyDefaultRange,
         float saturation = PLSequentialBlackBodyDefaultSaturation);
@@ -167,7 +169,7 @@ const float PLDivergingLightnessDefaultSaturation = 0.5f;
 const float PLDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
-void PLDivergingLightness(int n, unsigned char* colormap,
+int PLDivergingLightness(int n, unsigned char* colormap,
         float lightness = PLDivergingLightnessDefaultLightness,
         float saturation = PLDivergingLightnessDefaultSaturation,
         float hue = PLDivergingLightnessDefaultHue,
@@ -180,7 +182,7 @@ const float PLDivergingSaturationDefaultSaturation = 0.5f;
 const float PLDivergingSaturationDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingSaturationDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
-void PLDivergingSaturation(int n, unsigned char* colormap,
+int PLDivergingSaturation(int n, unsigned char* colormap,
         float lightness = PLDivergingSaturationDefaultLightness,
         float saturation = PLDivergingSaturationDefaultSaturation,
         float hue = PLDivergingSaturationDefaultHue,
@@ -192,7 +194,7 @@ const float PLQualitativeHueDefaultLightness = 0.55f;
 const float PLQualitativeHueDefaultSaturation = 0.35f;
 const float PLQualitativeHueDefaultHue = 0.0f;
 
-void PLQualitativeHue(int n, unsigned char* colormap,
+int PLQualitativeHue(int n, unsigned char* colormap,
         float lightness = PLQualitativeHueDefaultLightness,
         float saturation = PLQualitativeHueDefaultSaturation,
         float hue = PLQualitativeHueDefaultHue);
@@ -237,7 +239,7 @@ const unsigned char MorelandDefaultR1 = 59;
 const unsigned char MorelandDefaultG1 = 76;
 const unsigned char MorelandDefaultB1 = 192;
 
-void Moreland(int n, unsigned char* colormap,
+int Moreland(int n, unsigned char* colormap,
         unsigned char sr0 = MorelandDefaultR0,
         unsigned char sg0 = MorelandDefaultG0,
         unsigned char sb0 = MorelandDefaultB0,
@@ -258,7 +260,7 @@ void Moreland(int n, unsigned char* colormap,
 
 const float McNamesDefaultPeriods = 2.0f;
 
-void McNames(int n, unsigned char* colormap,
+int McNames(int n, unsigned char* colormap,
         float periods = McNamesDefaultPeriods);
 
 }

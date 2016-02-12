@@ -70,12 +70,14 @@ public:
     /* Reset all values to their method-specific defaults */
     virtual void reset() = 0;
 
-    /* Get the color map corresponding to the current values as a vector of colors */
-    virtual QVector<QColor> colorMap() const = 0;
+    /* Get the color map corresponding to the current values as a vector of colors.
+     * Also return the number of clipped colors unless 'clipped' is NULL. */
+    virtual QVector<QColor> colorMap(int* clipped = NULL) const = 0;
 
     /* Get a color map as an image of the specified size. If width or height is zero,
-     * then it will be set to the number of colors in the color map. */
-    QImage colorMapImage(int width, int height);
+     * then it will be set to the number of colors in the color map.
+     * Also return the number of clipped colors unless 'clipped' is NULL. */
+    QImage colorMapImage(int width, int height, int* clipped = NULL);
 
     /* Get a rich text string containing the relevant literature reference for this method */
     virtual QString reference() const = 0;
@@ -103,7 +105,7 @@ public:
     ~ColorMapBrewerSequentialWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& hue,
             float& contrast, float& saturation, float& brightness, float& warmth) const;
@@ -129,7 +131,7 @@ public:
     ~ColorMapBrewerDivergingWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& hue, float& divergence,
             float& contrast, float& saturation, float& brightness, float& warmth) const;
@@ -154,7 +156,7 @@ public:
     ~ColorMapBrewerQualitativeWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& hue, float& divergence,
             float& contrast, float& saturation, float& brightness) const;
@@ -176,7 +178,7 @@ public:
     ~ColorMapPLSequentialLightnessWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& saturation, float& hue) const;
 };
@@ -198,7 +200,7 @@ public:
     ~ColorMapPLSequentialSaturationWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& lightness, float& saturation, float& hue) const;
 };
@@ -220,7 +222,7 @@ public:
     ~ColorMapPLSequentialRainbowWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& hue, float& rotations, float& saturation) const;
 };
@@ -242,7 +244,7 @@ public:
     ~ColorMapPLSequentialBlackBodyWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& temperature, float& range, float& saturation) const;
 };
@@ -265,7 +267,7 @@ public:
     ~ColorMapPLDivergingLightnessWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& lightness, float& saturation, float& hue, float& divergence) const;
 };
@@ -288,7 +290,7 @@ public:
     ~ColorMapPLDivergingSaturationWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& lightness, float& saturation, float& hue, float& divergence) const;
 };
@@ -310,7 +312,7 @@ public:
     ~ColorMapPLQualitativeHueWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& lightness, float& saturation, float& hue) const;
 };
@@ -333,7 +335,7 @@ public:
     ~ColorMapCubeHelixWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& hue, float& rotations,
             float& saturation, float& gamma) const;
@@ -357,7 +359,7 @@ public:
     ~ColorMapMorelandWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n,
             unsigned char& r0, unsigned char& g0, unsigned char& b0,
@@ -379,7 +381,7 @@ public:
     ~ColorMapMcNamesWidget();
 
     void reset() override;
-    QVector<QColor> colorMap() const override;
+    QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& p) const;
 };
