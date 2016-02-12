@@ -101,83 +101,101 @@ void BrewerQualitative(int n, unsigned char* colormap,
         float brightness = BrewerQualitativeDefaultBrightness);
 
 /*
- * Isoluminant color maps.
+ * Perceptually linear (PL) color maps.
  *
- * These are useful for coloring surfaces because their constant luminance
- * allows non-interfering combination with shading.
+ * These are computed in CIELUV/LCH to achieve perceptual linearity.
+ * One or two of lightness, saturation, and hue are changed while the other(s)
+ * stay constant.
+ *
+ * For example, color maps of constant lightness are useful for 3D surfaces
+ * because they do not interfere with additional shading.
  */
 
-// Create a sequential isoluminant color map with n colors.
+/* Sequential perceptually linear maps */
 
-const float IsoluminantSequentialDefaultLuminance = 0.5f;
-const float IsoluminantSequentialDefaultSaturation = 0.5f;
-const float IsoluminantSequentialDefaultHue = 0.349065850399f; // 20 deg
+// Varying lightness
 
-void IsoluminantSequential(int n, unsigned char* colormap,
-        float luminance = IsoluminantSequentialDefaultLuminance,
-        float saturation = IsoluminantSequentialDefaultSaturation,
-        float hue = IsoluminantSequentialDefaultHue);
+const float PLSequentialLightnessDefaultSaturation = 0.5f;
+const float PLSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
 
-// Create a diverging isoluminant color map with n colors.
+void PLSequentialLightness(int n, unsigned char* colormap,
+        float saturation = PLSequentialLightnessDefaultSaturation,
+        float hue = PLSequentialLightnessDefaultHue);
 
-const float IsoluminantDivergingDefaultLuminance = 0.5f;
-const float IsoluminantDivergingDefaultSaturation = 0.5f;
-const float IsoluminantDivergingDefaultHue = 0.349065850399f; // 20 deg
-const float IsoluminantDivergingDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+// Varying saturation
 
-void IsoluminantDiverging(int n, unsigned char* colormap,
-        float luminance = IsoluminantDivergingDefaultLuminance,
-        float saturation = IsoluminantDivergingDefaultSaturation,
-        float hue = IsoluminantDivergingDefaultHue,
-        float divergence = IsoluminantDivergingDefaultDivergence);
+const float PLSequentialSaturationDefaultLightness = 0.5f;
+const float PLSequentialSaturationDefaultSaturation = 0.5f;
+const float PLSequentialSaturationDefaultHue = 0.349065850399f; // 20 deg
 
-// Create a qualitative isoluminant color map with n colors.
+void PLSequentialSaturation(int n, unsigned char* colormap,
+        float lightness = PLSequentialSaturationDefaultLightness,
+        float saturation = PLSequentialSaturationDefaultSaturation,
+        float hue = PLSequentialSaturationDefaultHue);
 
-const float IsoluminantQualitativeDefaultLuminance = 0.55f;
-const float IsoluminantQualitativeDefaultSaturation = 0.35f;
-const float IsoluminantQualitativeDefaultHue = 0.0;
+// Varying hue (through all colors, rainbow-like)
 
-void IsoluminantQualitative(int n, unsigned char* colormap,
-        float luminance = IsoluminantQualitativeDefaultLuminance,
-        float saturation = IsoluminantQualitativeDefaultSaturation,
-        float hue = IsoluminantQualitativeDefaultHue);
+const float PLSequentialRainbowDefaultHue = 0.0f;
+const float PLSequentialRainbowDefaultRotations = -1.5f;
+const float PLSequentialRainbowDefaultSaturation = 1.2f;
 
-/*
- * Perceptually uniform rainbow.
- *
- * These are similar to CubeHelix, but are constructed in LCH color space
- * to achieve better perceptual uniformity.
- */
+void PLSequentialRainbow(int n, unsigned char* colormap,
+        float hue = PLSequentialRainbowDefaultHue,
+        float rotations = PLSequentialRainbowDefaultRotations,
+        float saturation = PLSequentialRainbowDefaultSaturation);
 
-const float UniformRainbowDefaultHue = 0.0f;
-const float UniformRainbowDefaultRotations = -1.5f;
-const float UniformRainbowDefaultSaturation = 1.2f;
+// Varying hue (through physically plausible black body colors at increasing
+// temperatures).
+// The defaults are chosen so that we start at red and arrive at the D65 white
+// point (6500 K), thus excluding the blue colors that occur at higher
+// temperatures.
+const float PLSequentialBlackBodyDefaultTemperature = 250.0f;
+const float PLSequentialBlackBodyDefaultRange = 6250.0f;
+const float PLSequentialBlackBodyDefaultSaturation = 2.5f;
 
-void UniformRainbow(int n, unsigned char* colormap,
-        float hue = UniformRainbowDefaultHue,
-        float rotations = UniformRainbowDefaultRotations,
-        float saturation = UniformRainbowDefaultSaturation);
+void PLSequentialBlackBody(int n, unsigned char* colormap,
+        float temperature = PLSequentialBlackBodyDefaultTemperature,
+        float range = PLSequentialBlackBodyDefaultRange,
+        float saturation = PLSequentialBlackBodyDefaultSaturation);
 
-/*
- * Black Body color maps, based on the hue of a black body at increading
- * temperatures, but with linearly increasing lightness and chromaticity.
- *
- * Parameters are the temperature at the lower end of the map, and the range of
- * temperatures in the map. (The temperature at the higher end of the map is the
- * sum of the two). Furthermore, the saturation can be adjusted, but high
- * saturations will lead to color clipping.
- */
+/* Diverging perceptually linear maps */
 
-// The defaults are chosen so that we start at red and arrive the D65 white point
-// (6500 K), thus excluding the blue colors that occur at higher temperatures.
-const float BlackBodyDefaultTemperature = 250.0f;
-const float BlackBodyDefaultRange = 6250.0f;
-const float BlackBodyDefaultSaturation = 2.5f;
+// Varying lightness
 
-void BlackBody(int n, unsigned char* colormap,
-        float temperature = BlackBodyDefaultTemperature,
-        float range = BlackBodyDefaultRange,
-        float saturation = BlackBodyDefaultSaturation);
+const float PLDivergingLightnessDefaultLightness = 0.1f;
+const float PLDivergingLightnessDefaultSaturation = 0.5f;
+const float PLDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
+const float PLDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+
+void PLDivergingLightness(int n, unsigned char* colormap,
+        float lightness = PLDivergingLightnessDefaultLightness,
+        float saturation = PLDivergingLightnessDefaultSaturation,
+        float hue = PLDivergingLightnessDefaultHue,
+        float divergence = PLDivergingLightnessDefaultDivergence);
+
+// Varying saturation
+
+const float PLDivergingSaturationDefaultLightness = 0.5f;
+const float PLDivergingSaturationDefaultSaturation = 0.5f;
+const float PLDivergingSaturationDefaultHue = 0.349065850399f; // 20 deg
+const float PLDivergingSaturationDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+
+void PLDivergingSaturation(int n, unsigned char* colormap,
+        float lightness = PLDivergingSaturationDefaultLightness,
+        float saturation = PLDivergingSaturationDefaultSaturation,
+        float hue = PLDivergingSaturationDefaultHue,
+        float divergence = PLDivergingSaturationDefaultDivergence);
+
+/* Qualitative perceptually linear maps */
+
+const float PLQualitativeHueDefaultLightness = 0.55f;
+const float PLQualitativeHueDefaultSaturation = 0.35f;
+const float PLQualitativeHueDefaultHue = 0.0f;
+
+void PLQualitativeHue(int n, unsigned char* colormap,
+        float lightness = PLQualitativeHueDefaultLightness,
+        float saturation = PLQualitativeHueDefaultSaturation,
+        float hue = PLQualitativeHueDefaultHue);
 
 /*
  * CubeHelix color maps, as described in

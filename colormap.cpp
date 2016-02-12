@@ -552,53 +552,34 @@ void BrewerQualitative(int n, unsigned char* colormap, float hue, float divergen
     }
 }
 
-/* Isoluminant */
+/* Perceptually linear (PL) */
 
-void IsoluminantSequential(int n, unsigned char* colormap,
-        float luminance, float saturation, float hue)
+void PLSequentialLightness(int n, unsigned char* colormap, float saturation, float hue)
 {
     triplet lch;
-    lch.l = luminance * 100.0f;
     lch.h = hue;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
-        float s = saturation * 5.0f * (1.0f - t);
-        lch.c = lch_chroma(lch.l, s);
+        lch.l = t * 100.0f;
+        lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
         lch_to_colormap(lch, colormap + 3 * i);
     }
 }
 
-void IsoluminantDiverging(int n, unsigned char* colormap,
-        float luminance, float saturation, float hue, float divergence)
+void PLSequentialSaturation(int n, unsigned char* colormap,
+        float lightness, float saturation, float hue)
 {
     triplet lch;
-    lch.l = luminance * 100.0f;
+    lch.l = lightness * 100.0f;
+    lch.h = hue;
     for (int i = 0; i < n; i++) {
         float t = i / (n - 1.0f);
-        float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
-        lch.c = lch_chroma(lch.l, s);
-        lch.h = (t <= 0.5f ? hue : hue + divergence);
+        lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
         lch_to_colormap(lch, colormap + 3 * i);
     }
 }
 
-void IsoluminantQualitative(int n, unsigned char* colormap,
-        float luminance, float saturation, float hue)
-{
-    float divergence = twopi * (n - 1.0f) / n;
-    triplet lch;
-    lch.l = luminance * 100.0f;
-    lch.c = lch_chroma(lch.l, saturation * 5.0f);
-    for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
-        lch.h = hue + t * divergence;
-        lch_to_colormap(lch, colormap + 3 * i);
-    }
-}
-
-/* UniformRainbow */
-
-void UniformRainbow(int n, unsigned char* colormap, float hue, float rotations, float saturation)
+void PLSequentialRainbow(int n, unsigned char* colormap, float hue, float rotations, float saturation)
 {
     triplet luv, lch;
     for (int i = 0; i < n; i++) {
@@ -609,8 +590,6 @@ void UniformRainbow(int n, unsigned char* colormap, float hue, float rotations, 
         lch_to_colormap(lch, colormap + 3 * i);
     }
 }
-
-/* BlackBody */
 
 static float plancks_law(float temperature, float lambda)
 {
@@ -743,7 +722,7 @@ static triplet color_matching_function(int lambda /* in nanometers */)
     return xyz;
 }
 
-void BlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
+void PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
 {
     for (int i = 0; i < n; i++) {
         float fract = i / (n - 1.0f);
@@ -763,6 +742,47 @@ void BlackBody(int n, unsigned char* colormap, float temperature, float range, f
         triplet lch = luv_to_lch(xyz_to_luv(adjust_y(xyz, 10.0f)));
         lch.l = fract * 100.0f;
         lch.c = lch_chroma(lch.l, (1.0f - fract) * saturation);
+        lch_to_colormap(lch, colormap + 3 * i);
+    }
+}
+
+void PLDivergingLightness(int n, unsigned char* colormap, float lightness, float saturation, float hue, float divergence)
+{
+    triplet lch;
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        lch.l = 100.0f * lightness + 100.0f * (1.0f - lightness) * (t <= 0.5f ? 2.0f * t : 2.0f * (1.0f - t));
+        float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
+        lch.c = lch_chroma(lch.l, s);
+        lch.h = (t <= 0.5f ? hue : hue + divergence);
+        lch_to_colormap(lch, colormap + 3 * i);
+    }
+}
+
+void PLDivergingSaturation(int n, unsigned char* colormap,
+        float lightness, float saturation, float hue, float divergence)
+{
+    triplet lch;
+    lch.l = lightness * 100.0f;
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
+        lch.c = lch_chroma(lch.l, s);
+        lch.h = (t <= 0.5f ? hue : hue + divergence);
+        lch_to_colormap(lch, colormap + 3 * i);
+    }
+}
+
+void PLQualitativeHue(int n, unsigned char* colormap,
+        float lightness, float saturation, float hue)
+{
+    float divergence = twopi * (n - 1.0f) / n;
+    triplet lch;
+    lch.l = lightness * 100.0f;
+    lch.c = lch_chroma(lch.l, saturation * 5.0f);
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        lch.h = hue + t * divergence;
         lch_to_colormap(lch, colormap + 3 * i);
     }
 }

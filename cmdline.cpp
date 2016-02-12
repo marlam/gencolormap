@@ -37,11 +37,13 @@ enum type {
     brewer_seq,
     brewer_div,
     brewer_qual,
-    isolum_seq,
-    isolum_div,
-    isolum_qual,
-    unirainbow,
-    blackbody,
+    plseq_lightness,
+    plseq_saturation,
+    plseq_rainbow,
+    plseq_blackbody,
+    pldiv_lightness,
+    pldiv_saturation,
+    plqual_hue,
     cubehelix,
     moreland,
     mcnames
@@ -59,7 +61,7 @@ int main(int argc, char* argv[])
     float saturation = -1.0f;
     float brightness = -1.0f;
     float warmth = -1.0f;
-    float luminance = -1.0f;
+    float lightness = -1.0f;
     float rotations = NAN;
     float temperature = -1.0f;
     float range = -1.0f;
@@ -80,7 +82,7 @@ int main(int argc, char* argv[])
         { "saturation",  required_argument, 0, 's' },
         { "brightness",  required_argument, 0, 'b' },
         { "warmth",      required_argument, 0, 'w' },
-        { "luminance",   required_argument, 0, 'l' },
+        { "lightness",   required_argument, 0, 'l' },
         { "rotations",   required_argument, 0, 'r' },
         { "temperature", required_argument, 0, 'T' },
         { "range",       required_argument, 0, 'R' },
@@ -106,11 +108,13 @@ int main(int argc, char* argv[])
             type = (strcmp(optarg, "brewer-sequential") == 0 ? brewer_seq
                     : strcmp(optarg, "brewer-diverging") == 0 ? brewer_div
                     : strcmp(optarg, "brewer-qualitative") == 0 ? brewer_qual
-                    : strcmp(optarg, "isoluminant-sequential") == 0 ? isolum_seq
-                    : strcmp(optarg, "isoluminant-divergent") == 0 ? isolum_div
-                    : strcmp(optarg, "isoluminant-qualitative") == 0 ? isolum_qual
-                    : strcmp(optarg, "uniformrainbow") == 0 ? unirainbow
-                    : strcmp(optarg, "blackbody") == 0 ? blackbody
+                    : strcmp(optarg, "plsequential-lightness") == 0 ? plseq_lightness
+                    : strcmp(optarg, "plsequential-saturation") == 0 ? plseq_saturation
+                    : strcmp(optarg, "plsequential-rainbow") == 0 ? plseq_rainbow
+                    : strcmp(optarg, "plsequential-blackbody") == 0 ? plseq_blackbody
+                    : strcmp(optarg, "pldiverging-lightness") == 0 ? pldiv_lightness
+                    : strcmp(optarg, "pldiverging-saturation") == 0 ? pldiv_saturation
+                    : strcmp(optarg, "plqualitative-hue") == 0 ? plqual_hue
                     : strcmp(optarg, "cubehelix") == 0 ? cubehelix
                     : strcmp(optarg, "moreland") == 0 ? moreland
                     : strcmp(optarg, "mcnames") == 0 ? mcnames
@@ -138,7 +142,7 @@ int main(int argc, char* argv[])
             warmth = atof(optarg);
             break;
         case 'l':
-            luminance = atof(optarg);
+            lightness = atof(optarg);
             break;
         case 'r':
             rotations = atof(optarg);
@@ -191,24 +195,21 @@ int main(int argc, char* argv[])
                 "    [-b|--brightness=B]               Set brightness in [0,1]\n"
                 "    [-w|--warmth=W]                   Set warmth in [0,1] for seq. and div. maps\n"
                 "    [-d|--divergence=D]               Set divergence in deg. for div. and qual. maps\n"
-                "  Isoluminant color maps:\n"
-                "    -t|--type=isoluminant-sequential  Generate a sequential color map\n"
-                "    -t|--type=isoluminant-diverging   Generate a diverging color map\n"
-                "    -t|--type=isoluminant-qualitative Generate a qualitative color map\n"
-                "    [-l|--luminance=L]                Set luminance in [0,1]\n"
+                "  Perceptually linear color maps:\n"
+                "    -t|--type=plsequential-lightness  Sequential map with varying lightness\n"
+                "    -t|--type=plsequential-saturation Sequential map with varying saturation\n"
+                "    -t|--type=plsequential-rainbow    Sequential map with varying hue (rainbow)\n"
+                "    -t|--type=plsequential-blackbody  Sequential map with varying hue (black body)\n"
+                "    -t|--type=pldiverging-lightness   Diverging map with varying lightness\n"
+                "    -t|--type=pldiverging-saturation  Diverging map with varying saturation\n"
+                "    -t|--type=plqualitative-hue       Qualitative map with evenly distributed hue\n"
+                "    [-l|--lightness=L]                Set lightness in [0,1]\n"
                 "    [-s|--saturation=S]               Set saturation in [0,1]\n"
                 "    [-h|--hue=H]                      Set default hue in [0,360] degrees\n"
                 "    [-d|--divergence=D]               Set divergence in deg. for div. and qual. maps\n"
-                "  Uniform Rainbow color maps:\n"
-                "    -t|--type=uniformrainbow          Generate a uniform rainbow color map\n"
-                "    [-h|--hue=H]                      Set start hue in [0,360] degrees\n"
-                "    [-r|--rotations=R]                Set number of rotations, in (-infty,infty)\n"
-                "    [-s|--saturation=S]               Set saturation, in [0,5]\n"
-                "  Black Body color maps:\n"
-                "    -t|--type=blackbody               Generate a Black Body color map\n"
-                "    [-T|--temperature=T]              Start temperature of the map in Kelvin\n"
-                "    [-R|--range=R]                    Range of temperatures of the map in Kelvin\n"
-                "    [-s|--saturation=S]               Set saturation, in [0,5]\n"
+                "    [-r|--rotations=R]                Set number of rotations for rainbow maps\n"
+                "    [-T|--temperature=T]              Set start temp. in K for blackbody maps\n"
+                "    [-R|--range=R]                    Set temp. range in K for blackbody maps\n"
                 "  CubeHelix color maps:\n"
                 "    -t|--type=cubehelix               Generate a CubeHelix color map\n"
                 "    [-h|--hue=H]                      Set start hue in [0,180] degrees\n"
@@ -242,14 +243,18 @@ int main(int argc, char* argv[])
             hue = ColorMap::BrewerDivergingDefaultHue;
         else if (type == brewer_qual)
             hue = ColorMap::BrewerQualitativeDefaultHue;
-        else if (type == isolum_seq)
-            hue = ColorMap::IsoluminantSequentialDefaultHue;
-        else if (type == isolum_div)
-            hue = ColorMap::IsoluminantDivergingDefaultHue;
-        else if (type == isolum_qual)
-            hue = ColorMap::IsoluminantQualitativeDefaultHue;
-        else if (type == unirainbow)
-            hue = ColorMap::UniformRainbowDefaultHue;
+        else if (type == plseq_lightness)
+            hue = ColorMap::PLSequentialLightnessDefaultHue;
+        else if (type == plseq_saturation)
+            hue = ColorMap::PLSequentialSaturationDefaultHue;
+        else if (type == plseq_rainbow)
+            hue = ColorMap::PLSequentialRainbowDefaultHue;
+        else if (type == pldiv_lightness)
+            hue = ColorMap::PLDivergingLightnessDefaultHue;
+        else if (type == pldiv_saturation)
+            hue = ColorMap::PLDivergingSaturationDefaultHue;
+        else if (type == plqual_hue)
+            hue = ColorMap::PLQualitativeHueDefaultHue;
         else if (type == cubehelix)
             hue = ColorMap::CubeHelixDefaultHue;
     }
@@ -258,8 +263,10 @@ int main(int argc, char* argv[])
             divergence = ColorMap::BrewerDivergingDefaultDivergence;
         else if (type == brewer_qual)
             divergence = ColorMap::BrewerQualitativeDefaultDivergence;
-        else if (type == isolum_div)
-            divergence = ColorMap::IsoluminantDivergingDefaultDivergence;
+        else if (type == pldiv_lightness)
+            divergence = ColorMap::PLDivergingLightnessDefaultDivergence;
+        else if (type == pldiv_saturation)
+            divergence = ColorMap::PLDivergingSaturationDefaultDivergence;
     }
     if (contrast < 0.0f) {
         if (type == brewer_seq)
@@ -278,16 +285,20 @@ int main(int argc, char* argv[])
             saturation = ColorMap::BrewerDivergingDefaultSaturation;
         else if (type == brewer_qual)
             saturation = ColorMap::BrewerQualitativeDefaultSaturation;
-        else if (type == isolum_seq)
-            saturation = ColorMap::IsoluminantSequentialDefaultSaturation;
-        else if (type == isolum_div)
-            saturation = ColorMap::IsoluminantDivergingDefaultSaturation;
-        else if (type == isolum_qual)
-            saturation = ColorMap::IsoluminantQualitativeDefaultSaturation;
-        else if (type == unirainbow)
-            saturation = ColorMap::UniformRainbowDefaultSaturation;
-        else if (type == blackbody)
-            saturation = ColorMap::BlackBodyDefaultSaturation;
+        else if (type == plseq_lightness)
+            saturation = ColorMap::PLSequentialLightnessDefaultSaturation;
+        else if (type == plseq_saturation)
+            saturation = ColorMap::PLSequentialSaturationDefaultSaturation;
+        else if (type == plseq_rainbow)
+            saturation = ColorMap::PLSequentialRainbowDefaultSaturation;
+        else if (type == plseq_blackbody)
+            saturation = ColorMap::PLSequentialBlackBodyDefaultSaturation;
+        else if (type == pldiv_lightness)
+            saturation = ColorMap::PLDivergingLightnessDefaultSaturation;
+        else if (type == pldiv_saturation)
+            saturation = ColorMap::PLDivergingSaturationDefaultSaturation;
+        else if (type == plqual_hue)
+            saturation = ColorMap::PLQualitativeHueDefaultSaturation;
         else if (type == cubehelix)
             saturation = ColorMap::CubeHelixDefaultSaturation;
     }
@@ -305,27 +316,29 @@ int main(int argc, char* argv[])
         else if (type == brewer_div)
             warmth = ColorMap::BrewerDivergingDefaultWarmth;
     }
-    if (luminance < 0.0f) {
-        if (type == isolum_seq)
-            luminance = ColorMap::IsoluminantSequentialDefaultLuminance;
-        else if (type == isolum_div)
-            luminance = ColorMap::IsoluminantDivergingDefaultLuminance;
-        else if (type == isolum_qual)
-            luminance = ColorMap::IsoluminantQualitativeDefaultLuminance;
+    if (lightness < 0.0f) {
+        if (type == plseq_saturation)
+            lightness = ColorMap::PLSequentialSaturationDefaultLightness;
+        else if (type == pldiv_lightness)
+            lightness = ColorMap::PLDivergingLightnessDefaultLightness;
+        else if (type == pldiv_saturation)
+            lightness = ColorMap::PLDivergingSaturationDefaultLightness;
+        else if (type == plqual_hue)
+            lightness = ColorMap::PLQualitativeHueDefaultLightness;
     }
     if (std::isnan(rotations)) {
-        if (type == unirainbow)
-            rotations = ColorMap::UniformRainbowDefaultRotations;
+        if (type == plseq_rainbow)
+            rotations = ColorMap::PLSequentialRainbowDefaultRotations;
         else if (type == cubehelix)
             rotations = ColorMap::CubeHelixDefaultRotations;
     }
     if (temperature < 0.0f) {
-        if (type == blackbody)
-            temperature = ColorMap::BlackBodyDefaultTemperature;
+        if (type == plseq_blackbody)
+            temperature = ColorMap::PLSequentialBlackBodyDefaultTemperature;
     }
     if (range < 0.0f) {
-        if (type == blackbody)
-            range = ColorMap::BlackBodyDefaultRange;
+        if (type == plseq_blackbody)
+            range = ColorMap::PLSequentialBlackBodyDefaultRange;
     }
     if (gamma < 0.0f) {
         if (type == cubehelix)
@@ -361,20 +374,26 @@ int main(int argc, char* argv[])
     case brewer_qual:
         ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
         break;
-    case isolum_seq:
-        ColorMap::IsoluminantSequential(n, &(colormap[0]), luminance, saturation, hue);
+    case plseq_lightness:
+        ColorMap::PLSequentialLightness(n, &(colormap[0]), saturation, hue);
         break;
-    case isolum_div:
-        ColorMap::IsoluminantDiverging(n, &(colormap[0]), luminance, saturation, hue, divergence);
+    case plseq_saturation:
+        ColorMap::PLSequentialSaturation(n, &(colormap[0]), lightness, saturation, hue);
         break;
-    case isolum_qual:
-        ColorMap::IsoluminantQualitative(n, &(colormap[0]), luminance, saturation, hue);
+    case plseq_rainbow:
+        ColorMap::PLSequentialRainbow(n, &(colormap[0]), hue, rotations, saturation);
         break;
-    case unirainbow:
-        ColorMap::UniformRainbow(n, &(colormap[0]), hue, rotations, saturation);
+    case plseq_blackbody:
+        ColorMap::PLSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
         break;
-    case blackbody:
-        ColorMap::BlackBody(n, &(colormap[0]), temperature, range, saturation);
+    case pldiv_lightness:
+        ColorMap::PLDivergingLightness(n, &(colormap[0]), lightness, saturation, hue, divergence);
+        break;
+    case pldiv_saturation:
+        ColorMap::PLDivergingSaturation(n, &(colormap[0]), lightness, saturation, hue, divergence);
+        break;
+    case plqual_hue:
+        ColorMap::PLQualitativeHue(n, &(colormap[0]), lightness, saturation, hue);
         break;
     case cubehelix:
         ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);

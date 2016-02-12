@@ -43,26 +43,33 @@ static QString brewerlike_reference = QString("Relevant paper: "
         "<a href=\"http://dx.doi.org/10.1111/j.1467-8659.2008.01203.x\">Generating Color Palettes using Intuitive Parameters</a>, "
         "Computer Graphics Forum 27(3), May 2008.");
 
-static QString isoluminant_seq_reference = QString(
-        "Constant lightness, constant hue, linearly decreasing saturation. "
-        "Computed in CIELUV color space (LCH variant).");
+static QString plseq_lightness_reference = QString(
+        "Perceptually linear, varying lightness.<br>"
+        "Computed in CIELUV/LCH color space.");
 
-static QString isoluminant_div_reference = QString(
-        "Constant lightness, constant hue in each half, linearly decreasing saturation towards the middle. "
-        "Computed in CIELUV color space (LCH variant).");
+static QString plseq_saturation_reference = QString(
+        "Perceptually linear, varying saturation.<br>"
+        "Computed in CIELUV/LCH color space.");
 
-static QString isoluminant_qual_reference = QString(
-        "Constant lightness, constant saturation, evenly distributed hue. "
-        "Computed in CIELUV color space (LCH variant).");
+static QString plseq_rainbow_reference = QString(
+        "Perceptually linear, varying hue (rainbow).<br>"
+        "Computed in CIELUV/LCH color space.");
 
-static QString uniformrainbow_reference = QString(
-        "Linearly increasing lightness, linearly decreasing saturation, rotating hue. "
-        "Computed in CIELUV color space (LCH variant).");
+static QString plseq_blackbody_reference = QString(
+        "Perceptually linear, varying hue (black body at increasing temperatures).<br>"
+        "Computed in CIELUV/LCH color space.");
 
-static QString blackbody_reference = QString(
-        "Linearly increasing lightness, linearly decreasing saturation, hues taken from "
-        "a physically plausible model of black body radiation in the given range of temperatures. "
-        "Computed in CIELUV color space (LCH variant).");
+static QString pldiv_lightness_reference = QString(
+        "Perceptually linear, varying lightness.<br>"
+        "Computed in CIELUV/LCH color space.");
+
+static QString pldiv_saturation_reference = QString(
+        "Perceptually linear, varying saturation.<br>"
+        "Computed in CIELUV/LCH color space.");
+
+static QString plqual_hue_reference = QString(
+        "Perceptually linear, evenly distributed hue.<br>"
+        "Computed in CIELUV/LCH color space.");
 
 static QString cubehelix_reference = QString("Relevant paper: "
         "D. A. Green, "
@@ -543,9 +550,9 @@ void ColorMapBrewerQualitativeWidget::update()
         emit colorMapChanged();
 }
 
-/* ColorMapIsoluminantSequentialWidget */
+/* ColorMapPLSequentialLightnessWidget */
 
-ColorMapIsoluminantSequentialWidget::ColorMapIsoluminantSequentialWidget() :
+ColorMapPLSequentialLightnessWidget::ColorMapPLSequentialLightnessWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -557,92 +564,74 @@ ColorMapIsoluminantSequentialWidget::ColorMapIsoluminantSequentialWidget() :
     _n_spinbox->setSingleStep(1);
     layout->addWidget(_n_spinbox, 1, 1, 1, 3);
 
-    QLabel* luminance_label = new QLabel("Luminance:");
-    layout->addWidget(luminance_label, 2, 0);
-    _luminance_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(_luminance_changer->slider, 2, 1, 1, 2);
-    layout->addWidget(_luminance_changer->spinbox, 2, 3);
-
     QLabel* saturation_label = new QLabel("Saturation:");
-    layout->addWidget(saturation_label, 3, 0);
+    layout->addWidget(saturation_label, 2, 0);
     _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(_saturation_changer->slider, 3, 1, 1, 2);
-    layout->addWidget(_saturation_changer->spinbox, 3, 3);
+    layout->addWidget(_saturation_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 2, 3);
 
     QLabel* hue_label = new QLabel("Hue:");
-    layout->addWidget(hue_label, 4, 0);
+    layout->addWidget(hue_label, 3, 0);
     _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(_hue_changer->slider, 4, 1, 1, 2);
-    layout->addWidget(_hue_changer->spinbox, 4, 3);
-
-    QLabel* divergence_label = new QLabel("Divergence:");
-    layout->addWidget(divergence_label, 5, 0);
-    ColorMapCombinedSliderSpinBox* divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(divergence_changer->slider, 5, 1, 1, 2);
-    layout->addWidget(divergence_changer->spinbox, 5, 3);
-    hideWidgetButPreserveSize(divergence_label);
-    hideWidgetButPreserveSize(divergence_changer->slider);
-    hideWidgetButPreserveSize(divergence_changer->spinbox);
+    layout->addWidget(_hue_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 3, 3);
 
     layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
-    layout->setRowStretch(6, 1);
+    layout->addItem(new QSpacerItem(0, 0), 4, 0, 1, 4);
+    layout->setRowStretch(4, 1);
     setLayout(layout);
 
     connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
-    connect(_luminance_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     reset();
 }
 
-ColorMapIsoluminantSequentialWidget::~ColorMapIsoluminantSequentialWidget()
+ColorMapPLSequentialLightnessWidget::~ColorMapPLSequentialLightnessWidget()
 {
 }
 
-void ColorMapIsoluminantSequentialWidget::reset()
+void ColorMapPLSequentialLightnessWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _luminance_changer->setValue(ColorMap::IsoluminantSequentialDefaultLuminance);
-    _saturation_changer->setValue(ColorMap::IsoluminantSequentialDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::IsoluminantSequentialDefaultHue));
+    _saturation_changer->setValue(ColorMap::PLSequentialLightnessDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLSequentialLightnessDefaultHue));
     _update_lock = false;
     update();
 }
 
-QVector<QColor> ColorMapIsoluminantSequentialWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialLightnessWidget::colorMap() const
 {
     int n;
-    float l, s, h;
-    parameters(n, l, s, h);
+    float s, h;
+    parameters(n, s, h);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::IsoluminantSequential(n, colormap.data(), l, s, h);
+    ColorMap::PLSequentialLightness(n, colormap.data(), s, h);
     return toQColor(colormap);
 }
 
-QString ColorMapIsoluminantSequentialWidget::reference() const
+QString ColorMapPLSequentialLightnessWidget::reference() const
 {
-    return isoluminant_seq_reference;
+    return plseq_lightness_reference;
 }
 
-void ColorMapIsoluminantSequentialWidget::parameters(int& n, float& luminance, float& saturation, float& hue) const
+void ColorMapPLSequentialLightnessWidget::parameters(int& n, float& saturation, float& hue) const
 {
     n = _n_spinbox->value();
-    luminance = _luminance_changer->value();
     saturation = _saturation_changer->value();
     hue = qDegreesToRadians(_hue_changer->value());
 }
 
-void ColorMapIsoluminantSequentialWidget::update()
+void ColorMapPLSequentialLightnessWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapIsoluminantDivergingWidget */
+/* ColorMapPLSequentialSaturationWidget */
 
-ColorMapIsoluminantDivergingWidget::ColorMapIsoluminantDivergingWidget() :
+ColorMapPLSequentialSaturationWidget::ColorMapPLSequentialSaturationWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -654,11 +643,11 @@ ColorMapIsoluminantDivergingWidget::ColorMapIsoluminantDivergingWidget() :
     _n_spinbox->setSingleStep(1);
     layout->addWidget(_n_spinbox, 1, 1, 1, 3);
 
-    QLabel* luminance_label = new QLabel("Luminance:");
-    layout->addWidget(luminance_label, 2, 0);
-    _luminance_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(_luminance_changer->slider, 2, 1, 1, 2);
-    layout->addWidget(_luminance_changer->spinbox, 2, 3);
+    QLabel* lightness_label = new QLabel("Lightness:");
+    layout->addWidget(lightness_label, 2, 0);
+    _lightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_lightness_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_lightness_changer->spinbox, 2, 3);
 
     QLabel* saturation_label = new QLabel("Saturation:");
     layout->addWidget(saturation_label, 3, 0);
@@ -672,171 +661,65 @@ ColorMapIsoluminantDivergingWidget::ColorMapIsoluminantDivergingWidget() :
     layout->addWidget(_hue_changer->slider, 4, 1, 1, 2);
     layout->addWidget(_hue_changer->spinbox, 4, 3);
 
-    QLabel* divergence_label = new QLabel("Divergence:");
-    layout->addWidget(divergence_label, 5, 0);
-    _divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(_divergence_changer->slider, 5, 1, 1, 2);
-    layout->addWidget(_divergence_changer->spinbox, 5, 3);
-
     layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
-    layout->setRowStretch(6, 1);
+    layout->addItem(new QSpacerItem(0, 0), 5, 0, 1, 4);
+    layout->setRowStretch(5, 1);
     setLayout(layout);
 
     connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
-    connect(_luminance_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    reset();
-}
-
-ColorMapIsoluminantDivergingWidget::~ColorMapIsoluminantDivergingWidget()
-{
-}
-
-void ColorMapIsoluminantDivergingWidget::reset()
-{
-    _update_lock = true;
-    _n_spinbox->setValue(257);
-    _luminance_changer->setValue(ColorMap::IsoluminantDivergingDefaultLuminance);
-    _saturation_changer->setValue(ColorMap::IsoluminantDivergingDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::IsoluminantDivergingDefaultHue));
-    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::IsoluminantDivergingDefaultDivergence));
-    _update_lock = false;
-    update();
-}
-
-QVector<QColor> ColorMapIsoluminantDivergingWidget::colorMap() const
-{
-    int n;
-    float l, s, h, d;
-    parameters(n, l, s, h, d);
-    QVector<unsigned char> colormap(3 * n);
-    ColorMap::IsoluminantDiverging(n, colormap.data(), l, s, h, d);
-    return toQColor(colormap);
-}
-
-QString ColorMapIsoluminantDivergingWidget::reference() const
-{
-    return isoluminant_div_reference;
-}
-
-void ColorMapIsoluminantDivergingWidget::parameters(int& n, float& luminance, float& saturation, float& hue, float& divergence) const
-{
-    n = _n_spinbox->value();
-    luminance = _luminance_changer->value();
-    saturation = _saturation_changer->value();
-    hue = qDegreesToRadians(_hue_changer->value());
-    divergence = qDegreesToRadians(_divergence_changer->value());
-}
-
-void ColorMapIsoluminantDivergingWidget::update()
-{
-    if (!_update_lock)
-        emit colorMapChanged();
-}
-
-/* ColorMapIsoluminantQualitativeWidget */
-
-ColorMapIsoluminantQualitativeWidget::ColorMapIsoluminantQualitativeWidget() :
-    _update_lock(false)
-{
-    QGridLayout *layout = new QGridLayout;
-
-    QLabel* n_label = new QLabel("Colors:");
-    layout->addWidget(n_label, 1, 0);
-    _n_spinbox = new QSpinBox();
-    _n_spinbox->setRange(2, 1024);
-    _n_spinbox->setSingleStep(1);
-    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
-
-    QLabel* luminance_label = new QLabel("Luminance:");
-    layout->addWidget(luminance_label, 2, 0);
-    _luminance_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(_luminance_changer->slider, 2, 1, 1, 2);
-    layout->addWidget(_luminance_changer->spinbox, 2, 3);
-
-    QLabel* saturation_label = new QLabel("Saturation:");
-    layout->addWidget(saturation_label, 3, 0);
-    _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(_saturation_changer->slider, 3, 1, 1, 2);
-    layout->addWidget(_saturation_changer->spinbox, 3, 3);
-
-    QLabel* hue_label = new QLabel("Hue:");
-    layout->addWidget(hue_label, 4, 0);
-    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(_hue_changer->slider, 4, 1, 1, 2);
-    layout->addWidget(_hue_changer->spinbox, 4, 3);
-
-    QLabel* divergence_label = new QLabel("Divergence:");
-    layout->addWidget(divergence_label, 5, 0);
-    ColorMapCombinedSliderSpinBox* divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(divergence_changer->slider, 5, 1, 1, 2);
-    layout->addWidget(divergence_changer->spinbox, 5, 3);
-    hideWidgetButPreserveSize(divergence_label);
-    hideWidgetButPreserveSize(divergence_changer->slider);
-    hideWidgetButPreserveSize(divergence_changer->spinbox);
-
-    layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
-    layout->setRowStretch(6, 1);
-    setLayout(layout);
-
-    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
-    connect(_luminance_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_lightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     reset();
 }
 
-ColorMapIsoluminantQualitativeWidget::~ColorMapIsoluminantQualitativeWidget()
+ColorMapPLSequentialSaturationWidget::~ColorMapPLSequentialSaturationWidget()
 {
 }
 
-void ColorMapIsoluminantQualitativeWidget::reset()
+void ColorMapPLSequentialSaturationWidget::reset()
 {
     _update_lock = true;
-    _n_spinbox->setValue(9);
-    _luminance_changer->setValue(ColorMap::IsoluminantQualitativeDefaultLuminance);
-    _saturation_changer->setValue(ColorMap::IsoluminantQualitativeDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::IsoluminantQualitativeDefaultHue));
+    _n_spinbox->setValue(256);
+    _lightness_changer->setValue(ColorMap::PLSequentialSaturationDefaultLightness);
+    _saturation_changer->setValue(ColorMap::PLSequentialSaturationDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLSequentialSaturationDefaultHue));
     _update_lock = false;
     update();
 }
 
-QVector<QColor> ColorMapIsoluminantQualitativeWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialSaturationWidget::colorMap() const
 {
     int n;
     float l, s, h;
     parameters(n, l, s, h);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::IsoluminantQualitative(n, colormap.data(), l, s, h);
+    ColorMap::PLSequentialSaturation(n, colormap.data(), l, s, h);
     return toQColor(colormap);
 }
 
-QString ColorMapIsoluminantQualitativeWidget::reference() const
+QString ColorMapPLSequentialSaturationWidget::reference() const
 {
-    return isoluminant_qual_reference;
+    return plseq_saturation_reference;
 }
 
-void ColorMapIsoluminantQualitativeWidget::parameters(int& n, float& luminance, float& saturation, float& hue) const
+void ColorMapPLSequentialSaturationWidget::parameters(int& n, float& lightness, float& saturation, float& hue) const
 {
     n = _n_spinbox->value();
-    luminance = _luminance_changer->value();
+    lightness = _lightness_changer->value();
     saturation = _saturation_changer->value();
     hue = qDegreesToRadians(_hue_changer->value());
 }
 
-void ColorMapIsoluminantQualitativeWidget::update()
+void ColorMapPLSequentialSaturationWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapUniformRainbowWidget */
+/* ColorMapPLSequentialRainbowWidget */
 
-ColorMapUniformRainbowWidget::ColorMapUniformRainbowWidget() :
+ColorMapPLSequentialRainbowWidget::ColorMapPLSequentialRainbowWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -878,37 +761,37 @@ ColorMapUniformRainbowWidget::ColorMapUniformRainbowWidget() :
     reset();
 }
 
-ColorMapUniformRainbowWidget::~ColorMapUniformRainbowWidget()
+ColorMapPLSequentialRainbowWidget::~ColorMapPLSequentialRainbowWidget()
 {
 }
 
-void ColorMapUniformRainbowWidget::reset()
+void ColorMapPLSequentialRainbowWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::UniformRainbowDefaultHue));
-    _rotations_changer->setValue(ColorMap::UniformRainbowDefaultRotations);
-    _saturation_changer->setValue(ColorMap::UniformRainbowDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLSequentialRainbowDefaultHue));
+    _rotations_changer->setValue(ColorMap::PLSequentialRainbowDefaultRotations);
+    _saturation_changer->setValue(ColorMap::PLSequentialRainbowDefaultSaturation);
     _update_lock = false;
     update();
 }
 
-QVector<QColor> ColorMapUniformRainbowWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialRainbowWidget::colorMap() const
 {
     int n;
     float h, r, s;
     parameters(n, h, r, s);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::UniformRainbow(n, colormap.data(), h, r, s);
+    ColorMap::PLSequentialRainbow(n, colormap.data(), h, r, s);
     return toQColor(colormap);
 }
 
-QString ColorMapUniformRainbowWidget::reference() const
+QString ColorMapPLSequentialRainbowWidget::reference() const
 {
-    return uniformrainbow_reference;
+    return plseq_rainbow_reference;
 }
 
-void ColorMapUniformRainbowWidget::parameters(int& n, float& hue,
+void ColorMapPLSequentialRainbowWidget::parameters(int& n, float& hue,
         float& rotations, float& saturation) const
 {
     n = _n_spinbox->value();
@@ -917,15 +800,15 @@ void ColorMapUniformRainbowWidget::parameters(int& n, float& hue,
     saturation = _saturation_changer->value();
 }
 
-void ColorMapUniformRainbowWidget::update()
+void ColorMapPLSequentialRainbowWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapBlackBodyWidget */
+/* ColorMapPLSequentialBlackBodyWidget */
 
-ColorMapBlackBodyWidget::ColorMapBlackBodyWidget() :
+ColorMapPLSequentialBlackBodyWidget::ColorMapPLSequentialBlackBodyWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -967,37 +850,37 @@ ColorMapBlackBodyWidget::ColorMapBlackBodyWidget() :
     reset();
 }
 
-ColorMapBlackBodyWidget::~ColorMapBlackBodyWidget()
+ColorMapPLSequentialBlackBodyWidget::~ColorMapPLSequentialBlackBodyWidget()
 {
 }
 
-void ColorMapBlackBodyWidget::reset()
+void ColorMapPLSequentialBlackBodyWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _temperature_changer->setValue(ColorMap::BlackBodyDefaultTemperature);
-    _range_changer->setValue(ColorMap::BlackBodyDefaultRange);
-    _saturation_changer->setValue(ColorMap::BlackBodyDefaultSaturation);
+    _temperature_changer->setValue(ColorMap::PLSequentialBlackBodyDefaultTemperature);
+    _range_changer->setValue(ColorMap::PLSequentialBlackBodyDefaultRange);
+    _saturation_changer->setValue(ColorMap::PLSequentialBlackBodyDefaultSaturation);
     _update_lock = false;
     update();
 }
 
-QVector<QColor> ColorMapBlackBodyWidget::colorMap() const
+QVector<QColor> ColorMapPLSequentialBlackBodyWidget::colorMap() const
 {
     int n;
     float t, r, s;
     parameters(n, t, r, s);
     QVector<unsigned char> colormap(3 * n);
-    ColorMap::BlackBody(n, colormap.data(), t, r, s);
+    ColorMap::PLSequentialBlackBody(n, colormap.data(), t, r, s);
     return toQColor(colormap);
 }
 
-QString ColorMapBlackBodyWidget::reference() const
+QString ColorMapPLSequentialBlackBodyWidget::reference() const
 {
-    return blackbody_reference;
+    return plseq_blackbody_reference;
 }
 
-void ColorMapBlackBodyWidget::parameters(int& n, float& temperature, float& range, float& saturation) const
+void ColorMapPLSequentialBlackBodyWidget::parameters(int& n, float& temperature, float& range, float& saturation) const
 {
     n = _n_spinbox->value();
     temperature = _temperature_changer->value();
@@ -1005,7 +888,289 @@ void ColorMapBlackBodyWidget::parameters(int& n, float& temperature, float& rang
     saturation = _saturation_changer->value();
 }
 
-void ColorMapBlackBodyWidget::update()
+void ColorMapPLSequentialBlackBodyWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+/* ColorMapPLDivergingLightnessWidget */
+
+ColorMapPLDivergingLightnessWidget::ColorMapPLDivergingLightnessWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* lightness_label = new QLabel("Lightness:");
+    layout->addWidget(lightness_label, 2, 0);
+    _lightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_lightness_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_lightness_changer->spinbox, 2, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 3, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_saturation_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 3, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 4, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 4, 3);
+
+    QLabel* divergence_label = new QLabel("Divergence:");
+    layout->addWidget(divergence_label, 5, 0);
+    _divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_divergence_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_divergence_changer->spinbox, 5, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
+    layout->setRowStretch(6, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_lightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapPLDivergingLightnessWidget::~ColorMapPLDivergingLightnessWidget()
+{
+}
+
+void ColorMapPLDivergingLightnessWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(257);
+    _lightness_changer->setValue(ColorMap::PLDivergingLightnessDefaultLightness);
+    _saturation_changer->setValue(ColorMap::PLDivergingLightnessDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingLightnessDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingLightnessDefaultDivergence));
+    _update_lock = false;
+    update();
+}
+
+QVector<QColor> ColorMapPLDivergingLightnessWidget::colorMap() const
+{
+    int n;
+    float l, s, h, d;
+    parameters(n, l, s, h, d);
+    QVector<unsigned char> colormap(3 * n);
+    ColorMap::PLDivergingLightness(n, colormap.data(), l, s, h, d);
+    return toQColor(colormap);
+}
+
+QString ColorMapPLDivergingLightnessWidget::reference() const
+{
+    return pldiv_lightness_reference;
+}
+
+void ColorMapPLDivergingLightnessWidget::parameters(int& n, float& lightness, float& saturation, float& hue, float& divergence) const
+{
+    n = _n_spinbox->value();
+    lightness = _lightness_changer->value();
+    saturation = _saturation_changer->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    divergence = qDegreesToRadians(_divergence_changer->value());
+}
+
+void ColorMapPLDivergingLightnessWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+/* ColorMapPLDivergingSaturationWidget */
+
+ColorMapPLDivergingSaturationWidget::ColorMapPLDivergingSaturationWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* lightness_label = new QLabel("Lightness:");
+    layout->addWidget(lightness_label, 2, 0);
+    _lightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_lightness_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_lightness_changer->spinbox, 2, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 3, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_saturation_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 3, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 4, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 4, 3);
+
+    QLabel* divergence_label = new QLabel("Divergence:");
+    layout->addWidget(divergence_label, 5, 0);
+    _divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_divergence_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_divergence_changer->spinbox, 5, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
+    layout->setRowStretch(6, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_lightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapPLDivergingSaturationWidget::~ColorMapPLDivergingSaturationWidget()
+{
+}
+
+void ColorMapPLDivergingSaturationWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(257);
+    _lightness_changer->setValue(ColorMap::PLDivergingSaturationDefaultLightness);
+    _saturation_changer->setValue(ColorMap::PLDivergingSaturationDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingSaturationDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingSaturationDefaultDivergence));
+    _update_lock = false;
+    update();
+}
+
+QVector<QColor> ColorMapPLDivergingSaturationWidget::colorMap() const
+{
+    int n;
+    float l, s, h, d;
+    parameters(n, l, s, h, d);
+    QVector<unsigned char> colormap(3 * n);
+    ColorMap::PLDivergingSaturation(n, colormap.data(), l, s, h, d);
+    return toQColor(colormap);
+}
+
+QString ColorMapPLDivergingSaturationWidget::reference() const
+{
+    return pldiv_saturation_reference;
+}
+
+void ColorMapPLDivergingSaturationWidget::parameters(int& n, float& lightness, float& saturation, float& hue, float& divergence) const
+{
+    n = _n_spinbox->value();
+    lightness = _lightness_changer->value();
+    saturation = _saturation_changer->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    divergence = qDegreesToRadians(_divergence_changer->value());
+}
+
+void ColorMapPLDivergingSaturationWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+/* ColorMapPLQualitativeHueWidget */
+
+ColorMapPLQualitativeHueWidget::ColorMapPLQualitativeHueWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 1024);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* lightness_label = new QLabel("Lightness:");
+    layout->addWidget(lightness_label, 2, 0);
+    _lightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_lightness_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_lightness_changer->spinbox, 2, 3);
+
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 3, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
+    layout->addWidget(_saturation_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 3, 3);
+
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 4, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 4, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 5, 0, 1, 4);
+    layout->setRowStretch(5, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_lightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapPLQualitativeHueWidget::~ColorMapPLQualitativeHueWidget()
+{
+}
+
+void ColorMapPLQualitativeHueWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(9);
+    _lightness_changer->setValue(ColorMap::PLQualitativeHueDefaultLightness);
+    _saturation_changer->setValue(ColorMap::PLQualitativeHueDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultHue));
+    _update_lock = false;
+    update();
+}
+
+QVector<QColor> ColorMapPLQualitativeHueWidget::colorMap() const
+{
+    int n;
+    float l, s, h;
+    parameters(n, l, s, h);
+    QVector<unsigned char> colormap(3 * n);
+    ColorMap::PLQualitativeHue(n, colormap.data(), l, s, h);
+    return toQColor(colormap);
+}
+
+QString ColorMapPLQualitativeHueWidget::reference() const
+{
+    return plqual_hue_reference;
+}
+
+void ColorMapPLQualitativeHueWidget::parameters(int& n, float& lightness, float& saturation, float& hue) const
+{
+    n = _n_spinbox->value();
+    lightness = _lightness_changer->value();
+    saturation = _saturation_changer->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+}
+
+void ColorMapPLQualitativeHueWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
