@@ -44,31 +44,31 @@ static QString brewerlike_reference = QString("Relevant paper: "
         "Computer Graphics Forum 27(3), May 2008.");
 
 static QString plseq_lightness_reference = QString(
-        "Perceptually linear, varying lightness.<br>"
+        "Perceptually linear, constant hue, varying lightness and saturation.<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString plseq_saturation_reference = QString(
-        "Perceptually linear, varying saturation.<br>"
+        "Perceptually linear, constant lightness and hue, varying saturation.<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString plseq_rainbow_reference = QString(
-        "Perceptually linear, varying hue (rainbow).<br>"
+        "Perceptually linear, varying lightness, saturation, and hue (rainbow).<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString plseq_blackbody_reference = QString(
-        "Perceptually linear, varying hue (black body at increasing temperatures).<br>"
+        "Perceptually linear, varying lightness, saturation, and hue (black body at increasing temperatures).<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString pldiv_lightness_reference = QString(
-        "Perceptually linear, varying lightness.<br>"
+        "Perceptually linear, constant hues, varying lightness and saturation.<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString pldiv_saturation_reference = QString(
-        "Perceptually linear, varying saturation.<br>"
+        "Perceptually linear, constant lightness and hues, varying saturation.<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString plqual_hue_reference = QString(
-        "Perceptually linear, evenly distributed hue.<br>"
+        "Perceptually linear, constant lightness and saturation, evenly distributed hue.<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString cubehelix_reference = QString("Relevant paper: "
