@@ -49,7 +49,7 @@ namespace ColorMap {
 
 // Create a sequential color map with n colors of the given hue in [0,2*PI].
 
-const float BrewerSequentialDefaultHue = 0.0;
+const float BrewerSequentialDefaultHue = 4.18879020479f; // 240 deg
 const float BrewerSequentialDefaultContrast = 0.88f;
 float BrewerSequentialDefaultContrastForSmallN(int n); // only for discrete color maps, i.e. n <= 9
 const float BrewerSequentialDefaultSaturation = 0.6f;
@@ -68,8 +68,8 @@ int BrewerSequential(int n, unsigned char* srgb_colormap,
 // by divergence (in [0,2*PI]) to that hue, and they will meet in the middle at
 // a neutral color.
 
-const float BrewerDivergingDefaultHue = 0.0;
-const float BrewerDivergingDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+const float BrewerDivergingDefaultHue = 4.18879020479f; // 240 deg
+const float BrewerDivergingDefaultDivergence = 4.18879020479f; // 240 deg = 2/3 * 2PI
 const float BrewerDivergingDefaultContrast = 0.88f;
 float BrewerDivergingDefaultContrastForSmallN(int n); // only for discrete color maps, i.e. n <= 9
 const float BrewerDivergingDefaultSaturation = 0.6f;
