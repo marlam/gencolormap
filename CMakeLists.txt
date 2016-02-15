@@ -23,6 +23,7 @@ if(Qt5Widgets_FOUND)
         qt5_add_resources(GUI_RESOURCES gui.qrc)
 	add_executable(gencolormap-gui gui.cpp
 		colormapwidgets.hpp colormapwidgets.cpp
+                testwidget.hpp testwidget.cpp
 		colormap.hpp colormap.cpp ${GUI_RESOURCES})
 	target_link_libraries(gencolormap-gui Qt5::Widgets)
 	install(TARGETS gencolormap-gui RUNTIME DESTINATION bin)

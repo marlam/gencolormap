@@ -40,6 +40,7 @@ class ColorMapPLQualitativeHueWidget;
 class ColorMapCubeHelixWidget;
 class ColorMapMorelandWidget;
 class ColorMapMcNamesWidget;
+class ColorMapTestWidget;
 class QTabWidget;
 class QLabel;
 
@@ -73,6 +74,7 @@ private:
     QLabel* _reference_label;
     QLabel* _clipped_label;
     QLabel* _colormap_label;
+    ColorMapTestWidget* _test_widget;
 
     ColorMapWidget* currentWidget();
 

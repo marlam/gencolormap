@@ -36,6 +36,7 @@
 #include <QMessageBox>
 
 #include "colormapwidgets.hpp"
+#include "testwidget.hpp"
 
 
 GUI::GUI()
@@ -71,7 +72,6 @@ GUI::GUI()
     connect(_mcnames_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
 
     QWidget *widget = new QWidget;
-    widget->setMinimumWidth(512 * qApp->devicePixelRatio());
     QGridLayout *layout = new QGridLayout;
 
     _category_widget = new QTabWidget();
@@ -110,6 +110,15 @@ GUI::GUI()
     _colormap_label = new QLabel();
     _colormap_label->setScaledContents(true);
     layout->addWidget(_colormap_label, 0, 1, 4, 1);
+
+    QLabel* test_label = new QLabel("Test pattern "
+            "<a href=\"http://peterkovesi.com/projects/colourmaps/colourmaptestimage.html\">"
+            "designed by P. Kovesi</a>:");
+    test_label->setWordWrap(true);
+    test_label->setOpenExternalLinks(true);
+    layout->addWidget(test_label, 4, 0, 1, 2);
+    _test_widget = new ColorMapTestWidget();
+    layout->addWidget(_test_widget, 5, 0, 1, 2);
 
     layout->setColumnStretch(0, 1);
     layout->setRowStretch(2, 1);
@@ -165,6 +174,7 @@ void GUI::update()
     QVector<QColor> colormap = currentWidget()->colorMap(&clipped);
     _clipped_label->setText(QString("Colors clipped: %1").arg(clipped));
     _colormap_label->setPixmap(QPixmap::fromImage(currentWidget()->colorMapImage(colormap, 32, _colormap_label->height())));
+    _test_widget->update(colormap);
 }
 
 void GUI::file_export_png()
