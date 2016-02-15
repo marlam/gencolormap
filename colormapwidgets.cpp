@@ -153,9 +153,8 @@ ColorMapWidget::~ColorMapWidget()
 {
 }
 
-QImage ColorMapWidget::colorMapImage(int width, int height, int* clipped)
+QImage ColorMapWidget::colorMapImage(const QVector<QColor>& colormap, int width, int height)
 {
-    QVector<QColor> colormap = colorMap(clipped);
     if (width <= 0)
         width = colormap.size();
     if (height <= 0)

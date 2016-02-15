@@ -162,8 +162,9 @@ void GUI::update()
 {
     _reference_label->setText(currentWidget()->reference());
     int clipped;
-    _colormap_label->setPixmap(QPixmap::fromImage(currentWidget()->colorMapImage(32, _colormap_label->height(), &clipped)));
+    QVector<QColor> colormap = currentWidget()->colorMap(&clipped);
     _clipped_label->setText(QString("Colors clipped: %1").arg(clipped));
+    _colormap_label->setPixmap(QPixmap::fromImage(currentWidget()->colorMapImage(colormap, 32, _colormap_label->height())));
 }
 
 void GUI::file_export_png()
@@ -171,7 +172,7 @@ void GUI::file_export_png()
     QString name = QFileDialog::getSaveFileName();
     if (!name.isEmpty()) {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        currentWidget()->colorMapImage(0, 1).save(name, "png");
+        currentWidget()->colorMapImage(currentWidget()->colorMap(), 0, 1).save(name, "png");
         QApplication::restoreOverrideCursor();
     }
 }
@@ -202,7 +203,7 @@ void GUI::edit_reset()
 
 void GUI::edit_copy_as_img()
 {
-    QApplication::clipboard()->setImage(currentWidget()->colorMapImage(0, 1));
+    QApplication::clipboard()->setImage(currentWidget()->colorMapImage(currentWidget()->colorMap(), 0, 1));
 }
 
 void GUI::edit_copy_as_txt()

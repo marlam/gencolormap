@@ -74,10 +74,10 @@ public:
      * Also return the number of clipped colors unless 'clipped' is NULL. */
     virtual QVector<QColor> colorMap(int* clipped = NULL) const = 0;
 
-    /* Get a color map as an image of the specified size. If width or height is zero,
-     * then it will be set to the number of colors in the color map.
-     * Also return the number of clipped colors unless 'clipped' is NULL. */
-    QImage colorMapImage(int width, int height, int* clipped = NULL);
+    /* Transform a color map to an image of the specified size. If width or
+     * height is zero, then it will be set to the number of colors in the
+     * color map. */
+    static QImage colorMapImage(const QVector<QColor>& colormap, int width, int height);
 
     /* Get a rich text string containing the relevant literature reference for this method */
     virtual QString reference() const = 0;
