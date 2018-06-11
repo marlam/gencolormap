@@ -23,4 +23,4 @@ The following papers are implemented:
   [An Effective Color Scale for Simultaneous Color and Gray-Scale Publications](http://dx.doi.org/10.1109/MSP.2006.1593340).
   IEEE Signal Processing Magazine 23(1), January 2006.
 
-![GUI screen shot](https://raw.githubusercontent.com/marlam/gencolormap/master/screenshot.png)
+![GUI screen shot](https://gitlab.marlam.de/marlam/gencolormap/raw/master/screenshot.png)
