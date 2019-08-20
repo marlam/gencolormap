@@ -4,7 +4,8 @@ These tools generate color maps for visualization.
 A variety of methods for sequential, diverging, and qualitative maps is available.
 
 The color map generation is contained in just two C++ files (`colormap.hpp` and
-`colormap.cpp`) and requires no additional libraries.
+`colormap.cpp`) and requires no additional libraries. You can simply copy these
+two files to your own project.
 
 Two frontends are included: a GUI for interactive use and a command line tool
 for scripting.
