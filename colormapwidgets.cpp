@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1119,33 +1120,40 @@ ColorMapPLQualitativeHueWidget::ColorMapPLQualitativeHueWidget() :
     _n_spinbox->setSingleStep(1);
     layout->addWidget(_n_spinbox, 1, 1, 1, 3);
 
+    QLabel* hue_label = new QLabel("Hue:");
+    layout->addWidget(hue_label, 2, 0);
+    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_hue_changer->slider, 2, 1, 1, 2);
+    layout->addWidget(_hue_changer->spinbox, 2, 3);
+
+    QLabel* divergence_label = new QLabel("Divergence:");
+    layout->addWidget(divergence_label, 3, 0);
+    _divergence_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
+    layout->addWidget(_divergence_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_divergence_changer->spinbox, 3, 3);
+
     QLabel* lightness_label = new QLabel("Lightness:");
-    layout->addWidget(lightness_label, 2, 0);
+    layout->addWidget(lightness_label, 4, 0);
     _lightness_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(_lightness_changer->slider, 2, 1, 1, 2);
-    layout->addWidget(_lightness_changer->spinbox, 2, 3);
+    layout->addWidget(_lightness_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_lightness_changer->spinbox, 4, 3);
 
     QLabel* saturation_label = new QLabel("Saturation:");
-    layout->addWidget(saturation_label, 3, 0);
+    layout->addWidget(saturation_label, 5, 0);
     _saturation_changer = new ColorMapCombinedSliderSpinBox(0, 1, 0.01f);
-    layout->addWidget(_saturation_changer->slider, 3, 1, 1, 2);
-    layout->addWidget(_saturation_changer->spinbox, 3, 3);
-
-    QLabel* hue_label = new QLabel("Hue:");
-    layout->addWidget(hue_label, 4, 0);
-    _hue_changer = new ColorMapCombinedSliderSpinBox(0, 360, 1);
-    layout->addWidget(_hue_changer->slider, 4, 1, 1, 2);
-    layout->addWidget(_hue_changer->spinbox, 4, 3);
+    layout->addWidget(_saturation_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 5, 3);
 
     layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 5, 0, 1, 4);
-    layout->setRowStretch(5, 1);
+    layout->addItem(new QSpacerItem(0, 0), 6, 0, 1, 4);
+    layout->setRowStretch(6, 1);
     setLayout(layout);
 
     connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
     connect(_lightness_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_hue_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_divergence_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     reset();
 }
 
@@ -1157,9 +1165,10 @@ void ColorMapPLQualitativeHueWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(9);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultDivergence));
     _lightness_changer->setValue(ColorMap::PLQualitativeHueDefaultLightness);
     _saturation_changer->setValue(ColorMap::PLQualitativeHueDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultHue));
     _update_lock = false;
     update();
 }
@@ -1167,10 +1176,10 @@ void ColorMapPLQualitativeHueWidget::reset()
 QVector<QColor> ColorMapPLQualitativeHueWidget::colorMap(int* clipped) const
 {
     int n;
-    float l, s, h;
-    parameters(n, l, s, h);
+    float h, d, l, s;
+    parameters(n, h, d, l, s);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLQualitativeHue(n, colormap.data(), l, s, h);
+    int cl = ColorMap::PLQualitativeHue(n, colormap.data(), h, d, l, s);
     if (clipped)
         *clipped = cl;
     return toQColor(colormap);
@@ -1181,12 +1190,13 @@ QString ColorMapPLQualitativeHueWidget::reference() const
     return plqual_hue_reference;
 }
 
-void ColorMapPLQualitativeHueWidget::parameters(int& n, float& lightness, float& saturation, float& hue) const
+void ColorMapPLQualitativeHueWidget::parameters(int& n, float& hue, float& divergence, float& lightness, float& saturation) const
 {
     n = _n_spinbox->value();
+    hue = qDegreesToRadians(_hue_changer->value());
+    divergence = qDegreesToRadians(_divergence_changer->value());
     lightness = _lightness_changer->value();
     saturation = _saturation_changer->value();
-    hue = qDegreesToRadians(_hue_changer->value());
 }
 
 void ColorMapPLQualitativeHueWidget::update()

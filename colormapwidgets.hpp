@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -301,9 +302,10 @@ Q_OBJECT
 private:
     bool _update_lock;
     QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _hue_changer;
+    ColorMapCombinedSliderSpinBox* _divergence_changer;
     ColorMapCombinedSliderSpinBox* _lightness_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
-    ColorMapCombinedSliderSpinBox* _hue_changer;
 private slots:
     void update();
 
@@ -314,7 +316,7 @@ public:
     void reset() override;
     QVector<QColor> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
-    void parameters(int& n, float& lightness, float& saturation, float& hue) const;
+    void parameters(int& n, float& hue, float& divergence, float& lightness, float& saturation) const;
 };
 
 class ColorMapCubeHelixWidget : public ColorMapWidget

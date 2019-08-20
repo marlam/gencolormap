@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2015 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -190,14 +191,16 @@ int PLDivergingSaturation(int n, unsigned char* colormap,
 
 /* Qualitative perceptually linear maps */
 
+const float PLQualitativeHueDefaultHue = 0.0f;
+const float PLQualitativeHueDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 const float PLQualitativeHueDefaultLightness = 0.55f;
 const float PLQualitativeHueDefaultSaturation = 0.22f;
-const float PLQualitativeHueDefaultHue = 0.0f;
 
 int PLQualitativeHue(int n, unsigned char* colormap,
+        float hue = PLQualitativeHueDefaultHue,
+        float divergence = PLQualitativeHueDefaultDivergence,
         float lightness = PLQualitativeHueDefaultLightness,
-        float saturation = PLQualitativeHueDefaultSaturation,
-        float hue = PLQualitativeHueDefaultHue);
+        float saturation = PLQualitativeHueDefaultSaturation);
 
 /*
  * CubeHelix color maps, as described in

@@ -796,9 +796,9 @@ int PLDivergingSaturation(int n, unsigned char* colormap,
 }
 
 int PLQualitativeHue(int n, unsigned char* colormap,
-        float lightness, float saturation, float hue)
+        float hue, float divergence, float lightness, float saturation)
 {
-    float divergence = twopi * (n - 1.0f) / n;
+    divergence *= (n - 1.0f) / n;
     triplet lch;
     lch.l = std::max(0.01f, lightness * 100.0f);
     lch.c = lch_chroma(lch.l, saturation * 5.0f);

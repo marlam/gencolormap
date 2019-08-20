@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -267,6 +268,8 @@ int main(int argc, char* argv[])
             divergence = ColorMap::PLDivergingLightnessDefaultDivergence;
         else if (type == pldiv_saturation)
             divergence = ColorMap::PLDivergingSaturationDefaultDivergence;
+        else if (type == plqual_hue)
+            divergence = ColorMap::PLQualitativeHueDefaultDivergence;
     }
     if (contrast < 0.0f) {
         if (type == brewer_seq)
@@ -394,7 +397,7 @@ int main(int argc, char* argv[])
         clipped = ColorMap::PLDivergingSaturation(n, &(colormap[0]), lightness, saturation, hue, divergence);
         break;
     case plqual_hue:
-        clipped = ColorMap::PLQualitativeHue(n, &(colormap[0]), lightness, saturation, hue);
+        clipped = ColorMap::PLQualitativeHue(n, &(colormap[0]), hue, divergence, lightness, saturation);
         break;
     case cubehelix:
         clipped = ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);
