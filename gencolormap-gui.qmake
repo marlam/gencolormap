@@ -1,0 +1,5 @@
+HEADERS = colormap.hpp colormapwidgets.hpp testwidget.hpp gui.hpp 
+SOURCES = colormap.cpp colormapwidgets.cpp testwidget.cpp gui.cpp 
+RESOURCES = gui.qrc
+CONFIG += release
+QT += widgets
