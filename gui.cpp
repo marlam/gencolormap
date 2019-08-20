@@ -233,7 +233,7 @@ void GUI::edit_copy_as_txt()
 void GUI::help_about()
 {
     QMessageBox::about(this, "About",
-                "<p>gencolormap version 0.3</p>"
+                "<p>gencolormap version 1.0</p>"
                 "<p>Copyright (C) 2019<br>"
                 "   <a href=\"http://www.cg.informatik.uni-siegen.de/\">"
                 "   Computer Graphics Group, University of Siegen</a>.<br>"
