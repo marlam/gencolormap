@@ -512,7 +512,7 @@ ColorMapBrewerQualitativeWidget::~ColorMapBrewerQualitativeWidget()
 void ColorMapBrewerQualitativeWidget::reset()
 {
     _update_lock = true;
-    _n_spinbox->setValue(9);
+    _n_spinbox->setValue(256);
     _hue_changer->setValue(qRadiansToDegrees(ColorMap::BrewerQualitativeDefaultHue));
     _divergence_changer->setValue(qRadiansToDegrees(ColorMap::BrewerQualitativeDefaultDivergence));
     _contrast_changer->setValue(ColorMap::BrewerQualitativeDefaultContrast);
@@ -1164,7 +1164,7 @@ ColorMapPLQualitativeHueWidget::~ColorMapPLQualitativeHueWidget()
 void ColorMapPLQualitativeHueWidget::reset()
 {
     _update_lock = true;
-    _n_spinbox->setValue(9);
+    _n_spinbox->setValue(256);
     _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultHue));
     _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultDivergence));
     _lightness_changer->setValue(ColorMap::PLQualitativeHueDefaultLightness);
