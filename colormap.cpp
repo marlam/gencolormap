@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -93,6 +94,7 @@ public:
     triplet() {}
     triplet(float t0, float t1, float t2) : x(t0), y(t1), z(t2) {}
     triplet(const triplet& t) : x(t.x), y(t.y), z(t.z) {}
+    triplet& operator=(const triplet& t) { x = t.x; y = t.y; z = t.z; return *this; }
 };
 
 triplet operator+(triplet t0, triplet t1)
