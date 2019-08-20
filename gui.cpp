@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2015, 2016 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -233,10 +234,10 @@ void GUI::help_about()
 {
     QMessageBox::about(this, "About",
                 "<p>gencolormap version 0.3</p>"
-                "<p>Copyright (C) 2016<br>"
+                "<p>Copyright (C) 2019<br>"
                 "   <a href=\"http://www.cg.informatik.uni-siegen.de/\">"
                 "   Computer Graphics Group, University of Siegen</a>.<br>"
-                "   Written by <a href=\"http://www.cg.informatik.uni-siegen.de/lambers-martin\">Martin Lambers</a>.<br>"
+                "   Written by <a href=\"https://marlam.de/\">Martin Lambers</a>.<br>"
                 "   This is free software under the terms of the "
                     "<a href=\"https://www.debian.org/legal/licenses/mit\">MIT/Expat License</a>. "
                 "   There is NO WARRANTY, to the extent permitted by law."
