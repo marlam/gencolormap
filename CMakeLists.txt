@@ -6,7 +6,7 @@
 # permitted in any medium without royalty provided the copyright notice and this
 # notice are preserved. This file is offered as-is, without any warranty.
 
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.10)
 set(CMAKE_AUTOMOC ON)
 
 project(gencolormap)
