@@ -8,7 +8,7 @@ The color map generation is contained in just two C++ files (`colormap.hpp` and
 two files to your own project.
 
 Two frontends are included: a GUI for interactive use and a command line tool
-for scripting.
+for scripting. The command line tool requires no libraries, the GUI requires Qt.
 
 The following papers are implemented:
 
