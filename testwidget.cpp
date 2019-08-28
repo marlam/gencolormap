@@ -24,6 +24,7 @@
 #include <cmath>
 
 #include <QGuiApplication>
+#include <QColor>
 
 #include "testwidget.hpp"
 
@@ -38,8 +39,7 @@ static const float twopi = 2.0 * M_PI;
 ColorMapTestWidget::ColorMapTestWidget() : QLabel()
 {
     setMinimumSize(W * qApp->devicePixelRatio(), H * qApp->devicePixelRatio());
-    QVector<QColor> initial_colormap;
-    initial_colormap.append(QColor(0, 0, 0));
+    QVector<unsigned char> initial_colormap(3, 0);
     update(initial_colormap);
 }
 
@@ -47,7 +47,7 @@ ColorMapTestWidget::~ColorMapTestWidget()
 {
 }
 
-void ColorMapTestWidget::update(const QVector<QColor>& colormap)
+void ColorMapTestWidget::update(const QVector<unsigned char>& colormap)
 {
     QImage img(W * qApp->devicePixelRatio(), H * qApp->devicePixelRatio(), QImage::Format_RGB32);
     for (int y = 0; y < img.height(); y++) {
@@ -60,12 +60,12 @@ void ColorMapTestWidget::update(const QVector<QColor>& colormap)
             float modulation = 0.05f * std::sin(W / 8 * twopi * u);
             float value = ramp + v * v * modulation;
             // Applying colormap
-            int i = std::round(value * (colormap.size() - 1));
+            int i = std::round(value * (colormap.size() / 3 - 1));
             if (i < 0)
                 i = 0;
-            else if (i >= colormap.size())
-                i = colormap.size() - 1;
-            scanline[x] = colormap[i].rgb();
+            else if (i >= colormap.size() / 3)
+                i = colormap.size() / 3 - 1;
+            scanline[x] = QColor(colormap[3 * i + 0], colormap[3 * i + 1], colormap[3 * i + 2]).rgb();
         }
     }
     setPixmap(QPixmap::fromImage(img));

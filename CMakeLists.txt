@@ -18,7 +18,7 @@ endif()
 
 find_package(Qt5Widgets QUIET)
 
-add_executable(gencolormap cmdline.cpp colormap.hpp colormap.cpp)
+add_executable(gencolormap cmdline.cpp colormap.hpp colormap.cpp export.hpp export.cpp)
 install(TARGETS gencolormap RUNTIME DESTINATION bin)
 
 if(Qt5Widgets_FOUND)
@@ -26,6 +26,7 @@ if(Qt5Widgets_FOUND)
 	add_executable(gencolormap-gui gui.cpp
 		colormapwidgets.hpp colormapwidgets.cpp
                 testwidget.hpp testwidget.cpp
+		export.hpp export.cpp
 		colormap.hpp colormap.cpp ${GUI_RESOURCES})
 	target_link_libraries(gencolormap-gui Qt5::Widgets)
 	install(TARGETS gencolormap-gui RUNTIME DESTINATION bin)

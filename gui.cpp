@@ -38,6 +38,7 @@
 
 #include "colormapwidgets.hpp"
 #include "testwidget.hpp"
+#include "export.hpp"
 
 
 GUI::GUI()
@@ -133,6 +134,9 @@ GUI::GUI()
     QAction* file_export_csv_act = new QAction("Export as &CSV...", this);
     connect(file_export_csv_act, SIGNAL(triggered()), this, SLOT(file_export_csv()));
     file_menu->addAction(file_export_csv_act);
+    QAction* file_export_json_act = new QAction("Export as &JSON...", this);
+    connect(file_export_json_act, SIGNAL(triggered()), this, SLOT(file_export_json()));
+    file_menu->addAction(file_export_json_act);
     file_menu->addSeparator();
     QAction* quit_act = new QAction("&Quit...", this);
     quit_act->setShortcut(QKeySequence::Quit);
@@ -145,10 +149,13 @@ GUI::GUI()
     QAction* edit_copy_as_img_act = new QAction("Copy as &image", this);
     connect(edit_copy_as_img_act, SIGNAL(triggered()), this, SLOT(edit_copy_as_img()));
     edit_menu->addAction(edit_copy_as_img_act);
-    QAction* edit_copy_as_txt_act = new QAction("Copy as &text", this);
-    connect(edit_copy_as_txt_act, SIGNAL(triggered()), this, SLOT(edit_copy_as_txt()));
-    edit_copy_as_txt_act->setShortcut(QKeySequence::Copy);
-    edit_menu->addAction(edit_copy_as_txt_act);
+    QAction* edit_copy_as_csv_act = new QAction("Copy as &CSV", this);
+    connect(edit_copy_as_csv_act, SIGNAL(triggered()), this, SLOT(edit_copy_as_csv()));
+    edit_copy_as_csv_act->setShortcut(QKeySequence::Copy);
+    edit_menu->addAction(edit_copy_as_csv_act);
+    QAction* edit_copy_as_json_act = new QAction("Copy as &JSON", this);
+    connect(edit_copy_as_json_act, SIGNAL(triggered()), this, SLOT(edit_copy_as_json()));
+    edit_menu->addAction(edit_copy_as_json_act);
     QMenu* help_menu = menuBar()->addMenu("&Help");
     QAction* help_about_act = new QAction("&About", this);
     connect(help_about_act, SIGNAL(triggered()), this, SLOT(help_about()));
@@ -172,7 +179,7 @@ void GUI::update()
 {
     _reference_label->setText(currentWidget()->reference());
     int clipped;
-    QVector<QColor> colormap = currentWidget()->colorMap(&clipped);
+    QVector<unsigned char> colormap = currentWidget()->colorMap(&clipped);
     _clipped_label->setText(QString("Colors clipped: %1").arg(clipped));
     _colormap_label->setPixmap(QPixmap::fromImage(currentWidget()->colorMapImage(colormap, 32, _colormap_label->height())));
     _test_widget->update(colormap);
@@ -195,13 +202,24 @@ void GUI::file_export_csv()
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
         QFile file(name);
         if (file.open(QIODevice::WriteOnly)) {
-            QVector<QColor> colormap = currentWidget()->colorMap();
             QTextStream stream(&file);
-            for (int i = 0; i < colormap.size(); i++) {
-                stream << colormap[i].red()   << ", "
-                       << colormap[i].green() << ", "
-                       << colormap[i].blue()  << endl;
-            }
+            QVector<unsigned char> colormap = currentWidget()->colorMap();
+            stream << ColorMap::ToCSV(colormap.size() / 3, colormap.constData()).c_str();
+        }
+        QApplication::restoreOverrideCursor();
+    }
+}
+
+void GUI::file_export_json()
+{
+    QString name = QFileDialog::getSaveFileName();
+    if (!name.isEmpty()) {
+        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+        QFile file(name);
+        if (file.open(QIODevice::WriteOnly)) {
+            QTextStream stream(&file);
+            QVector<unsigned char> colormap = currentWidget()->colorMap();
+            stream << ColorMap::ToJSON(colormap.size() / 3, colormap.constData()).c_str();
         }
         QApplication::restoreOverrideCursor();
     }
@@ -217,23 +235,23 @@ void GUI::edit_copy_as_img()
     QApplication::clipboard()->setImage(currentWidget()->colorMapImage(currentWidget()->colorMap(), 0, 1));
 }
 
-void GUI::edit_copy_as_txt()
+void GUI::edit_copy_as_csv()
 {
-    QVector<QColor> colormap = currentWidget()->colorMap();
-    QString string;
-    QTextStream stream(&string);
-    for (int i = 0; i < colormap.size(); i++) {
-        stream << colormap[i].red()   << ", "
-               << colormap[i].green() << ", "
-               << colormap[i].blue()  << endl;
-    }
-    QApplication::clipboard()->setText(string);
+    QVector<unsigned char> colormap = currentWidget()->colorMap();
+    QApplication::clipboard()->setText(ColorMap::ToCSV(colormap.size() / 3, colormap.constData()).c_str());
+}
+
+void GUI::edit_copy_as_json()
+{
+    QVector<unsigned char> colormap = currentWidget()->colorMap();
+    QApplication::clipboard()->setText(ColorMap::ToJSON(colormap.size() / 3, colormap.constData()).c_str());
 }
 
 void GUI::help_about()
 {
     QMessageBox::about(this, "About",
-                "<p>gencolormap version 1.0</p>"
+                "<p>gencolormap version 1.0<br>"
+                "   <a href=\"https://marlam.de/gencolormap\">https://marlam.de/gencolormap</a></p>"
                 "<p>Copyright (C) 2019<br>"
                 "   <a href=\"http://www.cg.informatik.uni-siegen.de/\">"
                 "   Computer Graphics Group, University of Siegen</a>.<br>"

@@ -33,6 +33,7 @@ extern char *optarg;
 extern int optind;
 
 #include "colormap.hpp"
+#include "export.hpp"
 
 enum type {
     brewer_seq,
@@ -50,12 +51,19 @@ enum type {
     mcnames
 };
 
+enum format {
+    csv,
+    json,
+    ppm
+};
+
 int main(int argc, char* argv[])
 {
     bool print_version = false;
     bool print_help = false;
-    int type = -1;
-    int n = -1;
+    int format = csv;
+    int type = brewer_seq;
+    int n = 256;
     float hue = -1.0f;
     float divergence = -1.0f;
     float contrast = -1.0f;
@@ -75,6 +83,7 @@ int main(int argc, char* argv[])
     struct option options[] = {
         { "version",     no_argument,       0, 'v' },
         { "help",        no_argument,       0, 'H' },
+        { "format",      required_argument, 0, 'f' },
         { "type",        required_argument, 0, 't' },
         { "n",           required_argument, 0, 'n' },
         { "hue",         required_argument, 0, 'h' },
@@ -95,7 +104,7 @@ int main(int argc, char* argv[])
     };
 
     for (;;) {
-        int c = getopt_long(argc, argv, "vHt:n:h:d:c:s:b:w:l:T:R:r:g:A:O:p:", options, NULL);
+        int c = getopt_long(argc, argv, "vHf:t:n:h:d:c:s:b:w:l:T:R:r:g:A:O:p:", options, NULL);
         if (c == -1)
             break;
         switch (c) {
@@ -104,6 +113,12 @@ int main(int argc, char* argv[])
             break;
         case 'H':
             print_help = true;
+            break;
+        case 'f':
+            format = (strcmp(optarg, "csv") == 0 ? csv
+                    : strcmp(optarg, "json") == 0 ? json
+                    : strcmp(optarg, "ppm") == 0 ? ppm
+                    : -1);
             break;
         case 't':
             type = (strcmp(optarg, "brewer-sequential") == 0 ? brewer_seq
@@ -119,7 +134,7 @@ int main(int argc, char* argv[])
                     : strcmp(optarg, "cubehelix") == 0 ? cubehelix
                     : strcmp(optarg, "moreland") == 0 ? moreland
                     : strcmp(optarg, "mcnames") == 0 ? mcnames
-                    : -2);
+                    : -1);
             break;
         case 'n':
             n = atoi(optarg);
@@ -175,6 +190,7 @@ int main(int argc, char* argv[])
 
     if (print_version) {
         printf("gencolormap version 1.0\n"
+                "https://marlam.de/gencolormap\n"
                 "Copyright (C) 2019 Computer Graphics Group, University of Siegen.\n"
                 "Written by Martin Lambers <martin.lambers@uni-siegen.de>.\n"
                 "This is free software under the terms of the MIT/Expat License.\n"
@@ -183,58 +199,65 @@ int main(int argc, char* argv[])
     }
 
     if (print_help) {
-        printf("Usage: %s\n"
-                "  Common options, required for all types:\n"
-                "    -n|--n=N                         Set number of colors in the map\n"
-                "  Brewer-like color maps:\n"
-                "    -t|--type=brewer-sequential       Generate a sequential color map\n"
-                "    -t|--type=brewer-diverging        Generate a diverging color map\n"
-                "    -t|--type=brewer-qualitative      Generate a qualitative color map\n"
-                "    [-h|--hue=H]                      Set default hue in [0,360] degrees\n"
-                "    [-c|--contrast=C]                 Set contrast in [0,1]\n"
-                "    [-s|--saturation=S]               Set saturation in [0,1]\n"
-                "    [-b|--brightness=B]               Set brightness in [0,1]\n"
-                "    [-w|--warmth=W]                   Set warmth in [0,1] for seq. and div. maps\n"
-                "    [-d|--divergence=D]               Set divergence in deg. for div. and qual. maps\n"
-                "  Perceptually linear color maps:\n"
-                "    -t|--type=plsequential-lightness  Sequential map with varying lightness\n"
-                "    -t|--type=plsequential-saturation Sequential map with varying saturation\n"
-                "    -t|--type=plsequential-rainbow    Sequential map with varying hue (rainbow)\n"
-                "    -t|--type=plsequential-blackbody  Sequential map with varying hue (black body)\n"
-                "    -t|--type=pldiverging-lightness   Diverging map with varying lightness\n"
-                "    -t|--type=pldiverging-saturation  Diverging map with varying saturation\n"
-                "    -t|--type=plqualitative-hue       Qualitative map with evenly distributed hue\n"
-                "    [-l|--lightness=L]                Set lightness in [0,1]\n"
-                "    [-s|--saturation=S]               Set saturation in [0,1]\n"
-                "    [-h|--hue=H]                      Set default hue in [0,360] degrees\n"
-                "    [-d|--divergence=D]               Set divergence in deg. for div. and qual. maps\n"
-                "    [-r|--rotations=R]                Set number of rotations for rainbow maps\n"
-                "    [-T|--temperature=T]              Set start temp. in K for blackbody maps\n"
-                "    [-R|--range=R]                    Set temp. range in K for blackbody maps\n"
-                "  CubeHelix color maps:\n"
-                "    -t|--type=cubehelix               Generate a CubeHelix color map\n"
-                "    [-h|--hue=H]                      Set start hue in [0,180] degrees\n"
-                "    [-r|--rotations=R]                Set number of rotations, in (-infty,infty)\n"
-                "    [-s|--saturation=S]               Set saturation, in [0,1]\n"
-                "    [-g|--gamma=G]                    Set gamma correction, in (0,infty)\n"
-                "  Moreland diverging color maps:\n"
-                "    -t|--type=moreland                Generate a Moreland diverging color map\n"
-                "    [-A|--color0=sr,sg,sb             Set the first color as sRGB values in [0,255]\n"
-                "    [-O|--color1=sr,sg,sb             Set the last color as sRGB values in [0,255]\n"
-                "  McNames sequential color maps:\n"
-                "    -t|--type=mcnames                 Generate a McNames sequential color map\n"
-                "    [-p|--periods=P]                  Set the number of periods in (0, infty)\n"
-                "Generates a color map and prints it to standard output as sRGB triplets.\n"
-                "Report bugs to <martin.lambers@uni-siegen.de>.\n", argv[0]);
+        printf("Usage: %s [option...]\n"
+                "Generates a color map and prints it to standard output.\n"
+                "Prints the number of colors that had to be clipped to standard error.\n"
+                "Common options:\n"
+                "  [-f|--format=csv|json|ppm]          Set output format\n"
+                "  [-n|--n=N]                          Set number of colors in the map\n"
+                "Brewer-like color maps:\n"
+                "  [-t|--type=brewer-sequential]       Generate a sequential color map\n"
+                "  [-t|--type=brewer-diverging]        Generate a diverging color map\n"
+                "  [-t|--type=brewer-qualitative]      Generate a qualitative color map\n"
+                "  [-h|--hue=H]                        Set default hue in [0,360] degrees\n"
+                "  [-c|--contrast=C]                   Set contrast in [0,1]\n"
+                "  [-s|--saturation=S]                 Set saturation in [0,1]\n"
+                "  [-b|--brightness=B]                 Set brightness in [0,1]\n"
+                "  [-w|--warmth=W]                     Set warmth in [0,1] for seq. and div. maps\n"
+                "  [-d|--divergence=D]                 Set diverg. in deg for div. and qual. maps\n"
+                "Perceptually linear color maps:\n"
+                "  [-t|--type=plsequential-lightness]  Sequential map, varying lightness\n"
+                "  [-t|--type=plsequential-saturation] Sequential map, varying saturation\n"
+                "  [-t|--type=plsequential-rainbow]    Sequential map, varying hue (rainbow)\n"
+                "  [-t|--type=plsequential-blackbody]  Sequential map, varying hue (black body)\n"
+                "  [-t|--type=pldiverging-lightness]   Diverging map, varying lightness\n"
+                "  [-t|--type=pldiverging-saturation]  Diverging map, varying saturation\n"
+                "  [-t|--type=plqualitative-hue]       Qualitative map, evenly distributed hue\n"
+                "  [-l|--lightness=L]                  Set lightness in [0,1]\n"
+                "  [-s|--saturation=S]                 Set saturation in [0,1]\n"
+                "  [-h|--hue=H]                        Set default hue in [0,360] degrees\n"
+                "  [-d|--divergence=D]                 Set diverg. in deg for div. and qual. maps\n"
+                "  [-r|--rotations=R]                  Set number of rotations for rainbow maps\n"
+                "  [-T|--temperature=T]                Set start temp. in K for black body maps\n"
+                "  [-R|--range=R]                      Set temp. range in K for black body maps\n"
+                "CubeHelix color maps:\n"
+                "  [-t|--type=cubehelix]               Generate a CubeHelix color map\n"
+                "  [-h|--hue=H]                        Set start hue in [0,180] degrees\n"
+                "  [-r|--rotations=R]                  Set number of rotations, in (-infty,infty)\n"
+                "  [-s|--saturation=S]                 Set saturation, in [0,1]\n"
+                "  [-g|--gamma=G]                      Set gamma correction, in (0,infty)\n"
+                "Moreland diverging color maps:\n"
+                "  [-t|--type=moreland]                Generate a Moreland diverging color map\n"
+                "  [-A|--color0=sr,sg,sb]              Set the first color as sRGB in [0,255]\n"
+                "  [-O|--color1=sr,sg,sb]              Set the last color as sRGB in [0,255]\n"
+                "McNames sequential color maps:\n"
+                "  [-t|--type=mcnames]                 Generate a McNames sequential color map\n"
+                "  [-p|--periods=P]                    Set the number of periods in (0, infty)\n"
+                "Defaults: format=csv, n=256, type=brewer-sequential\n"
+                "https://marlam.de/gencolormap\n", argv[0]);
         return 0;
     }
 
-    if (type < 0) {
-        fprintf(stderr, "Invalid or missing option -t|--type.\n");
+    if (format < 0) {
+        fprintf(stderr, "Invalid argument for option -f|--format.\n");
         return 1;
     }
     if (n < 2) {
-        fprintf(stderr, "Invalid or missing option -n|--n.\n");
+        fprintf(stderr, "Invalid argument for option -n|--n.\n");
+        return 1;
+    }
+    if (type < 0) {
+        fprintf(stderr, "Invalid argument for option -t|--type.\n");
         return 1;
     }
     if (hue < 0.0f) {
@@ -412,9 +435,15 @@ int main(int argc, char* argv[])
         break;
     }
 
-    for (int i = 0; i < n; i++) {
-        printf("%d, %d, %d\n", colormap[3 * i + 0], colormap[3 * i + 1], colormap[3 * i + 2]);
+    std::string output;
+    if (format == csv) {
+        output = ColorMap::ToCSV(n, colormap.data());
+    } else if (format == json) {
+        output = ColorMap::ToJSON(n, colormap.data());
+    } else {
+        output = ColorMap::ToPPM(n, colormap.data());
     }
+    fputs(output.c_str(), stdout);
     fprintf(stderr, "%d color(s) were clipped\n", clipped);
 
     return 0;

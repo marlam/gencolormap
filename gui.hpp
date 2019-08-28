@@ -83,9 +83,11 @@ private slots:
 
     void file_export_png();
     void file_export_csv();
+    void file_export_json();
     void edit_reset();
     void edit_copy_as_img();
-    void edit_copy_as_txt();
+    void edit_copy_as_csv();
+    void edit_copy_as_json();
     void help_about();
 };
 

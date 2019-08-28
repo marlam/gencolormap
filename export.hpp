@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2016, 2019 Computer Graphics Group, University of Siegen
+ * Copyright (C) 2019
+ * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,21 +22,22 @@
  * SOFTWARE.
  */
 
-#ifndef TESTWIDGET_HPP
-#define TESTWIDGET_HPP
+#ifndef COLORMAP_EXPORT_HPP
+#define COLORMAP_EXPORT_HPP
 
-#include <QLabel>
-#include <QVector>
+#include <string>
 
-class ColorMapTestWidget : public QLabel
-{
-Q_OBJECT
+namespace ColorMap {
 
-public:
-    ColorMapTestWidget();
-    ~ColorMapTestWidget();
+// Convert a color map with n sRGB triplets to CSV format
+std::string ToCSV(int n, const unsigned char* srgb_colormap);
 
-    void update(const QVector<unsigned char>& colormap);
-};
+// Convert a color map with n sRGB triplets to JSON format
+std::string ToJSON(int n, const unsigned char* srgb_colormap);
+
+// Convert a color map with n sRGB triplets to PPM format
+std::string ToPPM(int n, const unsigned char* srgb_colormap);
+
+}
 
 #endif
