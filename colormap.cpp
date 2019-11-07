@@ -27,6 +27,7 @@
 #include <limits>
 #include <cmath>
 #include <cstring>
+#include <cstdio>
 
 #include "colormap.hpp"
 
@@ -46,6 +47,11 @@ namespace ColorMap {
 
 static const float pi = M_PI;
 static const float twopi = 2.0 * M_PI;
+
+static float sqr(float x)
+{
+    return x * x;
+}
 
 static float clamp(float x, float lo, float hi)
 {
@@ -157,6 +163,11 @@ static float lch_saturation(float l, float c)
 static float lch_chroma(float l, float s)
 {
     return s * l;
+}
+
+static float lch_distance(triplet lch0, triplet lch1)
+{
+    return std::sqrt(sqr(lch0.l - lch1.l) + sqr(lch0.c - lch1.c) + sqr(lch0.h - lch1.h));
 }
 
 /* Color space conversion: LUV <-> XYZ */
@@ -618,13 +629,11 @@ static float plancks_law(float temperature, float lambda)
 }
 
 #if 0
-static float sqr(float x) { return x * x; }
-static triplet color_matching_function_approx(float lambda)
+static triplet color_matching_function_approx(float lambda /* in nanometers */)
 {
     // Analytic approximation of the CIE 1964 10 deg standard observer CMF.
     // Taken from the paper "Simple Analytic Approximations to the CIE XYZ
     // Color Matching Functions" by Wyman, Sloan, Shirley, JCGT 2(2), 2013.
-    lambda *= 1e9f; // convert to nanometers
     triplet xyz;
     xyz.x = 0.398f * std::exp(-1250.0f * sqr(std::log((lambda + 570.1f) / 1014.0f)))
           + 1.132f * std::exp(-234.0f  * sqr(std::log((1338.0f - lambda) / 743.5f)));
@@ -760,6 +769,130 @@ int PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, flo
         lch.c = lch_chroma(lch.l, (1.0f - fract) * saturation);
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
+    }
+    return clipped;
+}
+
+static float multi_hue_get(float t, int hues, const float* hue_values, const float* hue_positions)
+{
+    /* Trivial and pathological cases */
+    if (hues < 1)
+        return 0.0f;
+    if (hues == 1)
+        return hue_values[0];
+    if (t <= hue_positions[0])
+        return hue_values[0];
+    if (t >= hue_positions[hues - 1])
+        return hue_values[hues - 1];
+    /* Find index i so that t is in [hue_positions[i], hue_positions[i+1]]  */
+    int i;
+    for (i = 0; i < hues - 2; i++) {
+        if (t >= hue_positions[i] && t < hue_positions[i+1])
+            break;
+    }
+    float p0 = hue_positions[i];
+    float p1 = hue_positions[i + 1];
+    float alpha = (t - p0) / (p1 - p0);
+    float hue = (1.0f - alpha) * hue_values[i] + alpha * hue_values[i + 1];
+    return hue;
+}
+
+static triplet multi_hue_compute(float t, float t0, float t1, triplet lch0, triplet lch1, float D,
+        int hues, const float* hue_values, const float* hue_positions)
+{
+    // t is in [0,1]; tt is in [0,1] but relative to t0 and t1
+    float tt = (t - t0) / (t1 - t0);
+
+    triplet lch_t;
+    lch_t.h = multi_hue_get(t, hues, hue_values, hue_positions);
+    lch_t.l = (1.0f - tt) * lch0.l + tt * lch1.l;
+
+    float tmp0 = std::max(0.0f, sqr(tt * D) - sqr(lch0.l - lch_t.l) - sqr(lch0.h - lch_t.h));
+    float lch_t_c_0 = lch0.c + std::sqrt(tmp0);
+    float lch_t_c_1 = lch0.c - std::sqrt(tmp0);
+
+    float tmp1 = std::max(0.0f, sqr((1.0f - tt) * D) - sqr(lch1.l - lch_t.l) - sqr(lch1.h - lch_t.h));
+    float lch_t_c_2 = lch1.c + std::sqrt(tmp1);
+    float lch_t_c_3 = lch1.c - std::sqrt(tmp1);
+
+    lch_t.c = (1.0f - tt) * lch0.c + tt * lch1.c;
+    float mindist = 9999.9f;
+    if (lch_t_c_0 >= 0.0f) {
+        float d2 = std::abs(lch_t_c_0 - lch_t_c_2);
+        float d3 = std::abs(lch_t_c_0 - lch_t_c_3);
+        if (d2 < d3) {
+            mindist = d2;
+            lch_t.c = 0.5f * (lch_t_c_0 + lch_t_c_2);
+        } else {
+            mindist = d3;
+            lch_t.c = 0.5f * (lch_t_c_0 + lch_t_c_3);
+        }
+    }
+    if (lch_t_c_1 >= 0.0f) {
+        float d2 = std::abs(lch_t_c_1 - lch_t_c_2);
+        float d3 = std::abs(lch_t_c_1 - lch_t_c_3);
+        if (d2 < mindist && d2 < d3) {
+            mindist = d2;
+            lch_t.c = 0.5f * (lch_t_c_1 + lch_t_c_2);
+        } else if (d3 < mindist) {
+            mindist = d3;
+            lch_t.c = 0.5f * (lch_t_c_1 + lch_t_c_3);
+        }
+    }
+
+#if 0
+    fprintf(stderr, "t=%g tt=%g: l=%g h=%g tmp0=%g tmp1=%g c0=%g c1=%g c2=%g c3=%g\n", t, tt,
+            lch_t.l, lch_t.h, tmp0, tmp1, lch_t_c_0, lch_t_c_1, lch_t_c_2, lch_t_c_3);
+#endif
+
+    return lch_t;
+}
+
+int PLSequentialMultiHue(int n, unsigned char* colormap,
+        int hues, const float* hue_values, const float* hue_positions,
+        float l0, float s0, float l1, float s1, float s05)
+{
+    triplet lch_00, lch_10, lch_05;
+
+    lch_00.l = l0;
+    lch_00.c = lch_chroma(lch_00.l, s0);
+    lch_00.h = multi_hue_get(0.0f, hues, hue_values, hue_positions);
+    lch_10.l = l1;
+    lch_10.c = lch_chroma(lch_10.l, s1);
+    lch_10.h = multi_hue_get(1.0f, hues, hue_values, hue_positions);
+    lch_05.l = 0.5f * (l0 + l1);
+    lch_05.h = multi_hue_get(0.5f, hues, hue_values, hue_positions);
+    lch_05.c = lch_chroma(lch_05.l, s05);
+
+    float D_00_05 = lch_distance(lch_00, lch_05);
+    float D_05_10 = lch_distance(lch_05, lch_10);
+
+#if 0
+    fprintf(stderr,
+            "l00=%g c00=%g h00=%g\n"
+            "l05=%g c05=%g h05=%g\n"
+            "l10=%g c10=%g h10=%g\n"
+            "D_00_05=%g\n"
+            "D_05_10=%g\n",
+            lch_00.l, lch_00.c, lch_00.h,
+            lch_05.l, lch_05.c, lch_05.h,
+            lch_10.l, lch_10.c, lch_10.h,
+            D_00_05, D_05_10);
+#endif
+
+    triplet lch;
+    int clipped = 0;
+    for (int i = 0; i < n; i++) {
+        float t = i / (n - 1.0f);
+        if (t <= 0.5f) {
+            lch = multi_hue_compute(t, 0.0f, 0.5f, lch_00, lch_05, D_00_05, hues, hue_values, hue_positions);
+        } else {
+            lch = multi_hue_compute(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, hues, hue_values, hue_positions);
+        }
+#if 0
+        fprintf(stderr, "i=%d t=%g: l=%g c=%g h=%g\n", i, t, lch.l, lch.c, lch.h);
+#endif
+        clipped += lch_to_colormap(lch, colormap + 3 * i);
     }
     return clipped;
 }

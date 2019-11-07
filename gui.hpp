@@ -34,6 +34,7 @@ class ColorMapPLSequentialLightnessWidget;
 class ColorMapPLSequentialSaturationWidget;
 class ColorMapPLSequentialRainbowWidget;
 class ColorMapPLSequentialBlackBodyWidget;
+class ColorMapPLSequentialMultiHueWidget;
 class ColorMapPLDivergingLightnessWidget;
 class ColorMapPLDivergingSaturationWidget;
 class ColorMapPLQualitativeHueWidget;
@@ -61,6 +62,7 @@ private:
     ColorMapPLSequentialSaturationWidget *_plseq_saturation_widget;
     ColorMapPLSequentialRainbowWidget *_plseq_rainbow_widget;
     ColorMapPLSequentialBlackBodyWidget *_plseq_blackbody_widget;
+    ColorMapPLSequentialMultiHueWidget *_plseq_multihue_widget;
     ColorMapPLDivergingLightnessWidget *_pldiv_lightness_widget;
     ColorMapPLDivergingSaturationWidget *_pldiv_saturation_widget;
     ColorMapPLQualitativeHueWidget *_plqual_hue_widget;

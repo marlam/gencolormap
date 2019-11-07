@@ -32,7 +32,7 @@ class QSpinBox;
 class QSlider;
 class QDoubleSpinBox;
 class QPushButton;
-
+class QListWidget;
 
 // Internal helper class for a slider/spinbox combination
 class ColorMapCombinedSliderSpinBox : public QObject
@@ -248,6 +248,40 @@ public:
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n, float& temperature, float& range, float& saturation) const;
+};
+
+class ColorMapPLSequentialMultiHueWidget : public ColorMapWidget
+{
+Q_OBJECT
+private:
+    bool _update_lock;
+    QSpinBox* _n_spinbox;
+    QListWidget* _hue_list_widget;
+    QColor _hue_button_color;
+    QPushButton* _hue_button;
+    QDoubleSpinBox* _pos_spinbox;
+    ColorMapCombinedSliderSpinBox* _l0_changer;
+    ColorMapCombinedSliderSpinBox* _s0_changer;
+    ColorMapCombinedSliderSpinBox* _l1_changer;
+    ColorMapCombinedSliderSpinBox* _s1_changer;
+    ColorMapCombinedSliderSpinBox* _s05_changer;
+    void updateHueButton();
+private slots:
+    void update();
+    void hueButtonClicked();
+    void addHue();
+    void removeHue();
+
+public:
+    ColorMapPLSequentialMultiHueWidget();
+    ~ColorMapPLSequentialMultiHueWidget();
+
+    void reset() override;
+    QVector<unsigned char> colorMap(int* clipped = NULL) const override;
+    QString reference() const override;
+    void parameters(int& n,
+            QVector<float>& hue_values, QVector<float>& hue_positions,
+            float& l0, float& s0, float& l1, float& s1, float& s05) const;
 };
 
 class ColorMapPLDivergingLightnessWidget : public ColorMapWidget

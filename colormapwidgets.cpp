@@ -31,6 +31,9 @@
 #include <QPushButton>
 #include <QColorDialog>
 #include <QImage>
+#include <QListWidget>
+#include <QPushButton>
+#include <QColorDialog>
 #include <QtMath>
 
 #include "colormapwidgets.hpp"
@@ -58,6 +61,10 @@ static QString plseq_rainbow_reference = QString(
 
 static QString plseq_blackbody_reference = QString(
         "Perceptually linear, varying lightness, saturation, and hue (black body at increasing temperatures).<br>"
+        "Computed in CIELUV/LCH color space.");
+
+static QString plseq_multihue_reference = QString(
+        "Perceptually linear, varying lightness, saturation, and hue (user definable).<br>"
         "Computed in CIELUV/LCH color space.");
 
 static QString pldiv_lightness_reference = QString(
@@ -902,6 +909,221 @@ void ColorMapPLSequentialBlackBodyWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
+}
+
+/* ColorMapPLSequentialMultiHueWidget */
+
+static float colorToHue(QColor color)
+{
+    return color.hsvHueF() * 2.0f * static_cast<float>(M_PI);
+}
+
+static QColor hueToColor(float hue)
+{
+    return QColor::fromHsvF(hue / (2.0f * static_cast<float>(M_PI)), 1.0f, 1.0f);
+}
+
+ColorMapPLSequentialMultiHueWidget::ColorMapPLSequentialMultiHueWidget() :
+    _update_lock(false)
+{
+    QGridLayout *layout = new QGridLayout;
+
+    QLabel* n_label = new QLabel("Colors:");
+    layout->addWidget(n_label, 1, 0);
+    _n_spinbox = new QSpinBox();
+    _n_spinbox->setRange(2, 10240);
+    _n_spinbox->setSingleStep(1);
+    layout->addWidget(_n_spinbox, 1, 1, 1, 3);
+
+    QLabel* hue_list_label = new QLabel("Hues:");
+    layout->addWidget(hue_list_label, 2, 0);
+    _hue_list_widget = new QListWidget;
+    _hue_list_widget->setFlow(QListView::LeftToRight);
+    _hue_list_widget->setMaximumHeight(2 * _n_spinbox->sizeHint().height());
+    layout->addWidget(_hue_list_widget, 2, 1, 1, 3);
+
+    QGridLayout *hue_layout = new QGridLayout;
+    _hue_button_color = hueToColor(0.0f);
+    _hue_button = new QPushButton;
+    _hue_button->setFixedSize(QSize(_hue_button->sizeHint().width() / 2, _hue_button->sizeHint().height()));
+    updateHueButton();
+    connect(_hue_button, SIGNAL(clicked()), this, SLOT(hueButtonClicked()));
+    hue_layout->addWidget(_hue_button, 0, 0);
+    _pos_spinbox = new QDoubleSpinBox;
+    _pos_spinbox->setRange(0.0f, 1.0f);
+    _pos_spinbox->setSingleStep(0.01f);
+    _pos_spinbox->setDecimals(2);
+    hue_layout->addWidget(_pos_spinbox, 0, 1);
+    QPushButton* add_hue_btn = new QPushButton("Add");
+    connect(add_hue_btn, SIGNAL(clicked()), this, SLOT(addHue()));
+    hue_layout->addWidget(add_hue_btn, 0, 2);
+    hue_layout->addItem(new QSpacerItem(0, 0), 0, 3);
+    QPushButton* remove_hue_btn = new QPushButton("Remove");
+    connect(remove_hue_btn, SIGNAL(clicked()), this, SLOT(removeHue()));
+    hue_layout->addWidget(remove_hue_btn, 0, 4);
+    hue_layout->setColumnStretch(3, 1);
+    layout->addLayout(hue_layout, 3, 1, 1, 3);
+
+    QLabel* l0_label = new QLabel("Lightness at start:");
+    layout->addWidget(l0_label, 4, 0);
+    _l0_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
+    layout->addWidget(_l0_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_l0_changer->spinbox, 4, 3);
+
+    QLabel* s0_label = new QLabel("Saturation at start:");
+    layout->addWidget(s0_label, 5, 0);
+    _s0_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
+    layout->addWidget(_s0_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_s0_changer->spinbox, 5, 3);
+
+    QLabel* l1_label = new QLabel("Lightness at end:");
+    layout->addWidget(l1_label, 6, 0);
+    _l1_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
+    layout->addWidget(_l1_changer->slider, 6, 1, 1, 2);
+    layout->addWidget(_l1_changer->spinbox, 6, 3);
+
+    QLabel* s1_label = new QLabel("Saturation at end:");
+    layout->addWidget(s1_label, 7, 0);
+    _s1_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
+    layout->addWidget(_s1_changer->slider, 7, 1, 1, 2);
+    layout->addWidget(_s1_changer->spinbox, 7, 3);
+
+    QLabel* s05_label = new QLabel("Saturation in the middle:");
+    layout->addWidget(s05_label, 8, 0);
+    _s05_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
+    layout->addWidget(_s05_changer->slider, 8, 1, 1, 2);
+    layout->addWidget(_s05_changer->spinbox, 8, 3);
+
+    layout->setColumnStretch(1, 1);
+    layout->addItem(new QSpacerItem(0, 0), 9, 0, 1, 4);
+    layout->setRowStretch(9, 1);
+    setLayout(layout);
+
+    connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
+    connect(_l0_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_s0_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_l1_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_s1_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_s05_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    reset();
+}
+
+ColorMapPLSequentialMultiHueWidget::~ColorMapPLSequentialMultiHueWidget()
+{
+}
+
+static QListWidgetItem* list_item_from_huepos(float hue, float pos)
+{
+    QLabel tmp("TMP");
+    QPixmap pixmap(tmp.sizeHint().height(), tmp.sizeHint().height());
+    pixmap.fill(hueToColor(hue));
+    QListWidgetItem* lwi = new QListWidgetItem(QIcon(pixmap), QString::number(pos));
+    return lwi;
+}
+
+void ColorMapPLSequentialMultiHueWidget::reset()
+{
+    _update_lock = true;
+    _n_spinbox->setValue(256);
+    _hue_list_widget->clear();
+    for (int i = 0; i < ColorMap::PLSequentialMultiHueDefaultHues; i++) {
+        _hue_list_widget->addItem(list_item_from_huepos(
+                    ColorMap::PLSequentialMultiHueDefaultHueValues[i],
+                    ColorMap::PLSequentialMultiHueDefaultHuePositions[i]));
+    }
+    _l0_changer->setValue(ColorMap::PLSequentialMultiHueDefaultL0 / 100.0f);
+    _s0_changer->setValue(ColorMap::PLSequentialMultiHueDefaultS0);
+    _l1_changer->setValue(ColorMap::PLSequentialMultiHueDefaultL1 / 100.0f);
+    _s1_changer->setValue(ColorMap::PLSequentialMultiHueDefaultS1);
+    _s05_changer->setValue(ColorMap::PLSequentialMultiHueDefaultS05);
+    _update_lock = false;
+    update();
+}
+
+QVector<unsigned char> ColorMapPLSequentialMultiHueWidget::colorMap(int* clipped) const
+{
+    int n;
+    QVector<float> hue_values, hue_positions;
+    float l0, s0, l1, s1, s05;
+    parameters(n, hue_values, hue_positions, l0, s0, l1, s1, s05);
+    QVector<unsigned char> colormap(3 * n);
+    int cl = ColorMap::PLSequentialMultiHue(n, colormap.data(),
+            hue_values.size(), hue_values.data(), hue_positions.data(),
+            l0, s0, l1, s1, s05);
+    if (clipped)
+        *clipped = cl;
+    return colormap;
+}
+
+QString ColorMapPLSequentialMultiHueWidget::reference() const
+{
+    return plseq_multihue_reference;
+}
+
+void ColorMapPLSequentialMultiHueWidget::parameters(int& n,
+        QVector<float>& hue_values, QVector<float>& hue_positions,
+        float& l0, float& s0, float& l1, float& s1, float& s05) const
+{
+    n = _n_spinbox->value();
+    hue_values.clear();
+    hue_positions.clear();
+    for (int i = 0; i < _hue_list_widget->count(); i++) {
+        QListWidgetItem* item = _hue_list_widget->item(i);
+        float hue = colorToHue(item->icon().pixmap(1, 1).toImage().pixelColor(0, 0));
+        float pos = item->text().toFloat();
+        hue_values.append(hue);
+        hue_positions.append(pos);
+    }
+    l0 = std::max(0.01f, _l0_changer->value() * 100.0f);
+    s0 = _s0_changer->value();
+    l1 = std::max(0.01f, _l1_changer->value() * 100.0f);
+    s1 = _s1_changer->value();
+    s05 = _s05_changer->value();
+}
+
+void ColorMapPLSequentialMultiHueWidget::update()
+{
+    if (!_update_lock)
+        emit colorMapChanged();
+}
+
+void ColorMapPLSequentialMultiHueWidget::hueButtonClicked()
+{
+    QColor color = QColorDialog::getColor(_hue_button_color, this);
+    if (color.isValid()) {
+        _hue_button_color = hueToColor(colorToHue(color));
+        updateHueButton();
+    }
+}
+
+void ColorMapPLSequentialMultiHueWidget::updateHueButton()
+{
+    QPixmap pm(64, 64);
+    pm.fill(_hue_button_color);
+    _hue_button->setIcon(QIcon(pm));
+}
+
+void ColorMapPLSequentialMultiHueWidget::addHue()
+{
+    float hue = colorToHue(_hue_button_color);
+    float pos = _pos_spinbox->value();
+    for (int i = 0; i < _hue_list_widget->count(); i++) {
+        QListWidgetItem* item = _hue_list_widget->item(i);
+        float itemPos = item->text().toFloat();
+        if (itemPos == pos) {
+            delete _hue_list_widget->item(i);
+            break;
+        }
+    }
+    _hue_list_widget->insertItem(0, list_item_from_huepos(hue, pos));
+    _hue_list_widget->sortItems();
+    update();
+}
+
+void ColorMapPLSequentialMultiHueWidget::removeHue()
+{
+    delete _hue_list_widget->currentItem();
+    update();
 }
 
 /* ColorMapPLDivergingLightnessWidget */

@@ -53,6 +53,7 @@ GUI::GUI()
     _plseq_saturation_widget = new ColorMapPLSequentialSaturationWidget;
     _plseq_rainbow_widget = new ColorMapPLSequentialRainbowWidget;
     _plseq_blackbody_widget = new ColorMapPLSequentialBlackBodyWidget;
+    _plseq_multihue_widget = new ColorMapPLSequentialMultiHueWidget;
     _pldiv_lightness_widget = new ColorMapPLDivergingLightnessWidget;
     _pldiv_saturation_widget = new ColorMapPLDivergingSaturationWidget;
     _plqual_hue_widget = new ColorMapPLQualitativeHueWidget;
@@ -66,6 +67,7 @@ GUI::GUI()
     connect(_plseq_saturation_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_plseq_rainbow_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_plseq_blackbody_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
+    connect(_plseq_multihue_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_pldiv_lightness_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_pldiv_saturation_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
     connect(_plqual_hue_widget, SIGNAL(colorMapChanged()), this, SLOT(update()));
@@ -87,6 +89,7 @@ GUI::GUI()
 
     _category_widget = new QTabWidget();
     _category_seq_widget = new QTabWidget();
+    _category_seq_widget->addTab(_plseq_multihue_widget, "PL Multi Hue");
     _category_seq_widget->addTab(_brewerseq_widget, "Brewer-like");
     _category_seq_widget->addTab(_plseq_lightness_widget, "PL Lightness");
     _category_seq_widget->addTab(_plseq_saturation_widget, "PL Saturation");

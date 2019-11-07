@@ -161,6 +161,26 @@ int PLSequentialBlackBody(int n, unsigned char* colormap,
         float range = PLSequentialBlackBodyDefaultRange,
         float saturation = PLSequentialBlackBodyDefaultSaturation);
 
+// Varying hue (user definable)
+const float PLSequentialMultiHueDefaultL0 = 0.01f; // lightness at start
+const float PLSequentialMultiHueDefaultS0 = 0.0f; // saturation at start
+const float PLSequentialMultiHueDefaultL1 = 100.0f; // lightness at end
+const float PLSequentialMultiHueDefaultS1 = 0.0f; // saturation at end
+const float PLSequentialMultiHueDefaultS05 = 1.0f; // saturation in the middle
+const int PLSequentialMultiHueDefaultHues = 1; // number of hues defined in the following lists
+const float PLSequentialMultiHueDefaultHueValues[] = { 0.0f }; // hues values in radians in [0,2pi]
+const float PLSequentialMultiHueDefaultHuePositions[] = { 0.5f }; // hue positions in [0,1] sorted in ascending order
+
+int PLSequentialMultiHue(int n, unsigned char* colormap,
+        int hues = PLSequentialMultiHueDefaultHues,
+        const float* hue_values = PLSequentialMultiHueDefaultHueValues,
+        const float* hue_positions = PLSequentialMultiHueDefaultHuePositions,
+        float l0 = PLSequentialMultiHueDefaultL0,
+        float s0 = PLSequentialMultiHueDefaultS0,
+        float l1 = PLSequentialMultiHueDefaultL1,
+        float s1 = PLSequentialMultiHueDefaultS1,
+        float s05 = PLSequentialMultiHueDefaultS05);
+
 /* Diverging perceptually linear maps */
 
 // Varying lightness
