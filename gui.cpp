@@ -76,6 +76,15 @@ GUI::GUI()
     QWidget *widget = new QWidget;
     QGridLayout *layout = new QGridLayout;
 
+    int firstRow = 0;
+#ifdef Q_OS_WASM
+    QLabel *copyHintLabel0 = new QLabel("<b>Web Demo:</b> <i>Press CTRL+C to copy the color map to the clipboard in CSV format (this may require Google Chrome).</i>");
+    QLabel *copyHintLabel1 = new QLabel("<i>Other export options are only available in the native version. This is a limitation of Qt for WebAssembly.</i>");
+    layout->addWidget(copyHintLabel0, 0, 0);
+    layout->addWidget(copyHintLabel1, 1, 0);
+    firstRow = 2;
+#endif
+
     _category_widget = new QTabWidget();
     _category_seq_widget = new QTabWidget();
     _category_seq_widget->addTab(_brewerseq_widget, "Brewer-like");
@@ -100,30 +109,30 @@ GUI::GUI()
     connect(_category_qual_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
     _category_widget->addTab(_category_qual_widget, "Qualitative");
     connect(_category_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
-    layout->addWidget(_category_widget, 0, 0);
+    layout->addWidget(_category_widget, firstRow, 0);
     _reference_label = new QLabel(_brewerseq_widget->reference());
     _reference_label->setWordWrap(true);
     _reference_label->setOpenExternalLinks(true);
-    layout->addWidget(_reference_label, 1, 0);
-    layout->addItem(new QSpacerItem(0, 0), 2, 0);
+    layout->addWidget(_reference_label, firstRow + 1, 0);
+    layout->addItem(new QSpacerItem(0, 0), firstRow + 2, 0);
     _clipped_label = new QLabel("");
-    layout->addWidget(_clipped_label, 3, 0);
+    layout->addWidget(_clipped_label, firstRow + 3, 0);
 
     _colormap_label = new QLabel();
     _colormap_label->setScaledContents(true);
-    layout->addWidget(_colormap_label, 0, 1, 4, 1);
+    layout->addWidget(_colormap_label, firstRow, 1, 4, 1);
 
     QLabel* test_label = new QLabel("Test pattern "
             "<a href=\"http://peterkovesi.com/projects/colourmaps/colourmaptestimage.html\">"
             "designed by P. Kovesi</a>:");
     test_label->setWordWrap(true);
     test_label->setOpenExternalLinks(true);
-    layout->addWidget(test_label, 4, 0, 1, 2);
+    layout->addWidget(test_label, firstRow + 4, 0, 1, 2);
     _test_widget = new ColorMapTestWidget();
-    layout->addWidget(_test_widget, 5, 0, 1, 2);
+    layout->addWidget(_test_widget, firstRow + 5, 0, 1, 2);
 
     layout->setColumnStretch(0, 1);
-    layout->setRowStretch(2, 1);
+    layout->setRowStretch(firstRow + 2, 1);
     widget->setLayout(layout);
     setCentralWidget(widget);
 
@@ -160,6 +169,14 @@ GUI::GUI()
     QAction* help_about_act = new QAction("&About", this);
     connect(help_about_act, SIGNAL(triggered()), this, SLOT(help_about()));
     help_menu->addAction(help_about_act);
+
+#ifdef Q_OS_WASM
+    file_export_png_act->setEnabled(false);
+    file_export_csv_act->setEnabled(false);
+    file_export_json_act->setEnabled(false);
+    edit_copy_as_img_act->setEnabled(false);
+    edit_copy_as_json_act->setEnabled(false);
+#endif
 
     show();
     update();
