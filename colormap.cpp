@@ -232,18 +232,20 @@ static triplet xyz_to_lab(triplet xyz)
 
 static triplet rgb_to_xyz(triplet rgb)
 {
+    // values from http://terathon.com/blog/rgb-xyz-conversion-matrix-accuracy/
     return 100.0f * triplet(
-            (0.4124f * rgb.r + 0.3576f * rgb.g + 0.1805f * rgb.b),
-            (0.2126f * rgb.r + 0.7152f * rgb.g + 0.0722f * rgb.b),
-            (0.0193f * rgb.r + 0.1192f * rgb.g + 0.9505f * rgb.b));
+            (0.412391f * rgb.r + 0.357584f * rgb.g + 0.180481f * rgb.b),
+            (0.212639f * rgb.r + 0.715169f * rgb.g + 0.072192f * rgb.b),
+            (0.019331f * rgb.r + 0.119195f * rgb.g + 0.950532f * rgb.b));
 }
 
 static triplet xyz_to_rgb(triplet xyz)
 {
+    // values from http://terathon.com/blog/rgb-xyz-conversion-matrix-accuracy/
     return 0.01f * triplet(
-            (+3.2406255f * xyz.x - 1.5372080f * xyz.y - 0.4986286f * xyz.z),
-            (-0.9689307f * xyz.x + 1.8757561f * xyz.y + 0.0415175f * xyz.z),
-            (+0.0557101f * xyz.x - 0.2040211f * xyz.y + 1.0569959f * xyz.z));
+            (+3.240970f * xyz.x - 1.537383f * xyz.y - 0.498611f * xyz.z),
+            (-0.969244f * xyz.x + 1.875968f * xyz.y + 0.041555f * xyz.z),
+            (+0.055630f * xyz.x - 0.203977f * xyz.y + 1.056972f * xyz.z));
 }
 
 /* Color space conversion: RGB <-> sRGB */
