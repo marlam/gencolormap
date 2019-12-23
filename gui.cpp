@@ -267,7 +267,7 @@ void GUI::edit_copy_as_json()
 void GUI::help_about()
 {
     QMessageBox::about(this, "About",
-                "<p>gencolormap version 1.0<br>"
+                "<p>gencolormap version 1.1<br>"
                 "   <a href=\"https://marlam.de/gencolormap\">https://marlam.de/gencolormap</a></p>"
                 "<p>Copyright (C) 2019<br>"
                 "   <a href=\"http://www.cg.informatik.uni-siegen.de/\">"
