@@ -905,57 +905,6 @@ static float multi_hue_get(float t, int hues, const float* hue_values, const flo
     return hue;
 }
 
-static triplet multi_hue_compute(float t, float t0, float t1, triplet lch0, triplet lch1, float D,
-        int hues, const float* hue_values, const float* hue_positions)
-{
-    // t is in [0,1]; tt is in [0,1] but relative to t0 and t1
-    float tt = (t - t0) / (t1 - t0);
-
-    triplet lch_t;
-    lch_t.h = multi_hue_get(t, hues, hue_values, hue_positions);
-    lch_t.l = (1.0f - tt) * lch0.l + tt * lch1.l;
-
-    float tmp0 = std::max(0.0f, sqr(tt * D) - sqr(lch0.l - lch_t.l) - sqr(lch0.h - lch_t.h));
-    float lch_t_c_0 = lch0.c + std::sqrt(tmp0);
-    float lch_t_c_1 = lch0.c - std::sqrt(tmp0);
-
-    float tmp1 = std::max(0.0f, sqr((1.0f - tt) * D) - sqr(lch1.l - lch_t.l) - sqr(lch1.h - lch_t.h));
-    float lch_t_c_2 = lch1.c + std::sqrt(tmp1);
-    float lch_t_c_3 = lch1.c - std::sqrt(tmp1);
-
-    lch_t.c = (1.0f - tt) * lch0.c + tt * lch1.c;
-    float mindist = 9999.9f;
-    if (lch_t_c_0 >= 0.0f) {
-        float d2 = std::abs(lch_t_c_0 - lch_t_c_2);
-        float d3 = std::abs(lch_t_c_0 - lch_t_c_3);
-        if (d2 < d3) {
-            mindist = d2;
-            lch_t.c = 0.5f * (lch_t_c_0 + lch_t_c_2);
-        } else {
-            mindist = d3;
-            lch_t.c = 0.5f * (lch_t_c_0 + lch_t_c_3);
-        }
-    }
-    if (lch_t_c_1 >= 0.0f) {
-        float d2 = std::abs(lch_t_c_1 - lch_t_c_2);
-        float d3 = std::abs(lch_t_c_1 - lch_t_c_3);
-        if (d2 < mindist && d2 < d3) {
-            mindist = d2;
-            lch_t.c = 0.5f * (lch_t_c_1 + lch_t_c_2);
-        } else if (d3 < mindist) {
-            mindist = d3;
-            lch_t.c = 0.5f * (lch_t_c_1 + lch_t_c_3);
-        }
-    }
-
-#if 0
-    fprintf(stderr, "t=%g tt=%g: l=%g h=%g tmp0=%g tmp1=%g c0=%g c1=%g c2=%g c3=%g\n", t, tt,
-            lch_t.l, lch_t.h, tmp0, tmp1, lch_t_c_0, lch_t_c_1, lch_t_c_2, lch_t_c_3);
-#endif
-
-    return lch_t;
-}
-
 int PLSequentialMultiHue(int n, unsigned char* colormap,
         int hues, const float* hue_values, const float* hue_positions,
         float l0, float s0, float l1, float s1, float s05)
@@ -991,11 +940,12 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
     triplet lch;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
+        float h = multi_hue_get(t, hues, hue_values, hue_positions);
         if (t <= 0.5f) {
-            lch = multi_hue_compute(t, 0.0f, 0.5f, lch_00, lch_05, D_00_05, hues, hue_values, hue_positions);
+            lch = lch_compute_uniform_lc(t, 0.0f, 0.5f, lch_00, lch_05, D_00_05, h);
         } else {
-            lch = multi_hue_compute(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, hues, hue_values, hue_positions);
+            lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, h);
         }
 #if 0
         fprintf(stderr, "i=%d t=%g: l=%g c=%g h=%g\n", i, t, lch.l, lch.c, lch.h);
