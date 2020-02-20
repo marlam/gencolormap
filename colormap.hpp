@@ -106,7 +106,7 @@ int BrewerQualitative(int n, unsigned char* colormap,
 /*
  * Perceptually linear (PL) color maps.
  *
- * These are computed in CIELUV/LCH to achieve perceptual linearity.
+ * These are computed in CIELUV/LCH to achieve approximate perceptual linearity.
  * One or two of lightness, saturation, and hue are changed while the other(s)
  * stay constant.
  *
@@ -118,31 +118,37 @@ int BrewerQualitative(int n, unsigned char* colormap,
 
 // Varying lightness
 
+const float PLSequentialLightnessDefaultLightnessRange = 0.95f;
 const float PLSequentialLightnessDefaultSaturation = 0.45f;
 const float PLSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
 
 int PLSequentialLightness(int n, unsigned char* colormap,
+        float lightnessRange = PLSequentialLightnessDefaultLightnessRange,
         float saturation = PLSequentialLightnessDefaultSaturation,
         float hue = PLSequentialLightnessDefaultHue);
 
 // Varying saturation
 
+const float PLSequentialSaturationDefaultSaturationRange = 0.95f;
 const float PLSequentialSaturationDefaultLightness = 0.5f;
 const float PLSequentialSaturationDefaultSaturation = 0.45f;
 const float PLSequentialSaturationDefaultHue = 0.349065850399f; // 20 deg
 
 int PLSequentialSaturation(int n, unsigned char* colormap,
+        float saturationRange = PLSequentialSaturationDefaultSaturationRange,
         float lightness = PLSequentialSaturationDefaultLightness,
         float saturation = PLSequentialSaturationDefaultSaturation,
         float hue = PLSequentialSaturationDefaultHue);
 
 // Varying hue (through all colors, rainbow-like)
 
+const float PLSequentialRainbowDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
 const float PLSequentialRainbowDefaultHue = 0.0f;
 const float PLSequentialRainbowDefaultRotations = -1.5f;
 const float PLSequentialRainbowDefaultSaturation = 1.1f;
 
 int PLSequentialRainbow(int n, unsigned char* colormap,
+        float lightnessRange = PLSequentialRainbowDefaultLightnessRange,
         float hue = PLSequentialRainbowDefaultHue,
         float rotations = PLSequentialRainbowDefaultRotations,
         float saturation = PLSequentialRainbowDefaultSaturation);
@@ -185,25 +191,27 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
 
 // Varying lightness
 
-const float PLDivergingLightnessDefaultLightness = 0.05f;
+const float PLDivergingLightnessDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
 const float PLDivergingLightnessDefaultSaturation = 0.45f;
 const float PLDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
 int PLDivergingLightness(int n, unsigned char* colormap,
-        float lightness = PLDivergingLightnessDefaultLightness,
+        float lightnessRange = PLDivergingLightnessDefaultLightnessRange,
         float saturation = PLDivergingLightnessDefaultSaturation,
         float hue = PLDivergingLightnessDefaultHue,
         float divergence = PLDivergingLightnessDefaultDivergence);
 
 // Varying saturation
 
+const float PLDivergingSaturationDefaultSaturationRange = PLSequentialSaturationDefaultSaturationRange;
 const float PLDivergingSaturationDefaultLightness = 0.5f;
 const float PLDivergingSaturationDefaultSaturation = 0.45f;
 const float PLDivergingSaturationDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingSaturationDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
 int PLDivergingSaturation(int n, unsigned char* colormap,
+        float saturationRange = PLSequentialSaturationDefaultSaturationRange,
         float lightness = PLDivergingSaturationDefaultLightness,
         float saturation = PLDivergingSaturationDefaultSaturation,
         float hue = PLDivergingSaturationDefaultHue,

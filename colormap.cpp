@@ -167,7 +167,11 @@ static float lch_chroma(float l, float s)
 
 static float lch_distance(triplet lch0, triplet lch1)
 {
-    return std::sqrt(sqr(lch0.l - lch1.l) + sqr(lch0.c - lch1.c) + sqr(lch0.h - lch1.h));
+    /* We have to compute the euclidean distance in LUV space so that it is
+     * perceptually uniform. But using the equations above we can simplify
+     * the resulting expression to this: */
+    return std::sqrt(sqr(lch0.l - lch1.l) + sqr(lch0.c) + sqr(lch1.c)
+            - 2.0f * lch0.c * lch1.c * std::cos(lch0.h - lch1.h));
 }
 
 /* Color space conversion: LUV <-> XYZ */
@@ -571,15 +575,89 @@ int BrewerQualitative(int n, unsigned char* colormap, float hue, float divergenc
 
 /* Perceptually linear (PL) */
 
-int PLSequentialLightness(int n, unsigned char* colormap, float saturation, float hue)
+static triplet lch_compute_uniform_lc(float t,
+        float t0, float t1,
+        triplet lch0, triplet lch1, float D,
+        float hue)
 {
+    // t is in [0,1]; s is in [0,1] but relative to [t0,t1]
+    float s = (t - t0) / (t1 - t0);
+
+    triplet lcht;
+    lcht.h = hue;
+    lcht.l = (1.0f - s) * lch0.l + s * lch1.l;
+
+    // compute four solutions for lcht.c based on two conditions:
+    float lcht_cs[4];
+    // 1) the distance between lcht and lch0 is (s * D)
+    float tmp00 = lch0.c * std::cos(lcht.h - lch0.h);
+    float tmp01 = std::max(0.0f, sqr(tmp00) - sqr(lcht.l - lch0.l) - sqr(lch0.c) + sqr(s * D));
+    lcht_cs[0] = tmp00 + std::sqrt(tmp01);
+    lcht_cs[1] = tmp00 - std::sqrt(tmp01);
+    // 2) the distance between lcht and lch1 is ((1-s) * D)
+    float tmp10 = lch1.c * std::cos(lcht.h - lch1.h);
+    float tmp11 = std::max(0.0f, sqr(tmp10) - sqr(lcht.l - lch1.l) - sqr(lch1.c) + sqr((1.0f - s) * D));
+    lcht_cs[2] = tmp10 + std::sqrt(tmp11);
+    lcht_cs[3] = tmp10 - std::sqrt(tmp11);
+
+    // find the best solution
+    float min_c = std::min(lch0.c, lch1.c);
+    float max_c = std::max(lch0.c, lch1.c);
+    float min_solution_error = 9999.9f;
+    int min_solution_error_index = -1;
+    for (int i = 0; i < 4; i++) {
+        if (lcht_cs[i] < min_c || lcht_cs[i] > max_c) {
+            // this solution is invalid
+        } else {
+            // solution error is sum of the deviations from condition 1 and 2
+            float dist_lch0_lcht = lch_distance(lch0, triplet(lcht.l, lcht_cs[i], lcht.h));
+            float dist_lch1_lcht = lch_distance(lch1, triplet(lcht.l, lcht_cs[i], lcht.h));
+            float solution_error = std::abs(dist_lch0_lcht - s * D) + std::abs(dist_lch1_lcht - (1.0f - s) * D);
+            //fprintf(stderr, "t=%g: VALID %i with error %g\n", t, i, solution_error);
+            if (min_solution_error_index == -1 || solution_error < min_solution_error) {
+                min_solution_error = solution_error;
+                min_solution_error_index = i;
+            }
+        }
+    }
+    if (min_solution_error_index == -1) {
+        //fprintf(stderr, "TODO: FALLBACK at t=%g\n", t);
+        lcht.c = 0.5f * (lch0.c + lch1.c);
+    } else {
+        lcht.c = lcht_cs[min_solution_error_index];
+    }
+
+    return lcht;
+}
+
+int PLSequentialLightness(int n, unsigned char* colormap,
+        float lightness_range, float saturation, float hue)
+{
+    triplet lch_00, lch_10, lch_05;
+
+    lch_00.l = (1.0f - lightness_range) * 100.0f;
+    lch_00.c = lch_chroma(lch_00.l, 0.0f);
+    lch_00.h = hue;
+    lch_10.l = lightness_range * 100.0f;
+    lch_10.c = lch_chroma(lch_10.l, 0.0f);
+    lch_10.h = hue;
+    lch_05.l = (1.0f - 0.5f) * lch_00.l + 0.5f * lch_10.l;
+    lch_05.c = lch_chroma(lch_05.l, 5.0f * saturation);
+    lch_05.h = hue;
+
+    // the following distances are actually the same if 0.5f is 0.5:
+    float D_00_05 = lch_distance(lch_00, lch_05);
+    float D_05_10 = lch_distance(lch_05, lch_10);
+
     triplet lch;
-    lch.h = hue;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = (i + 0.5f) / n;
-        lch.l = std::max(0.01f, t * 100.0f);
-        lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
+        if (t <= 0.5f) {
+            lch = lch_compute_uniform_lc(t, 0.0f, 0.5f, lch_00, lch_05, D_00_05, hue);
+        } else {
+            lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, hue);
+        }
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
     }
@@ -587,30 +665,60 @@ int PLSequentialLightness(int n, unsigned char* colormap, float saturation, floa
 }
 
 int PLSequentialSaturation(int n, unsigned char* colormap,
-        float lightness, float saturation, float hue)
+        float saturation_range, float lightness, float saturation, float hue)
 {
+    lightness = std::max(0.01f, lightness * 100.0f);
+
+    triplet lch_00, lch_10;
+    lch_00.l = lightness;
+    lch_00.c = lch_chroma(lch_00.l, 1.0f - saturation_range);
+    lch_00.h = hue;
+    lch_10.l = lightness;
+    lch_10.c = lch_chroma(lch_10.l, saturation_range * 5.0f * saturation);
+    lch_10.h = hue;
+
+    float D_00_10 = lch_distance(lch_00, lch_10);
+
     triplet lch;
-    lch.l = std::max(0.01f, lightness * 100.0f);
-    lch.h = hue;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = (i + 0.5f) / n;
-        lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
+        lch = lch_compute_uniform_lc(t, 0.0f, 1.0f, lch_00, lch_10, D_00_10, hue);
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
     }
     return clipped;
 }
 
-int PLSequentialRainbow(int n, unsigned char* colormap, float hue, float rotations, float saturation)
+int PLSequentialRainbow(int n, unsigned char* colormap,
+        float lightness_range,
+        float hue, float rotations, float saturation)
 {
+    triplet lch_00, lch_10, lch_05;
+
+    lch_00.l = (1.0f - lightness_range) * 100.0f;
+    lch_00.c = lch_chroma(lch_00.l, (1.0f - lightness_range) * saturation);
+    lch_00.h = hue + 0.0f * rotations * twopi;
+    lch_10.l = lightness_range * 100.0f;
+    lch_10.c = lch_chroma(lch_10.l, (1.0f - lightness_range) * saturation);
+    lch_10.h = hue + 1.0f * rotations * twopi;
+    lch_05.l = 0.5f * (lch_00.l + lch_10.l);
+    lch_05.c = lch_chroma(lch_05.l, saturation);
+    lch_05.h = hue + 0.5f * rotations * twopi;
+
+    float D_00_05 = lch_distance(lch_00, lch_05);
+    float D_05_10 = lch_distance(lch_05, lch_10);
+
     triplet lch;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = (i + 0.5f) / n;
-        lch.l = std::max(0.01f, t * 100.0f);
-        lch.c = lch_chroma(lch.l, (1.0f - t) * saturation);
-        lch.h = hue + t * rotations * twopi;
+        float h = hue + t * rotations * twopi;
+        if (t <= 0.5f) {
+            lch = lch_compute_uniform_lc(t, 0.0f, 0.5f, lch_00, lch_05, D_00_05, h);
+        } else {
+            lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, h);
+        }
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
     }
@@ -892,41 +1000,39 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
 #if 0
         fprintf(stderr, "i=%d t=%g: l=%g c=%g h=%g\n", i, t, lch.l, lch.c, lch.h);
 #endif
-        clipped += lch_to_colormap(lch, colormap + 3 * i);
+        if (lch_to_colormap(lch, colormap + 3 * i))
+            clipped++;
     }
     return clipped;
 }
 
-int PLDivergingLightness(int n, unsigned char* colormap, float lightness, float saturation, float hue, float divergence)
+int PLDivergingLightness(int n, unsigned char* colormap,
+        float lightnessRange, float saturation, float hue, float divergence)
 {
-    triplet lch;
+    int lowerN = n / 2;
+    int higherN = n - lowerN;
     int clipped = 0;
-    for (int i = 0; i < n; i++) {
-        float t = (i + 0.5f) / n;
-        lch.l = std::max(0.01f, 100.0f * lightness + 100.0f * (1.0f - lightness) * (t <= 0.5f ? 2.0f * t : 2.0f * (1.0f - t)));
-        float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
-        lch.c = lch_chroma(lch.l, s);
-        lch.h = (t <= 0.5f ? hue : hue + divergence);
-        if (lch_to_colormap(lch, colormap + 3 * i))
-            clipped++;
-    }
+
+    clipped += PLSequentialLightness(higherN, colormap, lightnessRange, saturation, hue + divergence);
+    for (int i = 0; i < higherN; i++)
+        for (int j = 0; j < 3; j++)
+            colormap[3 * lowerN + 3 * i + j] = colormap[3 * (higherN - 1 - i) + j];
+    clipped += PLSequentialLightness(lowerN, colormap, lightnessRange, saturation, hue);
     return clipped;
 }
 
 int PLDivergingSaturation(int n, unsigned char* colormap,
-        float lightness, float saturation, float hue, float divergence)
+        float saturationRange, float lightness, float saturation, float hue, float divergence)
 {
-    triplet lch;
-    lch.l = std::max(0.01f, lightness * 100.0f);
+    int lowerN = n / 2;
+    int higherN = n - lowerN;
     int clipped = 0;
-    for (int i = 0; i < n; i++) {
-        float t = (i + 0.5f) / n;
-        float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
-        lch.c = lch_chroma(lch.l, s);
-        lch.h = (t <= 0.5f ? hue : hue + divergence);
-        if (lch_to_colormap(lch, colormap + 3 * i))
-            clipped++;
-    }
+
+    clipped += PLSequentialSaturation(lowerN, colormap + 3 * lowerN, saturationRange, lightness, saturation, hue);
+    for (int i = 0; i < lowerN; i++)
+        for (int j = 0; j < 3; j++)
+            colormap[3 * i + j] = colormap[3 * lowerN + 3 * (lowerN - 1 - i) + j];
+    clipped += PLSequentialSaturation(higherN, colormap + 3 * lowerN, saturationRange, lightness, saturation, hue + divergence);
     return clipped;
 }
 

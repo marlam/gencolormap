@@ -229,7 +229,8 @@ int main(int argc, char* argv[])
                 "  [-d|--divergence=D]                 Set diverg. in deg for div. and qual. maps\n"
                 "  [-r|--rotations=R]                  Set number of rotations for rainbow maps\n"
                 "  [-T|--temperature=T]                Set start temp. in K for black body maps\n"
-                "  [-R|--range=R]                      Set temp. range in K for black body maps\n"
+                "  [-R|--range=R]                      Set range for lightness, saturation, or\n"
+                "                                      temperature, depending on color map type\n"
                 "CubeHelix color maps:\n"
                 "  [-t|--type=cubehelix]               Generate a CubeHelix color map\n"
                 "  [-h|--hue=H]                        Set start hue in [0,180] degrees\n"
@@ -345,8 +346,6 @@ int main(int argc, char* argv[])
     if (lightness < 0.0f) {
         if (type == plseq_saturation)
             lightness = ColorMap::PLSequentialSaturationDefaultLightness;
-        else if (type == pldiv_lightness)
-            lightness = ColorMap::PLDivergingLightnessDefaultLightness;
         else if (type == pldiv_saturation)
             lightness = ColorMap::PLDivergingSaturationDefaultLightness;
         else if (type == plqual_hue)
@@ -363,7 +362,17 @@ int main(int argc, char* argv[])
             temperature = ColorMap::PLSequentialBlackBodyDefaultTemperature;
     }
     if (range < 0.0f) {
-        if (type == plseq_blackbody)
+        if (type == plseq_lightness)
+            range = ColorMap::PLSequentialLightnessDefaultLightnessRange;
+        else if (type == plseq_saturation)
+            range = ColorMap::PLSequentialSaturationDefaultSaturationRange;
+        else if (type == plseq_rainbow)
+            range = ColorMap::PLSequentialRainbowDefaultLightnessRange;
+        else if (type == pldiv_lightness)
+            range = ColorMap::PLDivergingLightnessDefaultLightnessRange;
+        else if (type == pldiv_saturation)
+            range = ColorMap::PLDivergingSaturationDefaultSaturationRange;
+        else if (type == plseq_blackbody)
             range = ColorMap::PLSequentialBlackBodyDefaultRange;
     }
     if (gamma < 0.0f) {
@@ -402,22 +411,22 @@ int main(int argc, char* argv[])
         clipped = ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
         break;
     case plseq_lightness:
-        clipped = ColorMap::PLSequentialLightness(n, &(colormap[0]), saturation, hue);
+        clipped = ColorMap::PLSequentialLightness(n, &(colormap[0]), range, saturation, hue);
         break;
     case plseq_saturation:
-        clipped = ColorMap::PLSequentialSaturation(n, &(colormap[0]), lightness, saturation, hue);
+        clipped = ColorMap::PLSequentialSaturation(n, &(colormap[0]), range, lightness, saturation, hue);
         break;
     case plseq_rainbow:
-        clipped = ColorMap::PLSequentialRainbow(n, &(colormap[0]), hue, rotations, saturation);
+        clipped = ColorMap::PLSequentialRainbow(n, &(colormap[0]), range, hue, rotations, saturation);
         break;
     case plseq_blackbody:
         clipped = ColorMap::PLSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
         break;
     case pldiv_lightness:
-        clipped = ColorMap::PLDivergingLightness(n, &(colormap[0]), lightness, saturation, hue, divergence);
+        clipped = ColorMap::PLDivergingLightness(n, &(colormap[0]), range, saturation, hue, divergence);
         break;
     case pldiv_saturation:
-        clipped = ColorMap::PLDivergingSaturation(n, &(colormap[0]), lightness, saturation, hue, divergence);
+        clipped = ColorMap::PLDivergingSaturation(n, &(colormap[0]), range, lightness, saturation, hue, divergence);
         break;
     case plqual_hue:
         clipped = ColorMap::PLQualitativeHue(n, &(colormap[0]), hue, divergence, lightness, saturation);

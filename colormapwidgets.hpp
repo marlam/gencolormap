@@ -169,6 +169,7 @@ Q_OBJECT
 private:
     bool _update_lock;
     QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _lightness_range_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
     ColorMapCombinedSliderSpinBox* _hue_changer;
 private slots:
@@ -181,7 +182,7 @@ public:
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
-    void parameters(int& n, float& saturation, float& hue) const;
+    void parameters(int& n, float& lightness_range, float& saturation, float& hue) const;
 };
 
 class ColorMapPLSequentialSaturationWidget : public ColorMapWidget
@@ -190,6 +191,7 @@ Q_OBJECT
 private:
     bool _update_lock;
     QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _saturation_range_changer;
     ColorMapCombinedSliderSpinBox* _lightness_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
     ColorMapCombinedSliderSpinBox* _hue_changer;
@@ -203,7 +205,7 @@ public:
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
-    void parameters(int& n, float& lightness, float& saturation, float& hue) const;
+    void parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue) const;
 };
 
 class ColorMapPLSequentialRainbowWidget : public ColorMapWidget
@@ -212,6 +214,7 @@ Q_OBJECT
 private:
     bool _update_lock;
     QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _lightness_range_changer;
     ColorMapCombinedSliderSpinBox* _hue_changer;
     ColorMapCombinedSliderSpinBox* _rotations_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
@@ -225,7 +228,7 @@ public:
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
-    void parameters(int& n, float& hue, float& rotations, float& saturation) const;
+    void parameters(int& n, float& lightness_range, float& hue, float& rotations, float& saturation) const;
 };
 
 class ColorMapPLSequentialBlackBodyWidget : public ColorMapWidget
@@ -290,7 +293,7 @@ Q_OBJECT
 private:
     bool _update_lock;
     QSpinBox* _n_spinbox;
-    ColorMapCombinedSliderSpinBox* _lightness_changer;
+    ColorMapCombinedSliderSpinBox* _lightness_range_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
     ColorMapCombinedSliderSpinBox* _hue_changer;
     ColorMapCombinedSliderSpinBox* _divergence_changer;
@@ -304,7 +307,7 @@ public:
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
-    void parameters(int& n, float& lightness, float& saturation, float& hue, float& divergence) const;
+    void parameters(int& n, float& lightness_range, float& saturation, float& hue, float& divergence) const;
 };
 
 class ColorMapPLDivergingSaturationWidget : public ColorMapWidget
@@ -313,6 +316,7 @@ Q_OBJECT
 private:
     bool _update_lock;
     QSpinBox* _n_spinbox;
+    ColorMapCombinedSliderSpinBox* _saturation_range_changer;
     ColorMapCombinedSliderSpinBox* _lightness_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
     ColorMapCombinedSliderSpinBox* _hue_changer;
@@ -327,7 +331,7 @@ public:
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
-    void parameters(int& n, float& lightness, float& saturation, float& hue, float& divergence) const;
+    void parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue, float& divergence) const;
 };
 
 class ColorMapPLQualitativeHueWidget : public ColorMapWidget
