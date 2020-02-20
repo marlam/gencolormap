@@ -457,7 +457,7 @@ int BrewerSequential(int n, unsigned char* colormap, float hue,
 
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         triplet c = get_colormap_entry(t, p0, p2, q0, q1, q2, contrast, brightness);
         if (luv_to_colormap(c, colormap + 3 * i))
             clipped++;
@@ -506,7 +506,7 @@ int BrewerDiverging(int n, unsigned char* colormap, float hue, float divergence,
                 c = 0.5f * (c0 + c1);
             }
         } else {
-            float t = i / (n - 1.0f);
+            float t = (i + 0.5f) / n;
             if (i < n / 2) {
                 float tt = 2.0f * t;
                 c = get_colormap_entry(tt, p00, p02, q00, q01, q02, contrast, brightness);
@@ -546,7 +546,7 @@ int BrewerQualitative(int n, unsigned char* colormap, float hue, float divergenc
     // Generate colors
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         float ch = std::fmod(twopi * (eps + t * r), twopi);
         float alpha = hue_diff(ch, ylch.h) / pi;
         float cl = (1.0f - alpha) * l0 + alpha * l1;
@@ -566,7 +566,7 @@ int PLSequentialLightness(int n, unsigned char* colormap, float saturation, floa
     lch.h = hue;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         lch.l = std::max(0.01f, t * 100.0f);
         lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
         if (lch_to_colormap(lch, colormap + 3 * i))
@@ -583,7 +583,7 @@ int PLSequentialSaturation(int n, unsigned char* colormap,
     lch.h = hue;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         lch.c = lch_chroma(lch.l, saturation * 5.0f * (1.0f - t));
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
@@ -596,7 +596,7 @@ int PLSequentialRainbow(int n, unsigned char* colormap, float hue, float rotatio
     triplet lch;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         lch.l = std::max(0.01f, t * 100.0f);
         lch.c = lch_chroma(lch.l, (1.0f - t) * saturation);
         lch.h = hue + t * rotations * twopi;
@@ -741,7 +741,7 @@ int PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, flo
 {
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float fract = i / (n - 1.0f);
+        float fract = (i + 0.5f) / n;
         // Black body temperature for this color map entry
         float t = temperature + fract * range;
         // Integrate radiance over the visible spectrum; according
@@ -769,7 +769,7 @@ int PLDivergingLightness(int n, unsigned char* colormap, float lightness, float 
     triplet lch;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         lch.l = std::max(0.01f, 100.0f * lightness + 100.0f * (1.0f - lightness) * (t <= 0.5f ? 2.0f * t : 2.0f * (1.0f - t)));
         float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
         lch.c = lch_chroma(lch.l, s);
@@ -787,7 +787,7 @@ int PLDivergingSaturation(int n, unsigned char* colormap,
     lch.l = std::max(0.01f, lightness * 100.0f);
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         float s = saturation * 5.0f * (t <= 0.5f ? 2.0f * (0.5f - t) : 2.0f * (t - 0.5f));
         lch.c = lch_chroma(lch.l, s);
         lch.h = (t <= 0.5f ? hue : hue + divergence);
@@ -806,7 +806,7 @@ int PLQualitativeHue(int n, unsigned char* colormap,
     lch.c = lch_chroma(lch.l, saturation * 5.0f);
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         lch.h = hue + t * divergence;
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
@@ -821,7 +821,7 @@ int CubeHelix(int n, unsigned char* colormap, float hue,
 {
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float fract = i / (n - 1.0f);
+        float fract = (i + 0.5f) / n;
         float angle = twopi * (hue / 3.0f + 1.0f + rot * fract);
         fract = std::pow(fract, gamma);
         float amp = saturation * fract * (1.0f - fract) / 2.0f;
@@ -889,7 +889,7 @@ int Moreland(int n, unsigned char* colormap,
     for (int i = 0; i < n; i++) {
         triplet msh0 = omsh0;
         triplet msh1 = omsh1;
-        float t = i / (n - 1.0f);
+        float t = (i + 0.5f) / n;
         if (place_white) {
             if (t < 0.5f) {
                 msh1.m = mmid;
@@ -955,7 +955,7 @@ int McNames(int n, unsigned char* colormap, float periods)
 
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float t = 1.0f - i / (n - 1.0f);
+        float t = 1.0f - (i + 0.5f) / n;
         float w = windowfunc(t);
         float tt = (1.0f - t) * sqrt3;
         float ttt = (tt - sqrt3 / 2.0f) * periods * twopi / sqrt3;
