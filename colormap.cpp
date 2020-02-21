@@ -631,21 +631,21 @@ static triplet lch_compute_uniform_lc(float t,
 }
 
 int PLSequentialLightness(int n, unsigned char* colormap,
-        float lightness_range, float saturation, float hue)
+        float lightness_range, float saturation_range, float saturation, float hue)
 {
     triplet lch_00, lch_10, lch_05;
 
     lch_00.l = (1.0f - lightness_range) * 100.0f;
-    lch_00.c = lch_chroma(lch_00.l, 0.0f);
+    lch_00.c = lch_chroma(lch_00.l, 1.0f - saturation_range);
     lch_00.h = hue;
     lch_10.l = lightness_range * 100.0f;
-    lch_10.c = lch_chroma(lch_10.l, 0.0f);
+    lch_10.c = lch_chroma(lch_10.l, 1.0f - saturation_range);
     lch_10.h = hue;
     lch_05.l = (1.0f - 0.5f) * lch_00.l + 0.5f * lch_10.l;
-    lch_05.c = lch_chroma(lch_05.l, 5.0f * saturation);
+    lch_05.c = lch_chroma(lch_05.l, 5.0f * saturation_range * saturation);
     lch_05.h = hue;
 
-    // the following distances are actually the same if 0.5f is 0.5:
+    // the following distances are actually the same since hue is constant:
     float D_00_05 = lch_distance(lch_00, lch_05);
     float D_05_10 = lch_distance(lch_05, lch_10);
 
@@ -691,21 +691,22 @@ int PLSequentialSaturation(int n, unsigned char* colormap,
 }
 
 int PLSequentialRainbow(int n, unsigned char* colormap,
-        float lightness_range,
+        float lightness_range, float saturation_range,
         float hue, float rotations, float saturation)
 {
     triplet lch_00, lch_10, lch_05;
 
     lch_00.l = (1.0f - lightness_range) * 100.0f;
-    lch_00.c = lch_chroma(lch_00.l, (1.0f - lightness_range) * saturation);
+    lch_00.c = lch_chroma(lch_00.l, 1.0f - saturation_range);
     lch_00.h = hue + 0.0f * rotations * twopi;
     lch_10.l = lightness_range * 100.0f;
-    lch_10.c = lch_chroma(lch_10.l, (1.0f - lightness_range) * saturation);
+    lch_10.c = lch_chroma(lch_10.l, 1.0f - saturation_range);
     lch_10.h = hue + 1.0f * rotations * twopi;
     lch_05.l = 0.5f * (lch_00.l + lch_10.l);
-    lch_05.c = lch_chroma(lch_05.l, saturation);
+    lch_05.c = lch_chroma(lch_05.l, saturation_range * saturation);
     lch_05.h = hue + 0.5f * rotations * twopi;
 
+    // the following are not necessarily equal because hue varies:
     float D_00_05 = lch_distance(lch_00, lch_05);
     float D_05_10 = lch_distance(lch_05, lch_10);
 
@@ -960,17 +961,17 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
 }
 
 int PLDivergingLightness(int n, unsigned char* colormap,
-        float lightness_range, float saturation, float hue, float divergence)
+        float lightness_range, float saturation_range, float saturation, float hue, float divergence)
 {
     int lowerN = n / 2;
     int higherN = n - lowerN;
     int clipped = 0;
 
-    clipped += PLSequentialLightness(higherN, colormap, lightness_range, saturation, hue + divergence);
+    clipped += PLSequentialLightness(higherN, colormap, lightness_range, saturation_range, saturation, hue + divergence);
     for (int i = 0; i < higherN; i++)
         for (int j = 0; j < 3; j++)
             colormap[3 * lowerN + 3 * i + j] = colormap[3 * (higherN - 1 - i) + j];
-    clipped += PLSequentialLightness(lowerN, colormap, lightness_range, saturation, hue);
+    clipped += PLSequentialLightness(lowerN, colormap, lightness_range, saturation_range, saturation, hue);
     return clipped;
 }
 

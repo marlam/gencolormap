@@ -119,19 +119,21 @@ int BrewerQualitative(int n, unsigned char* colormap,
 // Varying lightness
 
 const float PLSequentialLightnessDefaultLightnessRange = 0.95f;
+const float PLSequentialLightnessDefaultSaturationRange = 0.95f;
 const float PLSequentialLightnessDefaultSaturation = 0.45f;
 const float PLSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
 
 int PLSequentialLightness(int n, unsigned char* colormap,
         float lightness_range = PLSequentialLightnessDefaultLightnessRange,
+        float saturation_range = PLSequentialLightnessDefaultSaturationRange,
         float saturation = PLSequentialLightnessDefaultSaturation,
         float hue = PLSequentialLightnessDefaultHue);
 
 // Varying saturation
 
-const float PLSequentialSaturationDefaultSaturationRange = 0.95f;
+const float PLSequentialSaturationDefaultSaturationRange = PLSequentialLightnessDefaultSaturationRange;
 const float PLSequentialSaturationDefaultLightness = 0.5f;
-const float PLSequentialSaturationDefaultSaturation = 0.45f;
+const float PLSequentialSaturationDefaultSaturation = PLSequentialLightnessDefaultSaturation;
 const float PLSequentialSaturationDefaultHue = 0.349065850399f; // 20 deg
 
 int PLSequentialSaturation(int n, unsigned char* colormap,
@@ -143,12 +145,14 @@ int PLSequentialSaturation(int n, unsigned char* colormap,
 // Varying hue (through all colors, rainbow-like)
 
 const float PLSequentialRainbowDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
+const float PLSequentialRainbowDefaultSaturationRange = PLSequentialLightnessDefaultSaturationRange;
 const float PLSequentialRainbowDefaultHue = 0.0f;
 const float PLSequentialRainbowDefaultRotations = -1.5f;
 const float PLSequentialRainbowDefaultSaturation = 1.1f;
 
 int PLSequentialRainbow(int n, unsigned char* colormap,
         float lightness_range = PLSequentialRainbowDefaultLightnessRange,
+        float saturation_range = PLSequentialRainbowDefaultSaturationRange,
         float hue = PLSequentialRainbowDefaultHue,
         float rotations = PLSequentialRainbowDefaultRotations,
         float saturation = PLSequentialRainbowDefaultSaturation);
@@ -170,10 +174,9 @@ int PLSequentialBlackBody(int n, unsigned char* colormap,
 // Varying hue (user definable)
 const float PLSequentialMultiHueDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
 const float PLSequentialMultiHueDefaultSaturationRange = PLSequentialSaturationDefaultSaturationRange;
-const float PLSequentialMultiHueDefaultSaturation = PLSequentialLightnessDefaultSaturation;
+const float PLSequentialMultiHueDefaultSaturation = 0.38f;
 const int PLSequentialMultiHueDefaultHues = 2; // number of hues defined in the following lists
-const float PLSequentialMultiHueDefaultHueValues[] = {
-    PLSequentialLightnessDefaultHue, PLSequentialLightnessDefaultHue + 4.18879020479f }; // hues values in radians in [0,2pi]
+const float PLSequentialMultiHueDefaultHueValues[] = { 0.0f, 1.0471975512f }; // hues values in radians in [0,2pi]
 const float PLSequentialMultiHueDefaultHuePositions[] = { 0.25f, 0.75f }; // hue positions in [0,1] sorted in ascending order
 
 int PLSequentialMultiHue(int n, unsigned char* colormap,
@@ -189,12 +192,14 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
 // Varying lightness
 
 const float PLDivergingLightnessDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
-const float PLDivergingLightnessDefaultSaturation = 0.45f;
+const float PLDivergingLightnessDefaultSaturationRange = PLSequentialLightnessDefaultSaturationRange;
+const float PLDivergingLightnessDefaultSaturation = PLSequentialLightnessDefaultSaturation;
 const float PLDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
 const float PLDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
 int PLDivergingLightness(int n, unsigned char* colormap,
         float lightness_range = PLDivergingLightnessDefaultLightnessRange,
+        float saturation_range = PLDivergingLightnessDefaultSaturationRange,
         float saturation = PLDivergingLightnessDefaultSaturation,
         float hue = PLDivergingLightnessDefaultHue,
         float divergence = PLDivergingLightnessDefaultDivergence);

@@ -411,19 +411,22 @@ int main(int argc, char* argv[])
         clipped = ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
         break;
     case plseq_lightness:
-        clipped = ColorMap::PLSequentialLightness(n, &(colormap[0]), range, saturation, hue);
+        clipped = ColorMap::PLSequentialLightness(n, &(colormap[0]), range, range, saturation, hue);
+        // TODO: differentiate between lightness range and saturation range
         break;
     case plseq_saturation:
         clipped = ColorMap::PLSequentialSaturation(n, &(colormap[0]), range, lightness, saturation, hue);
         break;
     case plseq_rainbow:
-        clipped = ColorMap::PLSequentialRainbow(n, &(colormap[0]), range, hue, rotations, saturation);
+        clipped = ColorMap::PLSequentialRainbow(n, &(colormap[0]), range, range, hue, rotations, saturation);
+        // TODO: differentiate between lightness range and saturation range
         break;
     case plseq_blackbody:
         clipped = ColorMap::PLSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
         break;
     case pldiv_lightness:
-        clipped = ColorMap::PLDivergingLightness(n, &(colormap[0]), range, saturation, hue, divergence);
+        clipped = ColorMap::PLDivergingLightness(n, &(colormap[0]), range, range, saturation, hue, divergence);
+        // TODO: differentiate between lightness range and saturation range
         break;
     case pldiv_saturation:
         clipped = ColorMap::PLDivergingSaturation(n, &(colormap[0]), range, lightness, saturation, hue, divergence);
