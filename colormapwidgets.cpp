@@ -47,36 +47,36 @@ static QString brewerlike_reference = QString("Relevant paper: "
         "<a href=\"http://dx.doi.org/10.1111/j.1467-8659.2008.01203.x\">Generating Color Palettes using Intuitive Parameters</a>, "
         "Computer Graphics Forum 27(3), May 2008.");
 
-static QString plseq_lightness_reference = QString(
-        "Approximately perceptually linear, constant hue, varying lightness and saturation.<br>"
+static QString puseq_lightness_reference = QString(
+        "Approximately perceptually uniform, constant hue, varying lightness and saturation. "
         "Computed in CIELUV/LCH color space.");
 
-static QString plseq_saturation_reference = QString(
-        "Approximately perceptually linear, constant lightness and hue, varying saturation.<br>"
+static QString puseq_saturation_reference = QString(
+        "Approximately perceptually uniform, constant lightness and hue, varying saturation. "
         "Computed in CIELUV/LCH color space.");
 
-static QString plseq_rainbow_reference = QString(
-        "Approximately perceptually linear, varying lightness, saturation, and hue (rainbow).<br>"
+static QString puseq_rainbow_reference = QString(
+        "Approximately perceptually uniform, varying lightness, saturation, and hue (rainbow). "
         "Computed in CIELUV/LCH color space.");
 
-static QString plseq_blackbody_reference = QString(
-        "Approximately perceptually linear, varying lightness, saturation, and hue (black body at increasing temperatures).<br>"
+static QString puseq_blackbody_reference = QString(
+        "Approximately perceptually uniform, varying lightness, saturation, and hue (black body at increasing temperatures). "
         "Computed in CIELUV/LCH color space.");
 
-static QString plseq_multihue_reference = QString(
-        "Approximately perceptually linear, varying lightness, saturation, and hue (user definable).<br>"
+static QString puseq_multihue_reference = QString(
+        "Approximately perceptually uniform, varying lightness, saturation, and hue (user definable). "
         "Computed in CIELUV/LCH color space.");
 
-static QString pldiv_lightness_reference = QString(
-        "Approximately perceptually linear, constant hues, varying lightness and saturation.<br>"
+static QString pudiv_lightness_reference = QString(
+        "Approximately perceptually uniform, constant hues, varying lightness and saturation. "
         "Computed in CIELUV/LCH color space.");
 
-static QString pldiv_saturation_reference = QString(
-        "Approximately perceptually linear, constant lightness and hues, varying saturation.<br>"
+static QString pudiv_saturation_reference = QString(
+        "Approximately perceptually uniform, constant lightness and hues, varying saturation. "
         "Computed in CIELUV/LCH color space.");
 
-static QString plqual_hue_reference = QString(
-        "Approximately perceptually linear, constant lightness and saturation, evenly distributed hue.<br>"
+static QString puqual_hue_reference = QString(
+        "Approximately perceptually uniform, constant lightness and saturation, evenly distributed hue. "
         "Computed in CIELUV/LCH color space.");
 
 static QString cubehelix_reference = QString("Relevant paper: "
@@ -559,9 +559,9 @@ void ColorMapBrewerQualitativeWidget::update()
         emit colorMapChanged();
 }
 
-/* ColorMapPLSequentialLightnessWidget */
+/* ColorMapPUSequentialLightnessWidget */
 
-ColorMapPLSequentialLightnessWidget::ColorMapPLSequentialLightnessWidget() :
+ColorMapPUSequentialLightnessWidget::ColorMapPUSequentialLightnessWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -610,40 +610,40 @@ ColorMapPLSequentialLightnessWidget::ColorMapPLSequentialLightnessWidget() :
     reset();
 }
 
-ColorMapPLSequentialLightnessWidget::~ColorMapPLSequentialLightnessWidget()
+ColorMapPUSequentialLightnessWidget::~ColorMapPUSequentialLightnessWidget()
 {
 }
 
-void ColorMapPLSequentialLightnessWidget::reset()
+void ColorMapPUSequentialLightnessWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _lightness_range_changer->setValue(ColorMap::PLSequentialLightnessDefaultLightnessRange);
-    _saturation_range_changer->setValue(ColorMap::PLSequentialLightnessDefaultSaturationRange);
-    _saturation_changer->setValue(ColorMap::PLSequentialLightnessDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLSequentialLightnessDefaultHue));
+    _lightness_range_changer->setValue(ColorMap::PUSequentialLightnessDefaultLightnessRange);
+    _saturation_range_changer->setValue(ColorMap::PUSequentialLightnessDefaultSaturationRange);
+    _saturation_changer->setValue(ColorMap::PUSequentialLightnessDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PUSequentialLightnessDefaultHue));
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLSequentialLightnessWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUSequentialLightnessWidget::colorMap(int* clipped) const
 {
     int n;
     float lr, sr, s, h;
     parameters(n, lr, sr, s, h);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLSequentialLightness(n, colormap.data(), lr, sr, s, h);
+    int cl = ColorMap::PUSequentialLightness(n, colormap.data(), lr, sr, s, h);
     if (clipped)
         *clipped = cl;
     return colormap;
 }
 
-QString ColorMapPLSequentialLightnessWidget::reference() const
+QString ColorMapPUSequentialLightnessWidget::reference() const
 {
-    return plseq_lightness_reference;
+    return puseq_lightness_reference;
 }
 
-void ColorMapPLSequentialLightnessWidget::parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue) const
+void ColorMapPUSequentialLightnessWidget::parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue) const
 {
     n = _n_spinbox->value();
     lightness_range = _lightness_range_changer->value();
@@ -652,15 +652,15 @@ void ColorMapPLSequentialLightnessWidget::parameters(int& n, float& lightness_ra
     hue = qDegreesToRadians(_hue_changer->value());
 }
 
-void ColorMapPLSequentialLightnessWidget::update()
+void ColorMapPUSequentialLightnessWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapPLSequentialSaturationWidget */
+/* ColorMapPUSequentialSaturationWidget */
 
-ColorMapPLSequentialSaturationWidget::ColorMapPLSequentialSaturationWidget() :
+ColorMapPUSequentialSaturationWidget::ColorMapPUSequentialSaturationWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -709,40 +709,40 @@ ColorMapPLSequentialSaturationWidget::ColorMapPLSequentialSaturationWidget() :
     reset();
 }
 
-ColorMapPLSequentialSaturationWidget::~ColorMapPLSequentialSaturationWidget()
+ColorMapPUSequentialSaturationWidget::~ColorMapPUSequentialSaturationWidget()
 {
 }
 
-void ColorMapPLSequentialSaturationWidget::reset()
+void ColorMapPUSequentialSaturationWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _saturation_range_changer->setValue(ColorMap::PLSequentialSaturationDefaultSaturationRange);
-    _lightness_changer->setValue(ColorMap::PLSequentialSaturationDefaultLightness);
-    _saturation_changer->setValue(ColorMap::PLSequentialSaturationDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLSequentialSaturationDefaultHue));
+    _saturation_range_changer->setValue(ColorMap::PUSequentialSaturationDefaultSaturationRange);
+    _lightness_changer->setValue(ColorMap::PUSequentialSaturationDefaultLightness);
+    _saturation_changer->setValue(ColorMap::PUSequentialSaturationDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PUSequentialSaturationDefaultHue));
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLSequentialSaturationWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUSequentialSaturationWidget::colorMap(int* clipped) const
 {
     int n;
     float sr, l, s, h;
     parameters(n, sr, l, s, h);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLSequentialSaturation(n, colormap.data(), sr, l, s, h);
+    int cl = ColorMap::PUSequentialSaturation(n, colormap.data(), sr, l, s, h);
     if (clipped)
         *clipped = cl;
     return colormap;
 }
 
-QString ColorMapPLSequentialSaturationWidget::reference() const
+QString ColorMapPUSequentialSaturationWidget::reference() const
 {
-    return plseq_saturation_reference;
+    return puseq_saturation_reference;
 }
 
-void ColorMapPLSequentialSaturationWidget::parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue) const
+void ColorMapPUSequentialSaturationWidget::parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue) const
 {
     n = _n_spinbox->value();
     saturation_range = _saturation_range_changer->value();
@@ -751,15 +751,15 @@ void ColorMapPLSequentialSaturationWidget::parameters(int& n, float& saturation_
     hue = qDegreesToRadians(_hue_changer->value());
 }
 
-void ColorMapPLSequentialSaturationWidget::update()
+void ColorMapPUSequentialSaturationWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapPLSequentialRainbowWidget */
+/* ColorMapPUSequentialRainbowWidget */
 
-ColorMapPLSequentialRainbowWidget::ColorMapPLSequentialRainbowWidget() :
+ColorMapPUSequentialRainbowWidget::ColorMapPUSequentialRainbowWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -815,41 +815,41 @@ ColorMapPLSequentialRainbowWidget::ColorMapPLSequentialRainbowWidget() :
     reset();
 }
 
-ColorMapPLSequentialRainbowWidget::~ColorMapPLSequentialRainbowWidget()
+ColorMapPUSequentialRainbowWidget::~ColorMapPUSequentialRainbowWidget()
 {
 }
 
-void ColorMapPLSequentialRainbowWidget::reset()
+void ColorMapPUSequentialRainbowWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _lightness_range_changer->setValue(ColorMap::PLSequentialRainbowDefaultLightnessRange);
-    _saturation_range_changer->setValue(ColorMap::PLSequentialRainbowDefaultSaturationRange);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLSequentialRainbowDefaultHue));
-    _rotations_changer->setValue(ColorMap::PLSequentialRainbowDefaultRotations);
-    _saturation_changer->setValue(ColorMap::PLSequentialRainbowDefaultSaturation);
+    _lightness_range_changer->setValue(ColorMap::PUSequentialRainbowDefaultLightnessRange);
+    _saturation_range_changer->setValue(ColorMap::PUSequentialRainbowDefaultSaturationRange);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PUSequentialRainbowDefaultHue));
+    _rotations_changer->setValue(ColorMap::PUSequentialRainbowDefaultRotations);
+    _saturation_changer->setValue(ColorMap::PUSequentialRainbowDefaultSaturation);
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLSequentialRainbowWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUSequentialRainbowWidget::colorMap(int* clipped) const
 {
     int n;
     float lr, sr, h, r, s;
     parameters(n, lr, sr, h, r, s);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLSequentialRainbow(n, colormap.data(), lr, sr, h, r, s);
+    int cl = ColorMap::PUSequentialRainbow(n, colormap.data(), lr, sr, h, r, s);
     if (clipped)
         *clipped = cl;
     return colormap;
 }
 
-QString ColorMapPLSequentialRainbowWidget::reference() const
+QString ColorMapPUSequentialRainbowWidget::reference() const
 {
-    return plseq_rainbow_reference;
+    return puseq_rainbow_reference;
 }
 
-void ColorMapPLSequentialRainbowWidget::parameters(int& n,
+void ColorMapPUSequentialRainbowWidget::parameters(int& n,
         float& lightness_range, float& saturation_range,
         float& hue, float& rotations, float& saturation) const
 {
@@ -861,15 +861,15 @@ void ColorMapPLSequentialRainbowWidget::parameters(int& n,
     saturation = _saturation_changer->value();
 }
 
-void ColorMapPLSequentialRainbowWidget::update()
+void ColorMapPUSequentialRainbowWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapPLSequentialBlackBodyWidget */
+/* ColorMapPUSequentialBlackBodyWidget */
 
-ColorMapPLSequentialBlackBodyWidget::ColorMapPLSequentialBlackBodyWidget() :
+ColorMapPUSequentialBlackBodyWidget::ColorMapPUSequentialBlackBodyWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -911,39 +911,39 @@ ColorMapPLSequentialBlackBodyWidget::ColorMapPLSequentialBlackBodyWidget() :
     reset();
 }
 
-ColorMapPLSequentialBlackBodyWidget::~ColorMapPLSequentialBlackBodyWidget()
+ColorMapPUSequentialBlackBodyWidget::~ColorMapPUSequentialBlackBodyWidget()
 {
 }
 
-void ColorMapPLSequentialBlackBodyWidget::reset()
+void ColorMapPUSequentialBlackBodyWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _temperature_changer->setValue(ColorMap::PLSequentialBlackBodyDefaultTemperature);
-    _range_changer->setValue(ColorMap::PLSequentialBlackBodyDefaultRange);
-    _saturation_changer->setValue(ColorMap::PLSequentialBlackBodyDefaultSaturation);
+    _temperature_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultTemperature);
+    _range_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultRange);
+    _saturation_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultSaturation);
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLSequentialBlackBodyWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUSequentialBlackBodyWidget::colorMap(int* clipped) const
 {
     int n;
     float t, r, s;
     parameters(n, t, r, s);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLSequentialBlackBody(n, colormap.data(), t, r, s);
+    int cl = ColorMap::PUSequentialBlackBody(n, colormap.data(), t, r, s);
     if (clipped)
         *clipped = cl;
     return colormap;
 }
 
-QString ColorMapPLSequentialBlackBodyWidget::reference() const
+QString ColorMapPUSequentialBlackBodyWidget::reference() const
 {
-    return plseq_blackbody_reference;
+    return puseq_blackbody_reference;
 }
 
-void ColorMapPLSequentialBlackBodyWidget::parameters(int& n, float& temperature, float& range, float& saturation) const
+void ColorMapPUSequentialBlackBodyWidget::parameters(int& n, float& temperature, float& range, float& saturation) const
 {
     n = _n_spinbox->value();
     temperature = _temperature_changer->value();
@@ -951,13 +951,13 @@ void ColorMapPLSequentialBlackBodyWidget::parameters(int& n, float& temperature,
     saturation = _saturation_changer->value();
 }
 
-void ColorMapPLSequentialBlackBodyWidget::update()
+void ColorMapPUSequentialBlackBodyWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapPLSequentialMultiHueWidget */
+/* ColorMapPUSequentialMultiHueWidget */
 
 static float colorToHue(QColor color)
 {
@@ -969,7 +969,7 @@ static QColor hueToColor(float hue)
     return QColor::fromHsvF(hue / (2.0f * static_cast<float>(M_PI)), 1.0f, 1.0f);
 }
 
-ColorMapPLSequentialMultiHueWidget::ColorMapPLSequentialMultiHueWidget() :
+ColorMapPUSequentialMultiHueWidget::ColorMapPUSequentialMultiHueWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -1040,7 +1040,7 @@ ColorMapPLSequentialMultiHueWidget::ColorMapPLSequentialMultiHueWidget() :
     reset();
 }
 
-ColorMapPLSequentialMultiHueWidget::~ColorMapPLSequentialMultiHueWidget()
+ColorMapPUSequentialMultiHueWidget::~ColorMapPUSequentialMultiHueWidget()
 {
 }
 
@@ -1053,31 +1053,31 @@ static QListWidgetItem* list_item_from_huepos(float hue, float pos)
     return lwi;
 }
 
-void ColorMapPLSequentialMultiHueWidget::reset()
+void ColorMapPUSequentialMultiHueWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
     _hue_list_widget->clear();
-    for (int i = 0; i < ColorMap::PLSequentialMultiHueDefaultHues; i++) {
+    for (int i = 0; i < ColorMap::PUSequentialMultiHueDefaultHues; i++) {
         _hue_list_widget->addItem(list_item_from_huepos(
-                    ColorMap::PLSequentialMultiHueDefaultHueValues[i],
-                    ColorMap::PLSequentialMultiHueDefaultHuePositions[i]));
+                    ColorMap::PUSequentialMultiHueDefaultHueValues[i],
+                    ColorMap::PUSequentialMultiHueDefaultHuePositions[i]));
     }
-    _lightness_range_changer->setValue(ColorMap::PLSequentialMultiHueDefaultLightnessRange);
-    _saturation_range_changer->setValue(ColorMap::PLSequentialMultiHueDefaultSaturationRange);
-    _saturation_changer->setValue(ColorMap::PLSequentialMultiHueDefaultSaturation);
+    _lightness_range_changer->setValue(ColorMap::PUSequentialMultiHueDefaultLightnessRange);
+    _saturation_range_changer->setValue(ColorMap::PUSequentialMultiHueDefaultSaturationRange);
+    _saturation_changer->setValue(ColorMap::PUSequentialMultiHueDefaultSaturation);
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLSequentialMultiHueWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUSequentialMultiHueWidget::colorMap(int* clipped) const
 {
     int n;
     QVector<float> hue_values, hue_positions;
     float lr, sr, s;
     parameters(n, lr, sr, s, hue_values, hue_positions);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLSequentialMultiHue(n, colormap.data(),
+    int cl = ColorMap::PUSequentialMultiHue(n, colormap.data(),
             lr, sr, s,
             hue_values.size(), hue_values.data(), hue_positions.data());
     if (clipped)
@@ -1085,12 +1085,12 @@ QVector<unsigned char> ColorMapPLSequentialMultiHueWidget::colorMap(int* clipped
     return colormap;
 }
 
-QString ColorMapPLSequentialMultiHueWidget::reference() const
+QString ColorMapPUSequentialMultiHueWidget::reference() const
 {
-    return plseq_multihue_reference;
+    return puseq_multihue_reference;
 }
 
-void ColorMapPLSequentialMultiHueWidget::parameters(int& n,
+void ColorMapPUSequentialMultiHueWidget::parameters(int& n,
         float& lr, float& sr, float& s,
         QVector<float>& hue_values, QVector<float>& hue_positions) const
 {
@@ -1109,13 +1109,13 @@ void ColorMapPLSequentialMultiHueWidget::parameters(int& n,
     }
 }
 
-void ColorMapPLSequentialMultiHueWidget::update()
+void ColorMapPUSequentialMultiHueWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-void ColorMapPLSequentialMultiHueWidget::hueButtonClicked()
+void ColorMapPUSequentialMultiHueWidget::hueButtonClicked()
 {
     QColor color = QColorDialog::getColor(_hue_button_color, this);
     if (color.isValid()) {
@@ -1124,14 +1124,14 @@ void ColorMapPLSequentialMultiHueWidget::hueButtonClicked()
     }
 }
 
-void ColorMapPLSequentialMultiHueWidget::updateHueButton()
+void ColorMapPUSequentialMultiHueWidget::updateHueButton()
 {
     QPixmap pm(64, 64);
     pm.fill(_hue_button_color);
     _hue_button->setIcon(QIcon(pm));
 }
 
-void ColorMapPLSequentialMultiHueWidget::addHue()
+void ColorMapPUSequentialMultiHueWidget::addHue()
 {
     float hue = colorToHue(_hue_button_color);
     float pos = _pos_spinbox->value();
@@ -1148,15 +1148,15 @@ void ColorMapPLSequentialMultiHueWidget::addHue()
     update();
 }
 
-void ColorMapPLSequentialMultiHueWidget::removeHue()
+void ColorMapPUSequentialMultiHueWidget::removeHue()
 {
     delete _hue_list_widget->currentItem();
     update();
 }
 
-/* ColorMapPLDivergingLightnessWidget */
+/* ColorMapPUDivergingLightnessWidget */
 
-ColorMapPLDivergingLightnessWidget::ColorMapPLDivergingLightnessWidget() :
+ColorMapPUDivergingLightnessWidget::ColorMapPUDivergingLightnessWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -1212,41 +1212,41 @@ ColorMapPLDivergingLightnessWidget::ColorMapPLDivergingLightnessWidget() :
     reset();
 }
 
-ColorMapPLDivergingLightnessWidget::~ColorMapPLDivergingLightnessWidget()
+ColorMapPUDivergingLightnessWidget::~ColorMapPUDivergingLightnessWidget()
 {
 }
 
-void ColorMapPLDivergingLightnessWidget::reset()
+void ColorMapPUDivergingLightnessWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(257);
-    _lightness_range_changer->setValue(ColorMap::PLDivergingLightnessDefaultLightnessRange);
-    _saturation_range_changer->setValue(ColorMap::PLDivergingLightnessDefaultSaturationRange);
-    _saturation_changer->setValue(ColorMap::PLDivergingLightnessDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingLightnessDefaultHue));
-    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingLightnessDefaultDivergence));
+    _lightness_range_changer->setValue(ColorMap::PUDivergingLightnessDefaultLightnessRange);
+    _saturation_range_changer->setValue(ColorMap::PUDivergingLightnessDefaultSaturationRange);
+    _saturation_changer->setValue(ColorMap::PUDivergingLightnessDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PUDivergingLightnessDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PUDivergingLightnessDefaultDivergence));
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLDivergingLightnessWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUDivergingLightnessWidget::colorMap(int* clipped) const
 {
     int n;
     float lr, sr, s, h, d;
     parameters(n, lr, sr, s, h, d);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLDivergingLightness(n, colormap.data(), lr, sr, s, h, d);
+    int cl = ColorMap::PUDivergingLightness(n, colormap.data(), lr, sr, s, h, d);
     if (clipped)
         *clipped = cl;
     return colormap;
 }
 
-QString ColorMapPLDivergingLightnessWidget::reference() const
+QString ColorMapPUDivergingLightnessWidget::reference() const
 {
-    return pldiv_lightness_reference;
+    return pudiv_lightness_reference;
 }
 
-void ColorMapPLDivergingLightnessWidget::parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue, float& divergence) const
+void ColorMapPUDivergingLightnessWidget::parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue, float& divergence) const
 {
     n = _n_spinbox->value();
     lightness_range = _lightness_range_changer->value();
@@ -1256,15 +1256,15 @@ void ColorMapPLDivergingLightnessWidget::parameters(int& n, float& lightness_ran
     divergence = qDegreesToRadians(_divergence_changer->value());
 }
 
-void ColorMapPLDivergingLightnessWidget::update()
+void ColorMapPUDivergingLightnessWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapPLDivergingSaturationWidget */
+/* ColorMapPUDivergingSaturationWidget */
 
-ColorMapPLDivergingSaturationWidget::ColorMapPLDivergingSaturationWidget() :
+ColorMapPUDivergingSaturationWidget::ColorMapPUDivergingSaturationWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -1320,41 +1320,41 @@ ColorMapPLDivergingSaturationWidget::ColorMapPLDivergingSaturationWidget() :
     reset();
 }
 
-ColorMapPLDivergingSaturationWidget::~ColorMapPLDivergingSaturationWidget()
+ColorMapPUDivergingSaturationWidget::~ColorMapPUDivergingSaturationWidget()
 {
 }
 
-void ColorMapPLDivergingSaturationWidget::reset()
+void ColorMapPUDivergingSaturationWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(257);
-    _saturation_range_changer->setValue(ColorMap::PLDivergingSaturationDefaultSaturationRange);
-    _lightness_changer->setValue(ColorMap::PLDivergingSaturationDefaultLightness);
-    _saturation_changer->setValue(ColorMap::PLDivergingSaturationDefaultSaturation);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingSaturationDefaultHue));
-    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PLDivergingSaturationDefaultDivergence));
+    _saturation_range_changer->setValue(ColorMap::PUDivergingSaturationDefaultSaturationRange);
+    _lightness_changer->setValue(ColorMap::PUDivergingSaturationDefaultLightness);
+    _saturation_changer->setValue(ColorMap::PUDivergingSaturationDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PUDivergingSaturationDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PUDivergingSaturationDefaultDivergence));
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLDivergingSaturationWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUDivergingSaturationWidget::colorMap(int* clipped) const
 {
     int n;
     float sr, l, s, h, d;
     parameters(n, sr, l, s, h, d);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLDivergingSaturation(n, colormap.data(), sr, l, s, h, d);
+    int cl = ColorMap::PUDivergingSaturation(n, colormap.data(), sr, l, s, h, d);
     if (clipped)
         *clipped = cl;
     return colormap;
 }
 
-QString ColorMapPLDivergingSaturationWidget::reference() const
+QString ColorMapPUDivergingSaturationWidget::reference() const
 {
-    return pldiv_saturation_reference;
+    return pudiv_saturation_reference;
 }
 
-void ColorMapPLDivergingSaturationWidget::parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue, float& divergence) const
+void ColorMapPUDivergingSaturationWidget::parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue, float& divergence) const
 {
     n = _n_spinbox->value();
     saturation_range = _saturation_range_changer->value();
@@ -1364,15 +1364,15 @@ void ColorMapPLDivergingSaturationWidget::parameters(int& n, float& saturation_r
     divergence = qDegreesToRadians(_divergence_changer->value());
 }
 
-void ColorMapPLDivergingSaturationWidget::update()
+void ColorMapPUDivergingSaturationWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();
 }
 
-/* ColorMapPLQualitativeHueWidget */
+/* ColorMapPUQualitativeHueWidget */
 
-ColorMapPLQualitativeHueWidget::ColorMapPLQualitativeHueWidget() :
+ColorMapPUQualitativeHueWidget::ColorMapPUQualitativeHueWidget() :
     _update_lock(false)
 {
     QGridLayout *layout = new QGridLayout;
@@ -1421,40 +1421,40 @@ ColorMapPLQualitativeHueWidget::ColorMapPLQualitativeHueWidget() :
     reset();
 }
 
-ColorMapPLQualitativeHueWidget::~ColorMapPLQualitativeHueWidget()
+ColorMapPUQualitativeHueWidget::~ColorMapPUQualitativeHueWidget()
 {
 }
 
-void ColorMapPLQualitativeHueWidget::reset()
+void ColorMapPUQualitativeHueWidget::reset()
 {
     _update_lock = true;
     _n_spinbox->setValue(256);
-    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultHue));
-    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PLQualitativeHueDefaultDivergence));
-    _lightness_changer->setValue(ColorMap::PLQualitativeHueDefaultLightness);
-    _saturation_changer->setValue(ColorMap::PLQualitativeHueDefaultSaturation);
+    _hue_changer->setValue(qRadiansToDegrees(ColorMap::PUQualitativeHueDefaultHue));
+    _divergence_changer->setValue(qRadiansToDegrees(ColorMap::PUQualitativeHueDefaultDivergence));
+    _lightness_changer->setValue(ColorMap::PUQualitativeHueDefaultLightness);
+    _saturation_changer->setValue(ColorMap::PUQualitativeHueDefaultSaturation);
     _update_lock = false;
     update();
 }
 
-QVector<unsigned char> ColorMapPLQualitativeHueWidget::colorMap(int* clipped) const
+QVector<unsigned char> ColorMapPUQualitativeHueWidget::colorMap(int* clipped) const
 {
     int n;
     float h, d, l, s;
     parameters(n, h, d, l, s);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PLQualitativeHue(n, colormap.data(), h, d, l, s);
+    int cl = ColorMap::PUQualitativeHue(n, colormap.data(), h, d, l, s);
     if (clipped)
         *clipped = cl;
     return colormap;
 }
 
-QString ColorMapPLQualitativeHueWidget::reference() const
+QString ColorMapPUQualitativeHueWidget::reference() const
 {
-    return plqual_hue_reference;
+    return puqual_hue_reference;
 }
 
-void ColorMapPLQualitativeHueWidget::parameters(int& n, float& hue, float& divergence, float& lightness, float& saturation) const
+void ColorMapPUQualitativeHueWidget::parameters(int& n, float& hue, float& divergence, float& lightness, float& saturation) const
 {
     n = _n_spinbox->value();
     hue = qDegreesToRadians(_hue_changer->value());
@@ -1463,7 +1463,7 @@ void ColorMapPLQualitativeHueWidget::parameters(int& n, float& hue, float& diver
     saturation = _saturation_changer->value();
 }
 
-void ColorMapPLQualitativeHueWidget::update()
+void ColorMapPUQualitativeHueWidget::update()
 {
     if (!_update_lock)
         emit colorMapChanged();

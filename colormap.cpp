@@ -573,7 +573,7 @@ int BrewerQualitative(int n, unsigned char* colormap, float hue, float divergenc
     return clipped;
 }
 
-/* Perceptually linear (PL) */
+/* Perceptually uniform (PU) */
 
 static triplet lch_compute_uniform_lc(float t,
         float t0, float t1,
@@ -630,7 +630,7 @@ static triplet lch_compute_uniform_lc(float t,
     return lcht;
 }
 
-int PLSequentialLightness(int n, unsigned char* colormap,
+int PUSequentialLightness(int n, unsigned char* colormap,
         float lightness_range, float saturation_range, float saturation, float hue)
 {
     triplet lch_00, lch_10, lch_05;
@@ -664,7 +664,7 @@ int PLSequentialLightness(int n, unsigned char* colormap,
     return clipped;
 }
 
-int PLSequentialSaturation(int n, unsigned char* colormap,
+int PUSequentialSaturation(int n, unsigned char* colormap,
         float saturation_range, float lightness, float saturation, float hue)
 {
     lightness = std::max(0.01f, lightness * 100.0f);
@@ -690,7 +690,7 @@ int PLSequentialSaturation(int n, unsigned char* colormap,
     return clipped;
 }
 
-int PLSequentialRainbow(int n, unsigned char* colormap,
+int PUSequentialRainbow(int n, unsigned char* colormap,
         float lightness_range, float saturation_range,
         float hue, float rotations, float saturation)
 {
@@ -855,7 +855,7 @@ static triplet color_matching_function(int lambda /* in nanometers */)
     return xyz;
 }
 
-int PLSequentialBlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
+int PUSequentialBlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
 {
     int clipped = 0;
     for (int i = 0; i < n; i++) {
@@ -917,7 +917,7 @@ static float multi_hue_get(float t, int hues, const float* hue_values, const flo
     return hue;
 }
 
-int PLSequentialMultiHue(int n, unsigned char* colormap,
+int PUSequentialMultiHue(int n, unsigned char* colormap,
         float lightness_range,
         float saturation_range,
         float saturation,
@@ -960,37 +960,37 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
     return clipped;
 }
 
-int PLDivergingLightness(int n, unsigned char* colormap,
+int PUDivergingLightness(int n, unsigned char* colormap,
         float lightness_range, float saturation_range, float saturation, float hue, float divergence)
 {
     int lowerN = n / 2;
     int higherN = n - lowerN;
     int clipped = 0;
 
-    clipped += PLSequentialLightness(higherN, colormap, lightness_range, saturation_range, saturation, hue + divergence);
+    clipped += PUSequentialLightness(higherN, colormap, lightness_range, saturation_range, saturation, hue + divergence);
     for (int i = 0; i < higherN; i++)
         for (int j = 0; j < 3; j++)
             colormap[3 * lowerN + 3 * i + j] = colormap[3 * (higherN - 1 - i) + j];
-    clipped += PLSequentialLightness(lowerN, colormap, lightness_range, saturation_range, saturation, hue);
+    clipped += PUSequentialLightness(lowerN, colormap, lightness_range, saturation_range, saturation, hue);
     return clipped;
 }
 
-int PLDivergingSaturation(int n, unsigned char* colormap,
+int PUDivergingSaturation(int n, unsigned char* colormap,
         float saturation_range, float lightness, float saturation, float hue, float divergence)
 {
     int lowerN = n / 2;
     int higherN = n - lowerN;
     int clipped = 0;
 
-    clipped += PLSequentialSaturation(lowerN, colormap + 3 * lowerN, saturation_range, lightness, saturation, hue);
+    clipped += PUSequentialSaturation(lowerN, colormap + 3 * lowerN, saturation_range, lightness, saturation, hue);
     for (int i = 0; i < lowerN; i++)
         for (int j = 0; j < 3; j++)
             colormap[3 * i + j] = colormap[3 * lowerN + 3 * (lowerN - 1 - i) + j];
-    clipped += PLSequentialSaturation(higherN, colormap + 3 * lowerN, saturation_range, lightness, saturation, hue + divergence);
+    clipped += PUSequentialSaturation(higherN, colormap + 3 * lowerN, saturation_range, lightness, saturation, hue + divergence);
     return clipped;
 }
 
-int PLQualitativeHue(int n, unsigned char* colormap,
+int PUQualitativeHue(int n, unsigned char* colormap,
         float hue, float divergence, float lightness, float saturation)
 {
     divergence *= (n - 1.0f) / n;

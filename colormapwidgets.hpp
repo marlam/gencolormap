@@ -163,7 +163,7 @@ public:
             float& contrast, float& saturation, float& brightness) const;
 };
 
-class ColorMapPLSequentialLightnessWidget : public ColorMapWidget
+class ColorMapPUSequentialLightnessWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -177,8 +177,8 @@ private slots:
     void update();
 
 public:
-    ColorMapPLSequentialLightnessWidget();
-    ~ColorMapPLSequentialLightnessWidget();
+    ColorMapPUSequentialLightnessWidget();
+    ~ColorMapPUSequentialLightnessWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
@@ -186,7 +186,7 @@ public:
     void parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue) const;
 };
 
-class ColorMapPLSequentialSaturationWidget : public ColorMapWidget
+class ColorMapPUSequentialSaturationWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -200,8 +200,8 @@ private slots:
     void update();
 
 public:
-    ColorMapPLSequentialSaturationWidget();
-    ~ColorMapPLSequentialSaturationWidget();
+    ColorMapPUSequentialSaturationWidget();
+    ~ColorMapPUSequentialSaturationWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
@@ -209,7 +209,7 @@ public:
     void parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue) const;
 };
 
-class ColorMapPLSequentialRainbowWidget : public ColorMapWidget
+class ColorMapPUSequentialRainbowWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -224,8 +224,8 @@ private slots:
     void update();
 
 public:
-    ColorMapPLSequentialRainbowWidget();
-    ~ColorMapPLSequentialRainbowWidget();
+    ColorMapPUSequentialRainbowWidget();
+    ~ColorMapPUSequentialRainbowWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
@@ -233,7 +233,7 @@ public:
     void parameters(int& n, float& lightness_range, float& saturation_range, float& hue, float& rotations, float& saturation) const;
 };
 
-class ColorMapPLSequentialBlackBodyWidget : public ColorMapWidget
+class ColorMapPUSequentialBlackBodyWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -246,8 +246,8 @@ private slots:
     void update();
 
 public:
-    ColorMapPLSequentialBlackBodyWidget();
-    ~ColorMapPLSequentialBlackBodyWidget();
+    ColorMapPUSequentialBlackBodyWidget();
+    ~ColorMapPUSequentialBlackBodyWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
@@ -255,7 +255,7 @@ public:
     void parameters(int& n, float& temperature, float& range, float& saturation) const;
 };
 
-class ColorMapPLSequentialMultiHueWidget : public ColorMapWidget
+class ColorMapPUSequentialMultiHueWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -276,8 +276,8 @@ private slots:
     void removeHue();
 
 public:
-    ColorMapPLSequentialMultiHueWidget();
-    ~ColorMapPLSequentialMultiHueWidget();
+    ColorMapPUSequentialMultiHueWidget();
+    ~ColorMapPUSequentialMultiHueWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
@@ -287,7 +287,7 @@ public:
             QVector<float>& hue_values, QVector<float>& hue_positions) const;
 };
 
-class ColorMapPLDivergingLightnessWidget : public ColorMapWidget
+class ColorMapPUDivergingLightnessWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -302,8 +302,8 @@ private slots:
     void update();
 
 public:
-    ColorMapPLDivergingLightnessWidget();
-    ~ColorMapPLDivergingLightnessWidget();
+    ColorMapPUDivergingLightnessWidget();
+    ~ColorMapPUDivergingLightnessWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
@@ -311,7 +311,7 @@ public:
     void parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue, float& divergence) const;
 };
 
-class ColorMapPLDivergingSaturationWidget : public ColorMapWidget
+class ColorMapPUDivergingSaturationWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -326,8 +326,8 @@ private slots:
     void update();
 
 public:
-    ColorMapPLDivergingSaturationWidget();
-    ~ColorMapPLDivergingSaturationWidget();
+    ColorMapPUDivergingSaturationWidget();
+    ~ColorMapPUDivergingSaturationWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
@@ -335,7 +335,7 @@ public:
     void parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue, float& divergence) const;
 };
 
-class ColorMapPLQualitativeHueWidget : public ColorMapWidget
+class ColorMapPUQualitativeHueWidget : public ColorMapWidget
 {
 Q_OBJECT
 private:
@@ -349,8 +349,8 @@ private slots:
     void update();
 
 public:
-    ColorMapPLQualitativeHueWidget();
-    ~ColorMapPLQualitativeHueWidget();
+    ColorMapPUQualitativeHueWidget();
+    ~ColorMapPUQualitativeHueWidget();
 
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;

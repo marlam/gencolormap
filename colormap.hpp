@@ -104,9 +104,9 @@ int BrewerQualitative(int n, unsigned char* colormap,
         float brightness = BrewerQualitativeDefaultBrightness);
 
 /*
- * Perceptually linear (PL) color maps.
+ * Perceptually unifrom (PU) color maps.
  *
- * These are computed in CIELUV/LCH to achieve approximate perceptual linearity.
+ * These are computed in CIELUV/LCH to achieve approximate perceptual uniformity.
  * One or two of lightness, saturation, and hue are changed while the other(s)
  * stay constant.
  *
@@ -114,123 +114,123 @@ int BrewerQualitative(int n, unsigned char* colormap,
  * because they do not interfere with additional shading.
  */
 
-/* Sequential perceptually linear maps */
+/* Sequential perceptually uniform maps */
 
 // Varying lightness
 
-const float PLSequentialLightnessDefaultLightnessRange = 0.95f;
-const float PLSequentialLightnessDefaultSaturationRange = 0.95f;
-const float PLSequentialLightnessDefaultSaturation = 0.45f;
-const float PLSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
+const float PUSequentialLightnessDefaultLightnessRange = 0.95f;
+const float PUSequentialLightnessDefaultSaturationRange = 0.95f;
+const float PUSequentialLightnessDefaultSaturation = 0.45f;
+const float PUSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
 
-int PLSequentialLightness(int n, unsigned char* colormap,
-        float lightness_range = PLSequentialLightnessDefaultLightnessRange,
-        float saturation_range = PLSequentialLightnessDefaultSaturationRange,
-        float saturation = PLSequentialLightnessDefaultSaturation,
-        float hue = PLSequentialLightnessDefaultHue);
+int PUSequentialLightness(int n, unsigned char* colormap,
+        float lightness_range = PUSequentialLightnessDefaultLightnessRange,
+        float saturation_range = PUSequentialLightnessDefaultSaturationRange,
+        float saturation = PUSequentialLightnessDefaultSaturation,
+        float hue = PUSequentialLightnessDefaultHue);
 
 // Varying saturation
 
-const float PLSequentialSaturationDefaultSaturationRange = PLSequentialLightnessDefaultSaturationRange;
-const float PLSequentialSaturationDefaultLightness = 0.5f;
-const float PLSequentialSaturationDefaultSaturation = PLSequentialLightnessDefaultSaturation;
-const float PLSequentialSaturationDefaultHue = 0.349065850399f; // 20 deg
+const float PUSequentialSaturationDefaultSaturationRange = PUSequentialLightnessDefaultSaturationRange;
+const float PUSequentialSaturationDefaultLightness = 0.5f;
+const float PUSequentialSaturationDefaultSaturation = PUSequentialLightnessDefaultSaturation;
+const float PUSequentialSaturationDefaultHue = 0.349065850399f; // 20 deg
 
-int PLSequentialSaturation(int n, unsigned char* colormap,
-        float saturation_range = PLSequentialSaturationDefaultSaturationRange,
-        float lightness = PLSequentialSaturationDefaultLightness,
-        float saturation = PLSequentialSaturationDefaultSaturation,
-        float hue = PLSequentialSaturationDefaultHue);
+int PUSequentialSaturation(int n, unsigned char* colormap,
+        float saturation_range = PUSequentialSaturationDefaultSaturationRange,
+        float lightness = PUSequentialSaturationDefaultLightness,
+        float saturation = PUSequentialSaturationDefaultSaturation,
+        float hue = PUSequentialSaturationDefaultHue);
 
 // Varying hue (through all colors, rainbow-like)
 
-const float PLSequentialRainbowDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
-const float PLSequentialRainbowDefaultSaturationRange = PLSequentialLightnessDefaultSaturationRange;
-const float PLSequentialRainbowDefaultHue = 0.0f;
-const float PLSequentialRainbowDefaultRotations = -1.5f;
-const float PLSequentialRainbowDefaultSaturation = 1.1f;
+const float PUSequentialRainbowDefaultLightnessRange = PUSequentialLightnessDefaultLightnessRange;
+const float PUSequentialRainbowDefaultSaturationRange = PUSequentialLightnessDefaultSaturationRange;
+const float PUSequentialRainbowDefaultHue = 0.0f;
+const float PUSequentialRainbowDefaultRotations = -1.5f;
+const float PUSequentialRainbowDefaultSaturation = 1.1f;
 
-int PLSequentialRainbow(int n, unsigned char* colormap,
-        float lightness_range = PLSequentialRainbowDefaultLightnessRange,
-        float saturation_range = PLSequentialRainbowDefaultSaturationRange,
-        float hue = PLSequentialRainbowDefaultHue,
-        float rotations = PLSequentialRainbowDefaultRotations,
-        float saturation = PLSequentialRainbowDefaultSaturation);
+int PUSequentialRainbow(int n, unsigned char* colormap,
+        float lightness_range = PUSequentialRainbowDefaultLightnessRange,
+        float saturation_range = PUSequentialRainbowDefaultSaturationRange,
+        float hue = PUSequentialRainbowDefaultHue,
+        float rotations = PUSequentialRainbowDefaultRotations,
+        float saturation = PUSequentialRainbowDefaultSaturation);
 
 // Varying hue (through physically plausible black body colors at increasing
 // temperatures).
 // The defaults are chosen so that we start at red and arrive at the D65 white
 // point (6500 K), thus excluding the blue colors that occur at higher
 // temperatures.
-const float PLSequentialBlackBodyDefaultTemperature = 250.0f;
-const float PLSequentialBlackBodyDefaultRange = 6250.0f;
-const float PLSequentialBlackBodyDefaultSaturation = 2.3f;
+const float PUSequentialBlackBodyDefaultTemperature = 250.0f;
+const float PUSequentialBlackBodyDefaultRange = 6250.0f;
+const float PUSequentialBlackBodyDefaultSaturation = 2.3f;
 
-int PLSequentialBlackBody(int n, unsigned char* colormap,
-        float temperature = PLSequentialBlackBodyDefaultTemperature,
-        float range = PLSequentialBlackBodyDefaultRange,
-        float saturation = PLSequentialBlackBodyDefaultSaturation);
+int PUSequentialBlackBody(int n, unsigned char* colormap,
+        float temperature = PUSequentialBlackBodyDefaultTemperature,
+        float range = PUSequentialBlackBodyDefaultRange,
+        float saturation = PUSequentialBlackBodyDefaultSaturation);
 
 // Varying hue (user definable)
-const float PLSequentialMultiHueDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
-const float PLSequentialMultiHueDefaultSaturationRange = PLSequentialSaturationDefaultSaturationRange;
-const float PLSequentialMultiHueDefaultSaturation = 0.38f;
-const int PLSequentialMultiHueDefaultHues = 2; // number of hues defined in the following lists
-const float PLSequentialMultiHueDefaultHueValues[] = { 0.0f, 1.0471975512f }; // hues values in radians in [0,2pi]
-const float PLSequentialMultiHueDefaultHuePositions[] = { 0.25f, 0.75f }; // hue positions in [0,1] sorted in ascending order
+const float PUSequentialMultiHueDefaultLightnessRange = PUSequentialLightnessDefaultLightnessRange;
+const float PUSequentialMultiHueDefaultSaturationRange = PUSequentialSaturationDefaultSaturationRange;
+const float PUSequentialMultiHueDefaultSaturation = 0.38f;
+const int PUSequentialMultiHueDefaultHues = 2; // number of hues defined in the following lists
+const float PUSequentialMultiHueDefaultHueValues[] = { 0.0f, 1.0471975512f }; // hues values in radians in [0,2pi]
+const float PUSequentialMultiHueDefaultHuePositions[] = { 0.25f, 0.75f }; // hue positions in [0,1] sorted in ascending order
 
-int PLSequentialMultiHue(int n, unsigned char* colormap,
-        float lightness_range = PLSequentialMultiHueDefaultLightnessRange,
-        float saturation_range = PLSequentialMultiHueDefaultSaturationRange,
-        float saturation = PLSequentialMultiHueDefaultSaturation,
-        int hues = PLSequentialMultiHueDefaultHues,
-        const float* hue_values = PLSequentialMultiHueDefaultHueValues,
-        const float* hue_positions = PLSequentialMultiHueDefaultHuePositions);
+int PUSequentialMultiHue(int n, unsigned char* colormap,
+        float lightness_range = PUSequentialMultiHueDefaultLightnessRange,
+        float saturation_range = PUSequentialMultiHueDefaultSaturationRange,
+        float saturation = PUSequentialMultiHueDefaultSaturation,
+        int hues = PUSequentialMultiHueDefaultHues,
+        const float* hue_values = PUSequentialMultiHueDefaultHueValues,
+        const float* hue_positions = PUSequentialMultiHueDefaultHuePositions);
 
-/* Diverging perceptually linear maps */
+/* Diverging perceptually uniform maps */
 
 // Varying lightness
 
-const float PLDivergingLightnessDefaultLightnessRange = PLSequentialLightnessDefaultLightnessRange;
-const float PLDivergingLightnessDefaultSaturationRange = PLSequentialLightnessDefaultSaturationRange;
-const float PLDivergingLightnessDefaultSaturation = PLSequentialLightnessDefaultSaturation;
-const float PLDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
-const float PLDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+const float PUDivergingLightnessDefaultLightnessRange = PUSequentialLightnessDefaultLightnessRange;
+const float PUDivergingLightnessDefaultSaturationRange = PUSequentialLightnessDefaultSaturationRange;
+const float PUDivergingLightnessDefaultSaturation = PUSequentialLightnessDefaultSaturation;
+const float PUDivergingLightnessDefaultHue = 0.349065850399f; // 20 deg
+const float PUDivergingLightnessDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
-int PLDivergingLightness(int n, unsigned char* colormap,
-        float lightness_range = PLDivergingLightnessDefaultLightnessRange,
-        float saturation_range = PLDivergingLightnessDefaultSaturationRange,
-        float saturation = PLDivergingLightnessDefaultSaturation,
-        float hue = PLDivergingLightnessDefaultHue,
-        float divergence = PLDivergingLightnessDefaultDivergence);
+int PUDivergingLightness(int n, unsigned char* colormap,
+        float lightness_range = PUDivergingLightnessDefaultLightnessRange,
+        float saturation_range = PUDivergingLightnessDefaultSaturationRange,
+        float saturation = PUDivergingLightnessDefaultSaturation,
+        float hue = PUDivergingLightnessDefaultHue,
+        float divergence = PUDivergingLightnessDefaultDivergence);
 
 // Varying saturation
 
-const float PLDivergingSaturationDefaultSaturationRange = PLSequentialSaturationDefaultSaturationRange;
-const float PLDivergingSaturationDefaultLightness = 0.5f;
-const float PLDivergingSaturationDefaultSaturation = 0.45f;
-const float PLDivergingSaturationDefaultHue = 0.349065850399f; // 20 deg
-const float PLDivergingSaturationDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+const float PUDivergingSaturationDefaultSaturationRange = PUSequentialSaturationDefaultSaturationRange;
+const float PUDivergingSaturationDefaultLightness = 0.5f;
+const float PUDivergingSaturationDefaultSaturation = 0.45f;
+const float PUDivergingSaturationDefaultHue = 0.349065850399f; // 20 deg
+const float PUDivergingSaturationDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 
-int PLDivergingSaturation(int n, unsigned char* colormap,
-        float saturation_range = PLSequentialSaturationDefaultSaturationRange,
-        float lightness = PLDivergingSaturationDefaultLightness,
-        float saturation = PLDivergingSaturationDefaultSaturation,
-        float hue = PLDivergingSaturationDefaultHue,
-        float divergence = PLDivergingSaturationDefaultDivergence);
+int PUDivergingSaturation(int n, unsigned char* colormap,
+        float saturation_range = PUSequentialSaturationDefaultSaturationRange,
+        float lightness = PUDivergingSaturationDefaultLightness,
+        float saturation = PUDivergingSaturationDefaultSaturation,
+        float hue = PUDivergingSaturationDefaultHue,
+        float divergence = PUDivergingSaturationDefaultDivergence);
 
-/* Qualitative perceptually linear maps */
+/* Qualitative perceptually uniform maps */
 
-const float PLQualitativeHueDefaultHue = 0.0f;
-const float PLQualitativeHueDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
-const float PLQualitativeHueDefaultLightness = 0.55f;
-const float PLQualitativeHueDefaultSaturation = 0.22f;
+const float PUQualitativeHueDefaultHue = 0.0f;
+const float PUQualitativeHueDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
+const float PUQualitativeHueDefaultLightness = 0.55f;
+const float PUQualitativeHueDefaultSaturation = 0.22f;
 
-int PLQualitativeHue(int n, unsigned char* colormap,
-        float hue = PLQualitativeHueDefaultHue,
-        float divergence = PLQualitativeHueDefaultDivergence,
-        float lightness = PLQualitativeHueDefaultLightness,
-        float saturation = PLQualitativeHueDefaultSaturation);
+int PUQualitativeHue(int n, unsigned char* colormap,
+        float hue = PUQualitativeHueDefaultHue,
+        float divergence = PUQualitativeHueDefaultDivergence,
+        float lightness = PUQualitativeHueDefaultLightness,
+        float saturation = PUQualitativeHueDefaultSaturation);
 
 /*
  * CubeHelix color maps, as described in

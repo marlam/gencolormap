@@ -39,13 +39,13 @@ enum type {
     brewer_seq,
     brewer_div,
     brewer_qual,
-    plseq_lightness,
-    plseq_saturation,
-    plseq_rainbow,
-    plseq_blackbody,
-    pldiv_lightness,
-    pldiv_saturation,
-    plqual_hue,
+    puseq_lightness,
+    puseq_saturation,
+    puseq_rainbow,
+    puseq_blackbody,
+    pudiv_lightness,
+    pudiv_saturation,
+    puqual_hue,
     cubehelix,
     moreland,
     mcnames
@@ -124,13 +124,13 @@ int main(int argc, char* argv[])
             type = (strcmp(optarg, "brewer-sequential") == 0 ? brewer_seq
                     : strcmp(optarg, "brewer-diverging") == 0 ? brewer_div
                     : strcmp(optarg, "brewer-qualitative") == 0 ? brewer_qual
-                    : strcmp(optarg, "plsequential-lightness") == 0 ? plseq_lightness
-                    : strcmp(optarg, "plsequential-saturation") == 0 ? plseq_saturation
-                    : strcmp(optarg, "plsequential-rainbow") == 0 ? plseq_rainbow
-                    : strcmp(optarg, "plsequential-blackbody") == 0 ? plseq_blackbody
-                    : strcmp(optarg, "pldiverging-lightness") == 0 ? pldiv_lightness
-                    : strcmp(optarg, "pldiverging-saturation") == 0 ? pldiv_saturation
-                    : strcmp(optarg, "plqualitative-hue") == 0 ? plqual_hue
+                    : strcmp(optarg, "pusequential-lightness") == 0 ? puseq_lightness
+                    : strcmp(optarg, "pusequential-saturation") == 0 ? puseq_saturation
+                    : strcmp(optarg, "pusequential-rainbow") == 0 ? puseq_rainbow
+                    : strcmp(optarg, "pusequential-blackbody") == 0 ? puseq_blackbody
+                    : strcmp(optarg, "pudiverging-lightness") == 0 ? pudiv_lightness
+                    : strcmp(optarg, "pudiverging-saturation") == 0 ? pudiv_saturation
+                    : strcmp(optarg, "puqualitative-hue") == 0 ? puqual_hue
                     : strcmp(optarg, "cubehelix") == 0 ? cubehelix
                     : strcmp(optarg, "moreland") == 0 ? moreland
                     : strcmp(optarg, "mcnames") == 0 ? mcnames
@@ -215,14 +215,14 @@ int main(int argc, char* argv[])
                 "  [-b|--brightness=B]                 Set brightness in [0,1]\n"
                 "  [-w|--warmth=W]                     Set warmth in [0,1] for seq. and div. maps\n"
                 "  [-d|--divergence=D]                 Set diverg. in deg for div. and qual. maps\n"
-                "Perceptually linear color maps:\n"
-                "  [-t|--type=plsequential-lightness]  Sequential map, varying lightness\n"
-                "  [-t|--type=plsequential-saturation] Sequential map, varying saturation\n"
-                "  [-t|--type=plsequential-rainbow]    Sequential map, varying hue (rainbow)\n"
-                "  [-t|--type=plsequential-blackbody]  Sequential map, varying hue (black body)\n"
-                "  [-t|--type=pldiverging-lightness]   Diverging map, varying lightness\n"
-                "  [-t|--type=pldiverging-saturation]  Diverging map, varying saturation\n"
-                "  [-t|--type=plqualitative-hue]       Qualitative map, evenly distributed hue\n"
+                "Perceptually uniform color maps:\n"
+                "  [-t|--type=pusequential-lightness]  Sequential map, varying lightness\n"
+                "  [-t|--type=pusequential-saturation] Sequential map, varying saturation\n"
+                "  [-t|--type=pusequential-rainbow]    Sequential map, varying hue (rainbow)\n"
+                "  [-t|--type=pusequential-blackbody]  Sequential map, varying hue (black body)\n"
+                "  [-t|--type=pudiverging-lightness]   Diverging map, varying lightness\n"
+                "  [-t|--type=pudiverging-saturation]  Diverging map, varying saturation\n"
+                "  [-t|--type=puqualitative-hue]       Qualitative map, evenly distributed hue\n"
                 "  [-l|--lightness=L]                  Set lightness in [0,1]\n"
                 "  [-s|--saturation=S]                 Set saturation in [0,1]\n"
                 "  [-h|--hue=H]                        Set default hue in [0,360] degrees\n"
@@ -268,18 +268,18 @@ int main(int argc, char* argv[])
             hue = ColorMap::BrewerDivergingDefaultHue;
         else if (type == brewer_qual)
             hue = ColorMap::BrewerQualitativeDefaultHue;
-        else if (type == plseq_lightness)
-            hue = ColorMap::PLSequentialLightnessDefaultHue;
-        else if (type == plseq_saturation)
-            hue = ColorMap::PLSequentialSaturationDefaultHue;
-        else if (type == plseq_rainbow)
-            hue = ColorMap::PLSequentialRainbowDefaultHue;
-        else if (type == pldiv_lightness)
-            hue = ColorMap::PLDivergingLightnessDefaultHue;
-        else if (type == pldiv_saturation)
-            hue = ColorMap::PLDivergingSaturationDefaultHue;
-        else if (type == plqual_hue)
-            hue = ColorMap::PLQualitativeHueDefaultHue;
+        else if (type == puseq_lightness)
+            hue = ColorMap::PUSequentialLightnessDefaultHue;
+        else if (type == puseq_saturation)
+            hue = ColorMap::PUSequentialSaturationDefaultHue;
+        else if (type == puseq_rainbow)
+            hue = ColorMap::PUSequentialRainbowDefaultHue;
+        else if (type == pudiv_lightness)
+            hue = ColorMap::PUDivergingLightnessDefaultHue;
+        else if (type == pudiv_saturation)
+            hue = ColorMap::PUDivergingSaturationDefaultHue;
+        else if (type == puqual_hue)
+            hue = ColorMap::PUQualitativeHueDefaultHue;
         else if (type == cubehelix)
             hue = ColorMap::CubeHelixDefaultHue;
     }
@@ -288,12 +288,12 @@ int main(int argc, char* argv[])
             divergence = ColorMap::BrewerDivergingDefaultDivergence;
         else if (type == brewer_qual)
             divergence = ColorMap::BrewerQualitativeDefaultDivergence;
-        else if (type == pldiv_lightness)
-            divergence = ColorMap::PLDivergingLightnessDefaultDivergence;
-        else if (type == pldiv_saturation)
-            divergence = ColorMap::PLDivergingSaturationDefaultDivergence;
-        else if (type == plqual_hue)
-            divergence = ColorMap::PLQualitativeHueDefaultDivergence;
+        else if (type == pudiv_lightness)
+            divergence = ColorMap::PUDivergingLightnessDefaultDivergence;
+        else if (type == pudiv_saturation)
+            divergence = ColorMap::PUDivergingSaturationDefaultDivergence;
+        else if (type == puqual_hue)
+            divergence = ColorMap::PUQualitativeHueDefaultDivergence;
     }
     if (contrast < 0.0f) {
         if (type == brewer_seq)
@@ -312,20 +312,20 @@ int main(int argc, char* argv[])
             saturation = ColorMap::BrewerDivergingDefaultSaturation;
         else if (type == brewer_qual)
             saturation = ColorMap::BrewerQualitativeDefaultSaturation;
-        else if (type == plseq_lightness)
-            saturation = ColorMap::PLSequentialLightnessDefaultSaturation;
-        else if (type == plseq_saturation)
-            saturation = ColorMap::PLSequentialSaturationDefaultSaturation;
-        else if (type == plseq_rainbow)
-            saturation = ColorMap::PLSequentialRainbowDefaultSaturation;
-        else if (type == plseq_blackbody)
-            saturation = ColorMap::PLSequentialBlackBodyDefaultSaturation;
-        else if (type == pldiv_lightness)
-            saturation = ColorMap::PLDivergingLightnessDefaultSaturation;
-        else if (type == pldiv_saturation)
-            saturation = ColorMap::PLDivergingSaturationDefaultSaturation;
-        else if (type == plqual_hue)
-            saturation = ColorMap::PLQualitativeHueDefaultSaturation;
+        else if (type == puseq_lightness)
+            saturation = ColorMap::PUSequentialLightnessDefaultSaturation;
+        else if (type == puseq_saturation)
+            saturation = ColorMap::PUSequentialSaturationDefaultSaturation;
+        else if (type == puseq_rainbow)
+            saturation = ColorMap::PUSequentialRainbowDefaultSaturation;
+        else if (type == puseq_blackbody)
+            saturation = ColorMap::PUSequentialBlackBodyDefaultSaturation;
+        else if (type == pudiv_lightness)
+            saturation = ColorMap::PUDivergingLightnessDefaultSaturation;
+        else if (type == pudiv_saturation)
+            saturation = ColorMap::PUDivergingSaturationDefaultSaturation;
+        else if (type == puqual_hue)
+            saturation = ColorMap::PUQualitativeHueDefaultSaturation;
         else if (type == cubehelix)
             saturation = ColorMap::CubeHelixDefaultSaturation;
     }
@@ -344,36 +344,36 @@ int main(int argc, char* argv[])
             warmth = ColorMap::BrewerDivergingDefaultWarmth;
     }
     if (lightness < 0.0f) {
-        if (type == plseq_saturation)
-            lightness = ColorMap::PLSequentialSaturationDefaultLightness;
-        else if (type == pldiv_saturation)
-            lightness = ColorMap::PLDivergingSaturationDefaultLightness;
-        else if (type == plqual_hue)
-            lightness = ColorMap::PLQualitativeHueDefaultLightness;
+        if (type == puseq_saturation)
+            lightness = ColorMap::PUSequentialSaturationDefaultLightness;
+        else if (type == pudiv_saturation)
+            lightness = ColorMap::PUDivergingSaturationDefaultLightness;
+        else if (type == puqual_hue)
+            lightness = ColorMap::PUQualitativeHueDefaultLightness;
     }
     if (std::isnan(rotations)) {
-        if (type == plseq_rainbow)
-            rotations = ColorMap::PLSequentialRainbowDefaultRotations;
+        if (type == puseq_rainbow)
+            rotations = ColorMap::PUSequentialRainbowDefaultRotations;
         else if (type == cubehelix)
             rotations = ColorMap::CubeHelixDefaultRotations;
     }
     if (temperature < 0.0f) {
-        if (type == plseq_blackbody)
-            temperature = ColorMap::PLSequentialBlackBodyDefaultTemperature;
+        if (type == puseq_blackbody)
+            temperature = ColorMap::PUSequentialBlackBodyDefaultTemperature;
     }
     if (range < 0.0f) {
-        if (type == plseq_lightness)
-            range = ColorMap::PLSequentialLightnessDefaultLightnessRange;
-        else if (type == plseq_saturation)
-            range = ColorMap::PLSequentialSaturationDefaultSaturationRange;
-        else if (type == plseq_rainbow)
-            range = ColorMap::PLSequentialRainbowDefaultLightnessRange;
-        else if (type == pldiv_lightness)
-            range = ColorMap::PLDivergingLightnessDefaultLightnessRange;
-        else if (type == pldiv_saturation)
-            range = ColorMap::PLDivergingSaturationDefaultSaturationRange;
-        else if (type == plseq_blackbody)
-            range = ColorMap::PLSequentialBlackBodyDefaultRange;
+        if (type == puseq_lightness)
+            range = ColorMap::PUSequentialLightnessDefaultLightnessRange;
+        else if (type == puseq_saturation)
+            range = ColorMap::PUSequentialSaturationDefaultSaturationRange;
+        else if (type == puseq_rainbow)
+            range = ColorMap::PUSequentialRainbowDefaultLightnessRange;
+        else if (type == pudiv_lightness)
+            range = ColorMap::PUDivergingLightnessDefaultLightnessRange;
+        else if (type == pudiv_saturation)
+            range = ColorMap::PUDivergingSaturationDefaultSaturationRange;
+        else if (type == puseq_blackbody)
+            range = ColorMap::PUSequentialBlackBodyDefaultRange;
     }
     if (gamma < 0.0f) {
         if (type == cubehelix)
@@ -410,29 +410,29 @@ int main(int argc, char* argv[])
     case brewer_qual:
         clipped = ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
         break;
-    case plseq_lightness:
-        clipped = ColorMap::PLSequentialLightness(n, &(colormap[0]), range, range, saturation, hue);
+    case puseq_lightness:
+        clipped = ColorMap::PUSequentialLightness(n, &(colormap[0]), range, range, saturation, hue);
         // TODO: differentiate between lightness range and saturation range
         break;
-    case plseq_saturation:
-        clipped = ColorMap::PLSequentialSaturation(n, &(colormap[0]), range, lightness, saturation, hue);
+    case puseq_saturation:
+        clipped = ColorMap::PUSequentialSaturation(n, &(colormap[0]), range, lightness, saturation, hue);
         break;
-    case plseq_rainbow:
-        clipped = ColorMap::PLSequentialRainbow(n, &(colormap[0]), range, range, hue, rotations, saturation);
+    case puseq_rainbow:
+        clipped = ColorMap::PUSequentialRainbow(n, &(colormap[0]), range, range, hue, rotations, saturation);
         // TODO: differentiate between lightness range and saturation range
         break;
-    case plseq_blackbody:
-        clipped = ColorMap::PLSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
+    case puseq_blackbody:
+        clipped = ColorMap::PUSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
         break;
-    case pldiv_lightness:
-        clipped = ColorMap::PLDivergingLightness(n, &(colormap[0]), range, range, saturation, hue, divergence);
+    case pudiv_lightness:
+        clipped = ColorMap::PUDivergingLightness(n, &(colormap[0]), range, range, saturation, hue, divergence);
         // TODO: differentiate between lightness range and saturation range
         break;
-    case pldiv_saturation:
-        clipped = ColorMap::PLDivergingSaturation(n, &(colormap[0]), range, lightness, saturation, hue, divergence);
+    case pudiv_saturation:
+        clipped = ColorMap::PUDivergingSaturation(n, &(colormap[0]), range, lightness, saturation, hue, divergence);
         break;
-    case plqual_hue:
-        clipped = ColorMap::PLQualitativeHue(n, &(colormap[0]), hue, divergence, lightness, saturation);
+    case puqual_hue:
+        clipped = ColorMap::PUQualitativeHue(n, &(colormap[0]), hue, divergence, lightness, saturation);
         break;
     case cubehelix:
         clipped = ColorMap::CubeHelix(n, &(colormap[0]), hue, rotations, saturation, gamma);
