@@ -898,10 +898,21 @@ static float multi_hue_get(float t, int hues, const float* hue_values, const flo
         if (t >= hue_positions[i] && t < hue_positions[i+1])
             break;
     }
+    float h0 = hue_values[i];
+    float h1 = hue_values[i + 1];
     float p0 = hue_positions[i];
     float p1 = hue_positions[i + 1];
+    /* Check if the distance between h0 and h1 is shorter if we pass the
+     * boundary at 2pi */
+    if (h0 < h1 && h1 - h0 > h0 + twopi - h1) {
+        h0 += twopi;
+    } else if (h1 < h0 && h0 - h1 > h1 + twopi - h0) {
+        h1 += twopi;
+    }
     float alpha = (t - p0) / (p1 - p0);
-    float hue = (1.0f - alpha) * hue_values[i] + alpha * hue_values[i + 1];
+    float hue = (1.0f - alpha) * h0 + alpha * h1;
+    if (hue >= twopi)
+        hue -= twopi;
     return hue;
 }
 
