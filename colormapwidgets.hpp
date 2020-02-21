@@ -263,11 +263,9 @@ private:
     QColor _hue_button_color;
     QPushButton* _hue_button;
     QDoubleSpinBox* _pos_spinbox;
-    ColorMapCombinedSliderSpinBox* _l0_changer;
-    ColorMapCombinedSliderSpinBox* _s0_changer;
-    ColorMapCombinedSliderSpinBox* _l1_changer;
-    ColorMapCombinedSliderSpinBox* _s1_changer;
-    ColorMapCombinedSliderSpinBox* _s05_changer;
+    ColorMapCombinedSliderSpinBox* _lightness_range_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_range_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_changer;
     void updateHueButton();
 private slots:
     void update();
@@ -283,8 +281,8 @@ public:
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
     void parameters(int& n,
-            QVector<float>& hue_values, QVector<float>& hue_positions,
-            float& l0, float& s0, float& l1, float& s1, float& s05) const;
+            float& lr, float& sr, float& s,
+            QVector<float>& hue_values, QVector<float>& hue_positions) const;
 };
 
 class ColorMapPLDivergingLightnessWidget : public ColorMapWidget

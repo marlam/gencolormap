@@ -992,47 +992,33 @@ ColorMapPLSequentialMultiHueWidget::ColorMapPLSequentialMultiHueWidget() :
     hue_layout->setColumnStretch(3, 1);
     layout->addLayout(hue_layout, 3, 1, 1, 3);
 
-    QLabel* l0_label = new QLabel("Lightness at start:");
-    layout->addWidget(l0_label, 4, 0);
-    _l0_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
-    layout->addWidget(_l0_changer->slider, 4, 1, 1, 2);
-    layout->addWidget(_l0_changer->spinbox, 4, 3);
+    QLabel* lightness_range_label = new QLabel("Lightness range:");
+    layout->addWidget(lightness_range_label, 4, 0);
+    _lightness_range_changer = new ColorMapCombinedSliderSpinBox(0.7f, 1.0f, 0.01f);
+    layout->addWidget(_lightness_range_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_lightness_range_changer->spinbox, 4, 3);
 
-    QLabel* s0_label = new QLabel("Saturation at start:");
-    layout->addWidget(s0_label, 5, 0);
-    _s0_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
-    layout->addWidget(_s0_changer->slider, 5, 1, 1, 2);
-    layout->addWidget(_s0_changer->spinbox, 5, 3);
+    QLabel* saturation_range_label = new QLabel("Saturation range:");
+    layout->addWidget(saturation_range_label, 5, 0);
+    _saturation_range_changer = new ColorMapCombinedSliderSpinBox(0.7f, 1.0f, 0.01f);
+    layout->addWidget(_saturation_range_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_saturation_range_changer->spinbox, 5, 3);
 
-    QLabel* l1_label = new QLabel("Lightness at end:");
-    layout->addWidget(l1_label, 6, 0);
-    _l1_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
-    layout->addWidget(_l1_changer->slider, 6, 1, 1, 2);
-    layout->addWidget(_l1_changer->spinbox, 6, 3);
-
-    QLabel* s1_label = new QLabel("Saturation at end:");
-    layout->addWidget(s1_label, 7, 0);
-    _s1_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
-    layout->addWidget(_s1_changer->slider, 7, 1, 1, 2);
-    layout->addWidget(_s1_changer->spinbox, 7, 3);
-
-    QLabel* s05_label = new QLabel("Saturation in the middle:");
-    layout->addWidget(s05_label, 8, 0);
-    _s05_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
-    layout->addWidget(_s05_changer->slider, 8, 1, 1, 2);
-    layout->addWidget(_s05_changer->spinbox, 8, 3);
+    QLabel* saturation_label = new QLabel("Saturation:");
+    layout->addWidget(saturation_label, 6, 0);
+    _saturation_changer = new ColorMapCombinedSliderSpinBox(0.0f, 1.0f, 0.01f);
+    layout->addWidget(_saturation_changer->slider, 6, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 6, 3);
 
     layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 9, 0, 1, 4);
-    layout->setRowStretch(9, 1);
+    layout->addItem(new QSpacerItem(0, 0), 7, 0, 1, 4);
+    layout->setRowStretch(7, 1);
     setLayout(layout);
 
     connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
-    connect(_l0_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_s0_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_l1_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_s1_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_s05_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_lightness_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     reset();
 }
 
@@ -1059,11 +1045,9 @@ void ColorMapPLSequentialMultiHueWidget::reset()
                     ColorMap::PLSequentialMultiHueDefaultHueValues[i],
                     ColorMap::PLSequentialMultiHueDefaultHuePositions[i]));
     }
-    _l0_changer->setValue(ColorMap::PLSequentialMultiHueDefaultL0 / 100.0f);
-    _s0_changer->setValue(ColorMap::PLSequentialMultiHueDefaultS0);
-    _l1_changer->setValue(ColorMap::PLSequentialMultiHueDefaultL1 / 100.0f);
-    _s1_changer->setValue(ColorMap::PLSequentialMultiHueDefaultS1);
-    _s05_changer->setValue(ColorMap::PLSequentialMultiHueDefaultS05);
+    _lightness_range_changer->setValue(ColorMap::PLSequentialMultiHueDefaultLightnessRange);
+    _saturation_range_changer->setValue(ColorMap::PLSequentialMultiHueDefaultSaturationRange);
+    _saturation_changer->setValue(ColorMap::PLSequentialMultiHueDefaultSaturation);
     _update_lock = false;
     update();
 }
@@ -1072,12 +1056,12 @@ QVector<unsigned char> ColorMapPLSequentialMultiHueWidget::colorMap(int* clipped
 {
     int n;
     QVector<float> hue_values, hue_positions;
-    float l0, s0, l1, s1, s05;
-    parameters(n, hue_values, hue_positions, l0, s0, l1, s1, s05);
+    float lr, sr, s;
+    parameters(n, lr, sr, s, hue_values, hue_positions);
     QVector<unsigned char> colormap(3 * n);
     int cl = ColorMap::PLSequentialMultiHue(n, colormap.data(),
-            hue_values.size(), hue_values.data(), hue_positions.data(),
-            l0, s0, l1, s1, s05);
+            lr, sr, s,
+            hue_values.size(), hue_values.data(), hue_positions.data());
     if (clipped)
         *clipped = cl;
     return colormap;
@@ -1089,10 +1073,13 @@ QString ColorMapPLSequentialMultiHueWidget::reference() const
 }
 
 void ColorMapPLSequentialMultiHueWidget::parameters(int& n,
-        QVector<float>& hue_values, QVector<float>& hue_positions,
-        float& l0, float& s0, float& l1, float& s1, float& s05) const
+        float& lr, float& sr, float& s,
+        QVector<float>& hue_values, QVector<float>& hue_positions) const
 {
     n = _n_spinbox->value();
+    lr = _lightness_range_changer->value();
+    sr = _saturation_range_changer->value();
+    s = _saturation_changer->value();
     hue_values.clear();
     hue_positions.clear();
     for (int i = 0; i < _hue_list_widget->count(); i++) {
@@ -1102,11 +1089,6 @@ void ColorMapPLSequentialMultiHueWidget::parameters(int& n,
         hue_values.append(hue);
         hue_positions.append(pos);
     }
-    l0 = std::max(0.01f, _l0_changer->value() * 100.0f);
-    s0 = _s0_changer->value();
-    l1 = std::max(0.01f, _l1_changer->value() * 100.0f);
-    s1 = _s1_changer->value();
-    s05 = _s05_changer->value();
 }
 
 void ColorMapPLSequentialMultiHueWidget::update()

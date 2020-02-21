@@ -917,36 +917,31 @@ static float multi_hue_get(float t, int hues, const float* hue_values, const flo
 }
 
 int PLSequentialMultiHue(int n, unsigned char* colormap,
-        int hues, const float* hue_values, const float* hue_positions,
-        float l0, float s0, float l1, float s1, float s05)
+        float lightness_range,
+        float saturation_range,
+        float saturation,
+        int hues,
+        const float* hue_values,
+        const float* hue_positions)
 {
     triplet lch_00, lch_10, lch_05;
 
-    lch_00.l = l0;
-    lch_00.c = lch_chroma(lch_00.l, s0);
+    lch_00.l = (1.0f - lightness_range) * 100.0f;
+    lch_00.c = lch_chroma(lch_00.l, 1.0f - saturation_range);
     lch_00.h = multi_hue_get(0.0f, hues, hue_values, hue_positions);
-    lch_10.l = l1;
-    lch_10.c = lch_chroma(lch_10.l, s1);
+    lch_10.l = lightness_range * 100.0f;
+    lch_10.c = lch_chroma(lch_10.l, 1.0f - saturation_range);
     lch_10.h = multi_hue_get(1.0f, hues, hue_values, hue_positions);
-    lch_05.l = 0.5f * (l0 + l1);
+    lch_05.l = (1.0f - 0.5f) * lch_00.l + 0.5f * lch_10.l;
+    lch_05.c = lch_chroma(lch_05.l, 5.0f * saturation_range * saturation);
     lch_05.h = multi_hue_get(0.5f, hues, hue_values, hue_positions);
-    lch_05.c = lch_chroma(lch_05.l, s05);
 
+    // the following distances should ideally be the same,
+    // but they are usually not since we use different hues.
+    // at least they should be close since hue differences
+    // are less dominant in the distance measure.
     float D_00_05 = lch_distance(lch_00, lch_05);
     float D_05_10 = lch_distance(lch_05, lch_10);
-
-#if 0
-    fprintf(stderr,
-            "l00=%g c00=%g h00=%g\n"
-            "l05=%g c05=%g h05=%g\n"
-            "l10=%g c10=%g h10=%g\n"
-            "D_00_05=%g\n"
-            "D_05_10=%g\n",
-            lch_00.l, lch_00.c, lch_00.h,
-            lch_05.l, lch_05.c, lch_05.h,
-            lch_10.l, lch_10.c, lch_10.h,
-            D_00_05, D_05_10);
-#endif
 
     triplet lch;
     int clipped = 0;
@@ -958,9 +953,6 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
         } else {
             lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, h);
         }
-#if 0
-        fprintf(stderr, "i=%d t=%g: l=%g c=%g h=%g\n", i, t, lch.l, lch.c, lch.h);
-#endif
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
     }
@@ -968,32 +960,32 @@ int PLSequentialMultiHue(int n, unsigned char* colormap,
 }
 
 int PLDivergingLightness(int n, unsigned char* colormap,
-        float lightnessRange, float saturation, float hue, float divergence)
+        float lightness_range, float saturation, float hue, float divergence)
 {
     int lowerN = n / 2;
     int higherN = n - lowerN;
     int clipped = 0;
 
-    clipped += PLSequentialLightness(higherN, colormap, lightnessRange, saturation, hue + divergence);
+    clipped += PLSequentialLightness(higherN, colormap, lightness_range, saturation, hue + divergence);
     for (int i = 0; i < higherN; i++)
         for (int j = 0; j < 3; j++)
             colormap[3 * lowerN + 3 * i + j] = colormap[3 * (higherN - 1 - i) + j];
-    clipped += PLSequentialLightness(lowerN, colormap, lightnessRange, saturation, hue);
+    clipped += PLSequentialLightness(lowerN, colormap, lightness_range, saturation, hue);
     return clipped;
 }
 
 int PLDivergingSaturation(int n, unsigned char* colormap,
-        float saturationRange, float lightness, float saturation, float hue, float divergence)
+        float saturation_range, float lightness, float saturation, float hue, float divergence)
 {
     int lowerN = n / 2;
     int higherN = n - lowerN;
     int clipped = 0;
 
-    clipped += PLSequentialSaturation(lowerN, colormap + 3 * lowerN, saturationRange, lightness, saturation, hue);
+    clipped += PLSequentialSaturation(lowerN, colormap + 3 * lowerN, saturation_range, lightness, saturation, hue);
     for (int i = 0; i < lowerN; i++)
         for (int j = 0; j < 3; j++)
             colormap[3 * i + j] = colormap[3 * lowerN + 3 * (lowerN - 1 - i) + j];
-    clipped += PLSequentialSaturation(higherN, colormap + 3 * lowerN, saturationRange, lightness, saturation, hue + divergence);
+    clipped += PLSequentialSaturation(higherN, colormap + 3 * lowerN, saturation_range, lightness, saturation, hue + divergence);
     return clipped;
 }
 
