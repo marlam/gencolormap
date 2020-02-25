@@ -223,9 +223,9 @@ int main(int argc, char* argv[])
     }
 
     if (print_version) {
-        printf("gencolormap version 1.1\n"
+        printf("gencolormap version 2.0\n"
                 "https://marlam.de/gencolormap\n"
-                "Copyright (C) 2019 Computer Graphics Group, University of Siegen.\n"
+                "Copyright (C) 2020 Computer Graphics Group, University of Siegen.\n"
                 "Written by Martin Lambers <martin.lambers@uni-siegen.de>.\n"
                 "This is free software under the terms of the MIT/Expat License.\n"
                 "There is NO WARRANTY, to the extent permitted by law.\n");
