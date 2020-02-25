@@ -240,7 +240,9 @@ private:
     bool _update_lock;
     QSpinBox* _n_spinbox;
     ColorMapCombinedSliderSpinBox* _temperature_changer;
-    ColorMapCombinedSliderSpinBox* _range_changer;
+    ColorMapCombinedSliderSpinBox* _temperature_range_changer;
+    ColorMapCombinedSliderSpinBox* _lightness_range_changer;
+    ColorMapCombinedSliderSpinBox* _saturation_range_changer;
     ColorMapCombinedSliderSpinBox* _saturation_changer;
 private slots:
     void update();
@@ -252,7 +254,7 @@ public:
     void reset() override;
     QVector<unsigned char> colorMap(int* clipped = NULL) const override;
     QString reference() const override;
-    void parameters(int& n, float& temperature, float& range, float& saturation) const;
+    void parameters(int& n, float& temperature, float& temperature_range, float& lightness_range, float& saturation_range, float& saturation) const;
 };
 
 class ColorMapPUSequentialMultiHueWidget : public ColorMapWidget

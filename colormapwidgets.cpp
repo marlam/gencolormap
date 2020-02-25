@@ -887,26 +887,40 @@ ColorMapPUSequentialBlackBodyWidget::ColorMapPUSequentialBlackBodyWidget() :
     layout->addWidget(_temperature_changer->slider, 2, 1, 1, 2);
     layout->addWidget(_temperature_changer->spinbox, 2, 3);
 
-    QLabel* range_label = new QLabel("Range (K):");
-    layout->addWidget(range_label, 3, 0);
-    _range_changer = new ColorMapCombinedSliderSpinBox(0.0f, 20000.0f, 100.0f);
-    layout->addWidget(_range_changer->slider, 3, 1, 1, 2);
-    layout->addWidget(_range_changer->spinbox, 3, 3);
+    QLabel* temperature_range_label = new QLabel("Range (K):");
+    layout->addWidget(temperature_range_label, 3, 0);
+    _temperature_range_changer = new ColorMapCombinedSliderSpinBox(0.0f, 20000.0f, 100.0f);
+    layout->addWidget(_temperature_range_changer->slider, 3, 1, 1, 2);
+    layout->addWidget(_temperature_range_changer->spinbox, 3, 3);
+
+    QLabel* lightness_range_label = new QLabel("Lightness range:");
+    layout->addWidget(lightness_range_label, 4, 0);
+    _lightness_range_changer = new ColorMapCombinedSliderSpinBox(0.7f, 1.0f, 0.01f);
+    layout->addWidget(_lightness_range_changer->slider, 4, 1, 1, 2);
+    layout->addWidget(_lightness_range_changer->spinbox, 4, 3);
+
+    QLabel* saturation_range_label = new QLabel("Saturation range:");
+    layout->addWidget(saturation_range_label, 5, 0);
+    _saturation_range_changer = new ColorMapCombinedSliderSpinBox(0.7f, 1.0f, 0.01f);
+    layout->addWidget(_saturation_range_changer->slider, 5, 1, 1, 2);
+    layout->addWidget(_saturation_range_changer->spinbox, 5, 3);
 
     QLabel* saturation_label = new QLabel("Saturation:");
-    layout->addWidget(saturation_label, 4, 0);
+    layout->addWidget(saturation_label, 6, 0);
     _saturation_changer = new ColorMapCombinedSliderSpinBox(0.0f, 5.0f, 0.1f);
-    layout->addWidget(_saturation_changer->slider, 4, 1, 1, 2);
-    layout->addWidget(_saturation_changer->spinbox, 4, 3);
+    layout->addWidget(_saturation_changer->slider, 6, 1, 1, 2);
+    layout->addWidget(_saturation_changer->spinbox, 6, 3);
 
     layout->setColumnStretch(1, 1);
-    layout->addItem(new QSpacerItem(0, 0), 5, 0, 1, 4);
-    layout->setRowStretch(5, 1);
+    layout->addItem(new QSpacerItem(0, 0), 7, 0, 1, 4);
+    layout->setRowStretch(7, 1);
     setLayout(layout);
 
     connect(_n_spinbox, SIGNAL(valueChanged(int)), this, SLOT(update()));
     connect(_temperature_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
-    connect(_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_temperature_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_lightness_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
+    connect(_saturation_range_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     connect(_saturation_changer, SIGNAL(valueChanged(float)), this, SLOT(update()));
     reset();
 }
@@ -920,7 +934,9 @@ void ColorMapPUSequentialBlackBodyWidget::reset()
     _update_lock = true;
     _n_spinbox->setValue(256);
     _temperature_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultTemperature);
-    _range_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultRange);
+    _temperature_range_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultTemperatureRange);
+    _lightness_range_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultLightnessRange);
+    _saturation_range_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultSaturationRange);
     _saturation_changer->setValue(ColorMap::PUSequentialBlackBodyDefaultSaturation);
     _update_lock = false;
     update();
@@ -929,10 +945,10 @@ void ColorMapPUSequentialBlackBodyWidget::reset()
 QVector<unsigned char> ColorMapPUSequentialBlackBodyWidget::colorMap(int* clipped) const
 {
     int n;
-    float t, r, s;
-    parameters(n, t, r, s);
+    float t, tr, lr, sr, s;
+    parameters(n, t, tr, lr, sr, s);
     QVector<unsigned char> colormap(3 * n);
-    int cl = ColorMap::PUSequentialBlackBody(n, colormap.data(), t, r, s);
+    int cl = ColorMap::PUSequentialBlackBody(n, colormap.data(), t, tr, lr, sr, s);
     if (clipped)
         *clipped = cl;
     return colormap;
@@ -943,11 +959,16 @@ QString ColorMapPUSequentialBlackBodyWidget::reference() const
     return puseq_blackbody_reference;
 }
 
-void ColorMapPUSequentialBlackBodyWidget::parameters(int& n, float& temperature, float& range, float& saturation) const
+void ColorMapPUSequentialBlackBodyWidget::parameters(int& n,
+        float& temperature, float& temperature_range,
+        float& lightness_range, float& saturation_range,
+        float& saturation) const
 {
     n = _n_spinbox->value();
     temperature = _temperature_changer->value();
-    range = _range_changer->value();
+    temperature_range = _temperature_range_changer->value();
+    lightness_range = _lightness_range_changer->value();
+    saturation_range = _saturation_range_changer->value();
     saturation = _saturation_changer->value();
 }
 

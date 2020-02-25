@@ -89,21 +89,21 @@ GUI::GUI()
 
     _category_widget = new QTabWidget();
     _category_seq_widget = new QTabWidget();
-    _category_seq_widget->addTab(_puseq_multihue_widget, "PU Multi Hue");
     _category_seq_widget->addTab(_brewerseq_widget, "Brewer-like");
+    _category_seq_widget->addTab(_cubehelix_widget, "CubeHelix");
+    //_category_seq_widget->addTab(_mcnames_widget, "McNames");
     _category_seq_widget->addTab(_puseq_lightness_widget, "PU Lightness");
     _category_seq_widget->addTab(_puseq_saturation_widget, "PU Saturation");
     _category_seq_widget->addTab(_puseq_rainbow_widget, "PU Rainbow");
     _category_seq_widget->addTab(_puseq_blackbody_widget, "PU Black Body");
-    _category_seq_widget->addTab(_cubehelix_widget, "CubeHelix");
-    //_category_seq_widget->addTab(_mcnames_widget, "McNames");
+    _category_seq_widget->addTab(_puseq_multihue_widget, "PU Multi Hue");
     connect(_category_seq_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
     _category_widget->addTab(_category_seq_widget, "Sequential");
     _category_div_widget = new QTabWidget();
     _category_div_widget->addTab(_brewerdiv_widget, "Brewer-like");
+    _category_div_widget->addTab(_moreland_widget, "Moreland");
     _category_div_widget->addTab(_pudiv_lightness_widget, "PU Lightness");
     _category_div_widget->addTab(_pudiv_saturation_widget, "PU Saturation");
-    _category_div_widget->addTab(_moreland_widget, "Moreland");
     connect(_category_div_widget, SIGNAL(currentChanged(int)), this, SLOT(update()));
     _category_widget->addTab(_category_div_widget, "Diverging");
     _category_qual_widget = new QTabWidget();

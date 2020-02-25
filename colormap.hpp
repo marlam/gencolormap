@@ -163,12 +163,16 @@ int PUSequentialRainbow(int n, unsigned char* colormap,
 // point (6500 K), thus excluding the blue colors that occur at higher
 // temperatures.
 const float PUSequentialBlackBodyDefaultTemperature = 250.0f;
-const float PUSequentialBlackBodyDefaultRange = 6250.0f;
-const float PUSequentialBlackBodyDefaultSaturation = 2.3f;
+const float PUSequentialBlackBodyDefaultTemperatureRange = 6250.0f;
+const float PUSequentialBlackBodyDefaultLightnessRange = PUSequentialLightnessDefaultLightnessRange;
+const float PUSequentialBlackBodyDefaultSaturationRange = PUSequentialLightnessDefaultSaturationRange;
+const float PUSequentialBlackBodyDefaultSaturation = 1.4f;
 
 int PUSequentialBlackBody(int n, unsigned char* colormap,
         float temperature = PUSequentialBlackBodyDefaultTemperature,
-        float range = PUSequentialBlackBodyDefaultRange,
+        float temperature_range = PUSequentialBlackBodyDefaultTemperatureRange,
+        float lightness_range = PUSequentialBlackBodyDefaultLightnessRange,
+        float saturation_range = PUSequentialBlackBodyDefaultSaturationRange,
         float saturation = PUSequentialBlackBodyDefaultSaturation);
 
 // Varying hue (user definable)

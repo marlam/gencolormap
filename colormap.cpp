@@ -855,27 +855,53 @@ static triplet color_matching_function(int lambda /* in nanometers */)
     return xyz;
 }
 
-int PUSequentialBlackBody(int n, unsigned char* colormap, float temperature, float range, float saturation)
+static float black_body_hue_at_temperature(float t)
 {
+    // Integrate radiance over the visible spectrum; according
+    // to literature, sampling at 10nm intervals is enough.
+    triplet xyz(0, 0, 0);
+    int stepsize = 5;
+    float s = stepsize * 1e-9f; // stepsize in meters
+    for (int lambda = 360; lambda <= 830; lambda += stepsize) {
+        float l = lambda * 1e-9f; // lambda in in meters
+        float radiosity = pi * plancks_law(t, l);
+        //xyz = xyz + s * radiosity * color_matching_function_approx(l);
+        xyz = xyz + s * radiosity * color_matching_function(lambda);
+    }
+    triplet lch = luv_to_lch(xyz_to_luv(adjust_y(xyz, 50.0f)));
+    return lch.h;
+}
+
+int PUSequentialBlackBody(int n, unsigned char* colormap,
+        float temperature, float temperature_range,
+        float lightness_range, float saturation_range, float saturation)
+{
+    triplet lch_00, lch_10, lch_05;
+
+    lch_00.l = (1.0f - lightness_range) * 100.0f;
+    lch_00.c = lch_chroma(lch_00.l, 1.0f - saturation_range);
+    lch_00.h = black_body_hue_at_temperature(temperature + 0.0f * temperature_range);
+    lch_10.l = lightness_range * 100.0f;
+    lch_10.c = lch_chroma(lch_10.l, 1.0f - saturation_range);
+    lch_10.h = black_body_hue_at_temperature(temperature + 1.0f * temperature_range);
+    lch_05.l = 0.5f * (lch_00.l + lch_10.l);
+    lch_05.c = lch_chroma(lch_05.l, saturation_range * saturation);
+    lch_05.h = black_body_hue_at_temperature(temperature + 0.5f * temperature_range);
+
+    // the following are not necessarily equal because hue varies:
+    float D_00_05 = lch_distance(lch_00, lch_05);
+    float D_05_10 = lch_distance(lch_05, lch_10);
+
+    triplet lch;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
-        float fract = (i + 0.5f) / n;
-        // Black body temperature for this color map entry
-        float t = temperature + fract * range;
-        // Integrate radiance over the visible spectrum; according
-        // to literature, sampling at 10nm intervals is enough.
-        triplet xyz(0, 0, 0);
-        int stepsize = 5;
-        float s = stepsize * 1e-9f; // stepsize in meters
-        for (int lambda = 360; lambda <= 830; lambda += stepsize) {
-            float l = lambda * 1e-9f; // lambda in in meters
-            float radiosity = pi * plancks_law(t, l);
-            //xyz = xyz + s * radiosity * color_matching_function_approx(l);
-            xyz = xyz + s * radiosity * color_matching_function(lambda);
+        float t = (i + 0.5f) / n;
+        float h = black_body_hue_at_temperature(temperature + t * temperature_range);
+        if (t <= 0.5f) {
+            lch = lch_compute_uniform_lc(t, 0.0f, 0.5f, lch_00, lch_05, D_00_05, h);
+        } else {
+            lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, h);
         }
-        triplet lch = luv_to_lch(xyz_to_luv(adjust_y(xyz, 10.0f)));
-        lch.l = std::max(0.01f, fract * 100.0f);
-        lch.c = lch_chroma(lch.l, (1.0f - fract) * saturation);
         if (lch_to_colormap(lch, colormap + 3 * i))
             clipped++;
     }

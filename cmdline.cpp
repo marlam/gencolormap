@@ -68,12 +68,14 @@ int main(int argc, char* argv[])
     float divergence = -1.0f;
     float contrast = -1.0f;
     float saturation = -1.0f;
+    float saturation_range = -1.0f;
     float brightness = -1.0f;
     float warmth = -1.0f;
     float lightness = -1.0f;
+    float lightness_range = -1.0f;
     float rotations = NAN;
     float temperature = -1.0f;
-    float range = -1.0f;
+    float temperature_range = -1.0f;
     float gamma = -1.0f;
     bool have_color0 = false;
     unsigned char color0[3];
@@ -81,30 +83,32 @@ int main(int argc, char* argv[])
     unsigned char color1[3];
     float periods = NAN;
     struct option options[] = {
-        { "version",     no_argument,       0, 'v' },
-        { "help",        no_argument,       0, 'H' },
-        { "format",      required_argument, 0, 'f' },
-        { "type",        required_argument, 0, 't' },
-        { "n",           required_argument, 0, 'n' },
-        { "hue",         required_argument, 0, 'h' },
-        { "divergence",  required_argument, 0, 'd' },
-        { "contrast",    required_argument, 0, 'c' },
-        { "saturation",  required_argument, 0, 's' },
-        { "brightness",  required_argument, 0, 'b' },
-        { "warmth",      required_argument, 0, 'w' },
-        { "lightness",   required_argument, 0, 'l' },
-        { "rotations",   required_argument, 0, 'r' },
-        { "temperature", required_argument, 0, 'T' },
-        { "range",       required_argument, 0, 'R' },
-        { "gamma",       required_argument, 0, 'g' },
-        { "color0",      required_argument, 0, 'A' },
-        { "color1",      required_argument, 0, 'O' },
-        { "periods",     required_argument, 0, 'p' },
+        { "version",           no_argument,       0, 'v' },
+        { "help",              no_argument,       0, 'H' },
+        { "format",            required_argument, 0, 'f' },
+        { "type",              required_argument, 0, 't' },
+        { "n",                 required_argument, 0, 'n' },
+        { "hue",               required_argument, 0, 'h' },
+        { "divergence",        required_argument, 0, 'd' },
+        { "contrast",          required_argument, 0, 'c' },
+        { "saturation",        required_argument, 0, 's' },
+        { "saturation-range",  required_argument, 0, 'S' },
+        { "brightness",        required_argument, 0, 'b' },
+        { "warmth",            required_argument, 0, 'w' },
+        { "lightness",         required_argument, 0, 'l' },
+        { "lightness-range",   required_argument, 0, 'L' },
+        { "rotations",         required_argument, 0, 'r' },
+        { "temperature",       required_argument, 0, 'T' },
+        { "temperature-range", required_argument, 0, 'R' },
+        { "gamma",             required_argument, 0, 'g' },
+        { "color0",            required_argument, 0, 'A' },
+        { "color1",            required_argument, 0, 'O' },
+        { "periods",           required_argument, 0, 'p' },
         { 0, 0, 0, 0 }
     };
 
     for (;;) {
-        int c = getopt_long(argc, argv, "vHf:t:n:h:d:c:s:b:w:l:T:R:r:g:A:O:p:", options, NULL);
+        int c = getopt_long(argc, argv, "vHf:t:n:h:d:c:s:S:b:w:l:L:r:T:R:g:A:O:p:", options, NULL);
         if (c == -1)
             break;
         switch (c) {
@@ -151,6 +155,9 @@ int main(int argc, char* argv[])
         case 's':
             saturation = atof(optarg);
             break;
+        case 'S':
+            saturation_range = atof(optarg);
+            break;
         case 'b':
             brightness = atof(optarg);
             break;
@@ -160,6 +167,9 @@ int main(int argc, char* argv[])
         case 'l':
             lightness = atof(optarg);
             break;
+        case 'L':
+            lightness_range = atof(optarg);
+            break;
         case 'r':
             rotations = atof(optarg);
             break;
@@ -167,7 +177,7 @@ int main(int argc, char* argv[])
             temperature = atof(optarg);
             break;
         case 'R':
-            range = atof(optarg);
+            temperature_range = atof(optarg);
             break;
         case 'g':
             gamma = atof(optarg);
@@ -224,13 +234,14 @@ int main(int argc, char* argv[])
                 "  [-t|--type=pudiverging-saturation]  Diverging map, varying saturation\n"
                 "  [-t|--type=puqualitative-hue]       Qualitative map, evenly distributed hue\n"
                 "  [-l|--lightness=L]                  Set lightness in [0,1]\n"
+                "  [-L|--lightness-range=LR]           Set lightness range in [0.7,1]\n"
                 "  [-s|--saturation=S]                 Set saturation in [0,1]\n"
+                "  [-S|--saturation-range=SR]          Set saturation range in [0.7,1]\n"
                 "  [-h|--hue=H]                        Set default hue in [0,360] degrees\n"
                 "  [-d|--divergence=D]                 Set diverg. in deg for div. and qual. maps\n"
                 "  [-r|--rotations=R]                  Set number of rotations for rainbow maps\n"
                 "  [-T|--temperature=T]                Set start temp. in K for black body maps\n"
-                "  [-R|--range=R]                      Set range for lightness, saturation, or\n"
-                "                                      temperature, depending on color map type\n"
+                "  [-R|--temperature-range=TR]         Set range for temperature in K\n"
                 "CubeHelix color maps:\n"
                 "  [-t|--type=cubehelix]               Generate a CubeHelix color map\n"
                 "  [-h|--hue=H]                        Set start hue in [0,180] degrees\n"
@@ -329,6 +340,20 @@ int main(int argc, char* argv[])
         else if (type == cubehelix)
             saturation = ColorMap::CubeHelixDefaultSaturation;
     }
+    if (saturation_range < 0.0f) {
+        if (type == puseq_lightness)
+            saturation_range = ColorMap::PUSequentialLightnessDefaultSaturationRange;
+        else if (type == puseq_saturation)
+            saturation_range = ColorMap::PUSequentialSaturationDefaultSaturationRange;
+        else if (type == puseq_rainbow)
+            saturation_range = ColorMap::PUSequentialRainbowDefaultSaturationRange;
+        else if (type == puseq_blackbody)
+            saturation_range = ColorMap::PUSequentialBlackBodyDefaultSaturationRange;
+        else if (type == pudiv_lightness)
+            saturation_range = ColorMap::PUDivergingLightnessDefaultSaturationRange;
+        else if (type == pudiv_saturation)
+            saturation_range = ColorMap::PUDivergingSaturationDefaultSaturationRange;
+    }
     if (brightness < 0.0f) {
         if (type == brewer_seq)
             brightness = ColorMap::BrewerSequentialDefaultBrightness;
@@ -351,6 +376,16 @@ int main(int argc, char* argv[])
         else if (type == puqual_hue)
             lightness = ColorMap::PUQualitativeHueDefaultLightness;
     }
+    if (lightness_range < 0.0f) {
+        if (type == puseq_lightness)
+            lightness_range = ColorMap::PUSequentialLightnessDefaultLightnessRange;
+        else if (type == puseq_rainbow)
+            lightness_range = ColorMap::PUSequentialRainbowDefaultLightnessRange;
+        else if (type == puseq_blackbody)
+            lightness_range = ColorMap::PUSequentialBlackBodyDefaultLightnessRange;
+        else if (type == pudiv_lightness)
+            lightness_range = ColorMap::PUDivergingLightnessDefaultLightnessRange;
+    }
     if (std::isnan(rotations)) {
         if (type == puseq_rainbow)
             rotations = ColorMap::PUSequentialRainbowDefaultRotations;
@@ -361,19 +396,9 @@ int main(int argc, char* argv[])
         if (type == puseq_blackbody)
             temperature = ColorMap::PUSequentialBlackBodyDefaultTemperature;
     }
-    if (range < 0.0f) {
-        if (type == puseq_lightness)
-            range = ColorMap::PUSequentialLightnessDefaultLightnessRange;
-        else if (type == puseq_saturation)
-            range = ColorMap::PUSequentialSaturationDefaultSaturationRange;
-        else if (type == puseq_rainbow)
-            range = ColorMap::PUSequentialRainbowDefaultLightnessRange;
-        else if (type == pudiv_lightness)
-            range = ColorMap::PUDivergingLightnessDefaultLightnessRange;
-        else if (type == pudiv_saturation)
-            range = ColorMap::PUDivergingSaturationDefaultSaturationRange;
-        else if (type == puseq_blackbody)
-            range = ColorMap::PUSequentialBlackBodyDefaultRange;
+    if (temperature_range < 0.0f) {
+        if (type == puseq_blackbody)
+            temperature_range = ColorMap::PUSequentialBlackBodyDefaultTemperatureRange;
     }
     if (gamma < 0.0f) {
         if (type == cubehelix)
@@ -411,25 +436,22 @@ int main(int argc, char* argv[])
         clipped = ColorMap::BrewerQualitative(n, &(colormap[0]), hue, divergence, contrast, saturation, brightness);
         break;
     case puseq_lightness:
-        clipped = ColorMap::PUSequentialLightness(n, &(colormap[0]), range, range, saturation, hue);
-        // TODO: differentiate between lightness range and saturation range
+        clipped = ColorMap::PUSequentialLightness(n, &(colormap[0]), lightness_range, saturation_range, saturation, hue);
         break;
     case puseq_saturation:
-        clipped = ColorMap::PUSequentialSaturation(n, &(colormap[0]), range, lightness, saturation, hue);
+        clipped = ColorMap::PUSequentialSaturation(n, &(colormap[0]), saturation_range, lightness, saturation, hue);
         break;
     case puseq_rainbow:
-        clipped = ColorMap::PUSequentialRainbow(n, &(colormap[0]), range, range, hue, rotations, saturation);
-        // TODO: differentiate between lightness range and saturation range
+        clipped = ColorMap::PUSequentialRainbow(n, &(colormap[0]), lightness_range, saturation_range, hue, rotations, saturation);
         break;
     case puseq_blackbody:
-        clipped = ColorMap::PUSequentialBlackBody(n, &(colormap[0]), temperature, range, saturation);
+        clipped = ColorMap::PUSequentialBlackBody(n, &(colormap[0]), temperature, temperature_range, lightness_range, saturation_range, saturation);
         break;
     case pudiv_lightness:
-        clipped = ColorMap::PUDivergingLightness(n, &(colormap[0]), range, range, saturation, hue, divergence);
-        // TODO: differentiate between lightness range and saturation range
+        clipped = ColorMap::PUDivergingLightness(n, &(colormap[0]), lightness_range, saturation_range, saturation, hue, divergence);
         break;
     case pudiv_saturation:
-        clipped = ColorMap::PUDivergingSaturation(n, &(colormap[0]), range, lightness, saturation, hue, divergence);
+        clipped = ColorMap::PUDivergingSaturation(n, &(colormap[0]), saturation_range, lightness, saturation, hue, divergence);
         break;
     case puqual_hue:
         clipped = ColorMap::PUQualitativeHue(n, &(colormap[0]), hue, divergence, lightness, saturation);
