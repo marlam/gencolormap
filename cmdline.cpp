@@ -43,6 +43,7 @@ enum type {
     puseq_saturation,
     puseq_rainbow,
     puseq_blackbody,
+    puseq_multihue,
     pudiv_lightness,
     pudiv_saturation,
     puqual_hue,
@@ -76,6 +77,8 @@ int main(int argc, char* argv[])
     float rotations = NAN;
     float temperature = -1.0f;
     float temperature_range = -1.0f;
+    std::vector<float> hue_values;
+    std::vector<float> hue_positions;
     float gamma = -1.0f;
     bool have_color0 = false;
     unsigned char color0[3];
@@ -100,6 +103,8 @@ int main(int argc, char* argv[])
         { "rotations",         required_argument, 0, 'r' },
         { "temperature",       required_argument, 0, 'T' },
         { "temperature-range", required_argument, 0, 'R' },
+        { "hue-values",        required_argument, 0, 'V' },
+        { "hue-positions",     required_argument, 0, 'P' },
         { "gamma",             required_argument, 0, 'g' },
         { "color0",            required_argument, 0, 'A' },
         { "color1",            required_argument, 0, 'O' },
@@ -108,7 +113,7 @@ int main(int argc, char* argv[])
     };
 
     for (;;) {
-        int c = getopt_long(argc, argv, "vHf:t:n:h:d:c:s:S:b:w:l:L:r:T:R:g:A:O:p:", options, NULL);
+        int c = getopt_long(argc, argv, "vHf:t:n:h:d:c:s:S:b:w:l:L:r:T:R:V:P::g:A:O:p:", options, NULL);
         if (c == -1)
             break;
         switch (c) {
@@ -132,6 +137,7 @@ int main(int argc, char* argv[])
                     : strcmp(optarg, "pusequential-saturation") == 0 ? puseq_saturation
                     : strcmp(optarg, "pusequential-rainbow") == 0 ? puseq_rainbow
                     : strcmp(optarg, "pusequential-blackbody") == 0 ? puseq_blackbody
+                    : strcmp(optarg, "pusequential-multihue") == 0 ? puseq_multihue
                     : strcmp(optarg, "pudiverging-lightness") == 0 ? pudiv_lightness
                     : strcmp(optarg, "pudiverging-saturation") == 0 ? pudiv_saturation
                     : strcmp(optarg, "puqualitative-hue") == 0 ? puqual_hue
@@ -178,6 +184,24 @@ int main(int argc, char* argv[])
             break;
         case 'R':
             temperature_range = atof(optarg);
+            break;
+        case 'V':
+            for (;;) {
+                hue_values.push_back(atof(optarg) * M_PI / 180.0);
+                optarg = strchr(optarg, ',');
+                if (!optarg)
+                    break;
+                optarg++;
+            }
+            break;
+        case 'P':
+            for (;;) {
+                hue_positions.push_back(atof(optarg));
+                optarg = strchr(optarg, ',');
+                if (!optarg)
+                    break;
+                optarg++;
+            }
             break;
         case 'g':
             gamma = atof(optarg);
@@ -230,6 +254,7 @@ int main(int argc, char* argv[])
                 "  [-t|--type=pusequential-saturation] Sequential map, varying saturation\n"
                 "  [-t|--type=pusequential-rainbow]    Sequential map, varying hue (rainbow)\n"
                 "  [-t|--type=pusequential-blackbody]  Sequential map, varying hue (black body)\n"
+                "  [-t|--type=pusequential-multihue]   Sequential map, varying hue (custom)\n"
                 "  [-t|--type=pudiverging-lightness]   Diverging map, varying lightness\n"
                 "  [-t|--type=pudiverging-saturation]  Diverging map, varying saturation\n"
                 "  [-t|--type=puqualitative-hue]       Qualitative map, evenly distributed hue\n"
@@ -242,6 +267,8 @@ int main(int argc, char* argv[])
                 "  [-r|--rotations=R]                  Set number of rotations for rainbow maps\n"
                 "  [-T|--temperature=T]                Set start temp. in K for black body maps\n"
                 "  [-R|--temperature-range=TR]         Set range for temperature in K\n"
+                "  [-V|--hue-values=H0,H1,...]         Set hue values in [0,360] for multi-hue maps\n"
+                "  [-P|--hue-positions=P0,P1,...]      Set hue positions in [0,1] for multi-hue maps\n"
                 "CubeHelix color maps:\n"
                 "  [-t|--type=cubehelix]               Generate a CubeHelix color map\n"
                 "  [-h|--hue=H]                        Set start hue in [0,180] degrees\n"
@@ -331,6 +358,8 @@ int main(int argc, char* argv[])
             saturation = ColorMap::PUSequentialRainbowDefaultSaturation;
         else if (type == puseq_blackbody)
             saturation = ColorMap::PUSequentialBlackBodyDefaultSaturation;
+        else if (type == puseq_multihue)
+            saturation = ColorMap::PUSequentialMultiHueDefaultSaturation;
         else if (type == pudiv_lightness)
             saturation = ColorMap::PUDivergingLightnessDefaultSaturation;
         else if (type == pudiv_saturation)
@@ -349,6 +378,8 @@ int main(int argc, char* argv[])
             saturation_range = ColorMap::PUSequentialRainbowDefaultSaturationRange;
         else if (type == puseq_blackbody)
             saturation_range = ColorMap::PUSequentialBlackBodyDefaultSaturationRange;
+        else if (type == puseq_multihue)
+            saturation_range = ColorMap::PUSequentialMultiHueDefaultSaturationRange;
         else if (type == pudiv_lightness)
             saturation_range = ColorMap::PUDivergingLightnessDefaultSaturationRange;
         else if (type == pudiv_saturation)
@@ -383,6 +414,8 @@ int main(int argc, char* argv[])
             lightness_range = ColorMap::PUSequentialRainbowDefaultLightnessRange;
         else if (type == puseq_blackbody)
             lightness_range = ColorMap::PUSequentialBlackBodyDefaultLightnessRange;
+        else if (type == puseq_multihue)
+            lightness_range = ColorMap::PUSequentialMultiHueDefaultLightnessRange;
         else if (type == pudiv_lightness)
             lightness_range = ColorMap::PUDivergingLightnessDefaultLightnessRange;
     }
@@ -403,6 +436,24 @@ int main(int argc, char* argv[])
     if (gamma < 0.0f) {
         if (type == cubehelix)
             gamma = ColorMap::CubeHelixDefaultGamma;
+    }
+    if (hue_values.size() == 0) {
+        if (type == puseq_multihue) {
+            hue_values.resize(ColorMap::PUSequentialMultiHueDefaultHues);
+            for (size_t i = 0; i < hue_values.size(); i++)
+                hue_values[i] = ColorMap::PUSequentialMultiHueDefaultHueValues[i];
+        }
+    }
+    if (hue_positions.size() == 0) {
+        if (type == puseq_multihue) {
+            hue_positions.resize(ColorMap::PUSequentialMultiHueDefaultHues);
+            for (size_t i = 0; i < hue_positions.size(); i++)
+                hue_positions[i] = ColorMap::PUSequentialMultiHueDefaultHuePositions[i];
+        }
+    }
+    if (hue_values.size() != hue_positions.size()) {
+        fprintf(stderr, "Number of hue values and positions do not match.\n");
+        return 1;
     }
     if (!have_color0) {
         if (type == moreland) {
@@ -446,6 +497,10 @@ int main(int argc, char* argv[])
         break;
     case puseq_blackbody:
         clipped = ColorMap::PUSequentialBlackBody(n, &(colormap[0]), temperature, temperature_range, lightness_range, saturation_range, saturation);
+        break;
+    case puseq_multihue:
+        clipped = ColorMap::PUSequentialMultiHue(n, &(colormap[0]), lightness_range, saturation_range, saturation,
+                hue_values.size(), hue_values.data(), hue_positions.data());
         break;
     case pudiv_lightness:
         clipped = ColorMap::PUDivergingLightness(n, &(colormap[0]), lightness_range, saturation_range, saturation, hue, divergence);
