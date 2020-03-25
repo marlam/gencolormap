@@ -100,7 +100,7 @@ GUI::GUI()
     export_format_group->addButton(_export_format_csv_button);
     export_format_group->addButton(_export_format_json_button);
     QGridLayout* export_format_layout = new QGridLayout;
-    QLabel* export_format_label = new QLabel("Export format: ");
+    QLabel* export_format_label = new QLabel("Export/Copy format: ");
     export_format_layout->addWidget(export_format_label, 0, 0);
     export_format_layout->addWidget(_export_format_png_button, 0, 1);
     export_format_layout->addWidget(_export_format_ppm_button, 0, 2);
