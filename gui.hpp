@@ -45,6 +45,7 @@ class ColorMapMcNamesWidget;
 class ColorMapTestWidget;
 class QTabWidget;
 class QLabel;
+class QRadioButton;
 
 
 class GUI : public QMainWindow
@@ -78,19 +79,19 @@ private:
     QLabel* _clipped_label;
     QLabel* _colormap_label;
     ColorMapTestWidget* _test_widget;
+    QRadioButton* _export_format_png_button;
+    QRadioButton* _export_format_ppm_button;
+    QRadioButton* _export_format_csv_button;
+    QRadioButton* _export_format_json_button;
 
     ColorMapWidget* currentWidget();
 
 private slots:
     void update();
 
-    void file_export_png();
-    void file_export_csv();
-    void file_export_json();
+    void file_export();
     void edit_reset();
-    void edit_copy_as_img();
-    void edit_copy_as_csv();
-    void edit_copy_as_json();
+    void edit_copy();
     void help_about();
 };
 

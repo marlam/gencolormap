@@ -35,6 +35,8 @@
 #include <QClipboard>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QRadioButton>
+#include <QButtonGroup>
 
 #include "colormapwidgets.hpp"
 #include "testwidget.hpp"
@@ -80,12 +82,33 @@ GUI::GUI()
 
     int firstRow = 0;
 #ifdef Q_OS_WASM
-    QLabel *copyHintLabel0 = new QLabel("<b>Web Demo:</b> <i>Press CTRL+C to copy the color map to the clipboard in CSV format (this may require Google Chrome).</i>");
-    QLabel *copyHintLabel1 = new QLabel("<i>Other export options are only available in the native version. This is a limitation of Qt for WebAssembly.</i>");
-    layout->addWidget(copyHintLabel0, 0, 0);
-    layout->addWidget(copyHintLabel1, 1, 0);
+    QLabel *copyHintLabel0 = new QLabel("<b>Web Demo:</b> <i>Press CTRL+C to copy the color map. Other export options</i>");
+    QLabel *copyHintLabel1 = new QLabel("<i>are only available in the native version. This is a limitation of Qt for WebAssembly.</i>");
+    layout->addWidget(copyHintLabel0, 0, 0, 1, 2);
+    layout->addWidget(copyHintLabel1, 1, 0, 1, 2);
     firstRow = 2;
 #endif
+
+    QButtonGroup* export_format_group = new QButtonGroup;
+    _export_format_png_button = new QRadioButton("PNG");
+    _export_format_ppm_button = new QRadioButton("PPM");
+    _export_format_csv_button = new QRadioButton("CSV");
+    _export_format_json_button = new QRadioButton("JSON");
+    _export_format_png_button->setChecked(true);
+    export_format_group->addButton(_export_format_png_button);
+    export_format_group->addButton(_export_format_ppm_button);
+    export_format_group->addButton(_export_format_csv_button);
+    export_format_group->addButton(_export_format_json_button);
+    QGridLayout* export_format_layout = new QGridLayout;
+    QLabel* export_format_label = new QLabel("Export format: ");
+    export_format_layout->addWidget(export_format_label, 0, 0);
+    export_format_layout->addWidget(_export_format_png_button, 0, 1);
+    export_format_layout->addWidget(_export_format_ppm_button, 0, 2);
+    export_format_layout->addWidget(_export_format_csv_button, 0, 3);
+    export_format_layout->addWidget(_export_format_json_button, 0, 4);
+    export_format_layout->addItem(new QSpacerItem(0, 0), 0, 5);
+    export_format_layout->setColumnStretch(5, 1);
+    layout->addLayout(export_format_layout, firstRow++, 0, 1, 2);
 
     _category_widget = new QTabWidget();
     _category_seq_widget = new QTabWidget();
@@ -134,52 +157,41 @@ GUI::GUI()
     _test_widget = new ColorMapTestWidget();
     layout->addWidget(_test_widget, firstRow + 5, 0, 1, 2);
 
+    QLabel* hint_label = new QLabel("Tip: Export as JSON and evaluate at <a href=\"https://colormeasures.org/\">colormeasures.org</a>.");
+    hint_label->setOpenExternalLinks(true);
+    layout->addWidget(hint_label, firstRow + 6, 0, 1, 2);
+
     layout->setColumnStretch(0, 1);
     layout->setRowStretch(firstRow + 2, 1);
     widget->setLayout(layout);
     setCentralWidget(widget);
 
     QMenu* file_menu = menuBar()->addMenu("&File");
-    QAction* file_export_png_act = new QAction("Export as &PNG...", this);
-    connect(file_export_png_act, SIGNAL(triggered()), this, SLOT(file_export_png()));
-    file_menu->addAction(file_export_png_act);
-    QAction* file_export_csv_act = new QAction("Export as &CSV...", this);
-    connect(file_export_csv_act, SIGNAL(triggered()), this, SLOT(file_export_csv()));
-    file_menu->addAction(file_export_csv_act);
-    QAction* file_export_json_act = new QAction("Export as &JSON...", this);
-    connect(file_export_json_act, SIGNAL(triggered()), this, SLOT(file_export_json()));
-    file_menu->addAction(file_export_json_act);
-    file_menu->addSeparator();
+    QAction* file_export_act = new QAction("&Export...", this);
+    file_export_act->setShortcut(QKeySequence::Save);
+    connect(file_export_act, SIGNAL(triggered()), this, SLOT(file_export()));
+    file_menu->addAction(file_export_act);
+#ifdef Q_OS_WASM
+    file_export_act->setEnabled(false);
+#endif
     QAction* quit_act = new QAction("&Quit...", this);
     quit_act->setShortcut(QKeySequence::Quit);
     connect(quit_act, SIGNAL(triggered()), this, SLOT(close()));
     file_menu->addAction(quit_act);
+
     QMenu* edit_menu = menuBar()->addMenu("&Edit");
     QAction* edit_reset_act = new QAction("&Reset", this);
     connect(edit_reset_act, SIGNAL(triggered()), this, SLOT(edit_reset()));
     edit_menu->addAction(edit_reset_act);
-    QAction* edit_copy_as_img_act = new QAction("Copy as &image", this);
-    connect(edit_copy_as_img_act, SIGNAL(triggered()), this, SLOT(edit_copy_as_img()));
-    edit_menu->addAction(edit_copy_as_img_act);
-    QAction* edit_copy_as_csv_act = new QAction("Copy as &CSV", this);
-    connect(edit_copy_as_csv_act, SIGNAL(triggered()), this, SLOT(edit_copy_as_csv()));
-    edit_copy_as_csv_act->setShortcut(QKeySequence::Copy);
-    edit_menu->addAction(edit_copy_as_csv_act);
-    QAction* edit_copy_as_json_act = new QAction("Copy as &JSON", this);
-    connect(edit_copy_as_json_act, SIGNAL(triggered()), this, SLOT(edit_copy_as_json()));
-    edit_menu->addAction(edit_copy_as_json_act);
+    QAction* edit_copy_act = new QAction("&Copy", this);
+    edit_copy_act->setShortcut(QKeySequence::Copy);
+    connect(edit_copy_act, SIGNAL(triggered()), this, SLOT(edit_copy()));
+    edit_menu->addAction(edit_copy_act);
+
     QMenu* help_menu = menuBar()->addMenu("&Help");
     QAction* help_about_act = new QAction("&About", this);
     connect(help_about_act, SIGNAL(triggered()), this, SLOT(help_about()));
     help_menu->addAction(help_about_act);
-
-#ifdef Q_OS_WASM
-    file_export_png_act->setEnabled(false);
-    file_export_csv_act->setEnabled(false);
-    file_export_json_act->setEnabled(false);
-    edit_copy_as_img_act->setEnabled(false);
-    edit_copy_as_json_act->setEnabled(false);
-#endif
 
     show();
     update();
@@ -205,41 +217,28 @@ void GUI::update()
     _test_widget->update(colormap);
 }
 
-void GUI::file_export_png()
+void GUI::file_export()
 {
     QString name = QFileDialog::getSaveFileName();
     if (!name.isEmpty()) {
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        currentWidget()->colorMapImage(currentWidget()->colorMap(), 0, 1).save(name, "png");
-        QApplication::restoreOverrideCursor();
-    }
-}
-
-void GUI::file_export_csv()
-{
-    QString name = QFileDialog::getSaveFileName();
-    if (!name.isEmpty()) {
-        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        QFile file(name);
-        if (file.open(QIODevice::WriteOnly)) {
-            QTextStream stream(&file);
-            QVector<unsigned char> colormap = currentWidget()->colorMap();
-            stream << ColorMap::ToCSV(colormap.size() / 3, colormap.constData()).c_str();
-        }
-        QApplication::restoreOverrideCursor();
-    }
-}
-
-void GUI::file_export_json()
-{
-    QString name = QFileDialog::getSaveFileName();
-    if (!name.isEmpty()) {
-        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-        QFile file(name);
-        if (file.open(QIODevice::WriteOnly)) {
-            QTextStream stream(&file);
-            QVector<unsigned char> colormap = currentWidget()->colorMap();
-            stream << ColorMap::ToJSON(colormap.size() / 3, colormap.constData()).c_str();
+        QVector<unsigned char> colormap = currentWidget()->colorMap();
+        if (_export_format_png_button->isChecked()) {
+            currentWidget()->colorMapImage(colormap, 0, 1).save(name, "png");
+        } else {
+            QFile file(name);
+            if (file.open(QIODevice::WriteOnly)) {
+                QTextStream stream(&file);
+                std::string exportedColormap;
+                if (_export_format_ppm_button->isChecked()) {
+                    exportedColormap = ColorMap::ToPPM(colormap.size() / 3, colormap.constData());
+                } else if (_export_format_csv_button->isChecked()) {
+                    exportedColormap = ColorMap::ToCSV(colormap.size() / 3, colormap.constData());
+                } else if (_export_format_json_button->isChecked()) {
+                    exportedColormap = ColorMap::ToJSON(colormap.size() / 3, colormap.constData());
+                }
+                stream << exportedColormap.c_str();
+            }
         }
         QApplication::restoreOverrideCursor();
     }
@@ -250,21 +249,22 @@ void GUI::edit_reset()
     currentWidget()->reset();
 }
 
-void GUI::edit_copy_as_img()
-{
-    QApplication::clipboard()->setImage(currentWidget()->colorMapImage(currentWidget()->colorMap(), 0, 1));
-}
-
-void GUI::edit_copy_as_csv()
+void GUI::edit_copy()
 {
     QVector<unsigned char> colormap = currentWidget()->colorMap();
-    QApplication::clipboard()->setText(ColorMap::ToCSV(colormap.size() / 3, colormap.constData()).c_str());
-}
-
-void GUI::edit_copy_as_json()
-{
-    QVector<unsigned char> colormap = currentWidget()->colorMap();
-    QApplication::clipboard()->setText(ColorMap::ToJSON(colormap.size() / 3, colormap.constData()).c_str());
+    if (_export_format_png_button->isChecked()) {
+        QApplication::clipboard()->setImage(currentWidget()->colorMapImage(colormap, 0, 1));
+    } else {
+        std::string exportedColormap;
+        if (_export_format_ppm_button->isChecked()) {
+            exportedColormap = ColorMap::ToPPM(colormap.size() / 3, colormap.constData());
+        } else if (_export_format_csv_button->isChecked()) {
+            exportedColormap = ColorMap::ToCSV(colormap.size() / 3, colormap.constData());
+        } else if (_export_format_json_button->isChecked()) {
+            exportedColormap = ColorMap::ToJSON(colormap.size() / 3, colormap.constData());
+        }
+        QApplication::clipboard()->setText(exportedColormap.c_str());
+    }
 }
 
 void GUI::help_about()
