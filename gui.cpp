@@ -82,11 +82,14 @@ GUI::GUI()
 
     int firstRow = 0;
 #ifdef Q_OS_WASM
-    QLabel *copyHintLabel0 = new QLabel("<b>Web Demo:</b> <i>Press CTRL+C to copy the color map. Other export options</i>");
-    QLabel *copyHintLabel1 = new QLabel("<i>are only available in the native version. This is a limitation of Qt for WebAssembly.</i>");
-    layout->addWidget(copyHintLabel0, 0, 0, 1, 2);
-    layout->addWidget(copyHintLabel1, 1, 0, 1, 2);
-    firstRow = 2;
+    QLabel *copy_hint_label = new QLabel("<b>Web Demo:</b> "
+            "<i>Press CTRL+C to copy the color map in a text-based format, "
+            "then save it to a file using a text editor. "
+            "Other export options are only available in the native version. "
+            "This is a limitation of Qt for WebAssembly.</i>");
+    copy_hint_label->setWordWrap(true);
+    layout->addWidget(copy_hint_label, 0, 0, 1, 2);
+    firstRow = 1;
 #endif
 
     QButtonGroup* export_format_group = new QButtonGroup;
@@ -94,7 +97,12 @@ GUI::GUI()
     _export_format_ppm_button = new QRadioButton("PPM");
     _export_format_csv_button = new QRadioButton("CSV");
     _export_format_json_button = new QRadioButton("JSON");
+#ifdef Q_OS_WASM
+    _export_format_png_button->setEnabled(false);
+    _export_format_ppm_button->setChecked(true);
+#else
     _export_format_png_button->setChecked(true);
+#endif
     export_format_group->addButton(_export_format_png_button);
     export_format_group->addButton(_export_format_ppm_button);
     export_format_group->addButton(_export_format_csv_button);
