@@ -47,37 +47,9 @@ static QString brewerlike_reference = QString("Relevant paper: "
         "<a href=\"http://dx.doi.org/10.1111/j.1467-8659.2008.01203.x\">Generating Color Palettes using Intuitive Parameters</a>, "
         "Computer Graphics Forum 27(3), May 2008.");
 
-static QString puseq_lightness_reference = QString(
-        "Approximately perceptually uniform, constant hue, varying lightness and saturation. "
-        "Computed in CIELUV/LCH color space.");
-
-static QString puseq_saturation_reference = QString(
-        "Approximately perceptually uniform, constant lightness and hue, varying saturation. "
-        "Computed in CIELUV/LCH color space.");
-
-static QString puseq_rainbow_reference = QString(
-        "Approximately perceptually uniform, varying lightness, saturation, and hue (rainbow). "
-        "Computed in CIELUV/LCH color space.");
-
-static QString puseq_blackbody_reference = QString(
-        "Approximately perceptually uniform, varying lightness, saturation, and hue (black body at increasing temperatures). "
-        "Computed in CIELUV/LCH color space.");
-
-static QString puseq_multihue_reference = QString(
-        "Approximately perceptually uniform, varying lightness, saturation, and hue (user definable). "
-        "Computed in CIELUV/LCH color space.");
-
-static QString pudiv_lightness_reference = QString(
-        "Approximately perceptually uniform, constant hues, varying lightness and saturation. "
-        "Computed in CIELUV/LCH color space.");
-
-static QString pudiv_saturation_reference = QString(
-        "Approximately perceptually uniform, constant lightness and hues, varying saturation. "
-        "Computed in CIELUV/LCH color space.");
-
-static QString puqual_hue_reference = QString(
-        "Approximately perceptually uniform, constant lightness and saturation, evenly distributed hue. "
-        "Computed in CIELUV/LCH color space.");
+static QString pu_reference = QString("Relevant paper: "
+        "M. Lambers, Interactive Creation of Perceptually Uniform Color Maps, "
+        "Proc. EuroVis Short Papers, May 2020 (accepted for publication).");
 
 static QString cubehelix_reference = QString("Relevant paper: "
         "D. A. Green, "
@@ -640,7 +612,7 @@ QVector<unsigned char> ColorMapPUSequentialLightnessWidget::colorMap(int* clippe
 
 QString ColorMapPUSequentialLightnessWidget::reference() const
 {
-    return puseq_lightness_reference;
+    return pu_reference;
 }
 
 void ColorMapPUSequentialLightnessWidget::parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue) const
@@ -739,7 +711,7 @@ QVector<unsigned char> ColorMapPUSequentialSaturationWidget::colorMap(int* clipp
 
 QString ColorMapPUSequentialSaturationWidget::reference() const
 {
-    return puseq_saturation_reference;
+    return pu_reference;
 }
 
 void ColorMapPUSequentialSaturationWidget::parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue) const
@@ -846,7 +818,7 @@ QVector<unsigned char> ColorMapPUSequentialRainbowWidget::colorMap(int* clipped)
 
 QString ColorMapPUSequentialRainbowWidget::reference() const
 {
-    return puseq_rainbow_reference;
+    return pu_reference;
 }
 
 void ColorMapPUSequentialRainbowWidget::parameters(int& n,
@@ -956,7 +928,7 @@ QVector<unsigned char> ColorMapPUSequentialBlackBodyWidget::colorMap(int* clippe
 
 QString ColorMapPUSequentialBlackBodyWidget::reference() const
 {
-    return puseq_blackbody_reference;
+    return pu_reference;
 }
 
 void ColorMapPUSequentialBlackBodyWidget::parameters(int& n,
@@ -1108,7 +1080,7 @@ QVector<unsigned char> ColorMapPUSequentialMultiHueWidget::colorMap(int* clipped
 
 QString ColorMapPUSequentialMultiHueWidget::reference() const
 {
-    return puseq_multihue_reference;
+    return pu_reference;
 }
 
 void ColorMapPUSequentialMultiHueWidget::parameters(int& n,
@@ -1264,7 +1236,7 @@ QVector<unsigned char> ColorMapPUDivergingLightnessWidget::colorMap(int* clipped
 
 QString ColorMapPUDivergingLightnessWidget::reference() const
 {
-    return pudiv_lightness_reference;
+    return pu_reference;
 }
 
 void ColorMapPUDivergingLightnessWidget::parameters(int& n, float& lightness_range, float& saturation_range, float& saturation, float& hue, float& divergence) const
@@ -1372,7 +1344,7 @@ QVector<unsigned char> ColorMapPUDivergingSaturationWidget::colorMap(int* clippe
 
 QString ColorMapPUDivergingSaturationWidget::reference() const
 {
-    return pudiv_saturation_reference;
+    return pu_reference;
 }
 
 void ColorMapPUDivergingSaturationWidget::parameters(int& n, float& saturation_range, float& lightness, float& saturation, float& hue, float& divergence) const
@@ -1472,7 +1444,7 @@ QVector<unsigned char> ColorMapPUQualitativeHueWidget::colorMap(int* clipped) co
 
 QString ColorMapPUQualitativeHueWidget::reference() const
 {
-    return puqual_hue_reference;
+    return pu_reference;
 }
 
 void ColorMapPUQualitativeHueWidget::parameters(int& n, float& hue, float& divergence, float& lightness, float& saturation) const

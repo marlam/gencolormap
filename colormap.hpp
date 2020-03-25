@@ -112,6 +112,10 @@ int BrewerQualitative(int n, unsigned char* colormap,
  *
  * For example, color maps of constant lightness are useful for 3D surfaces
  * because they do not interfere with additional shading.
+ *
+ * Relevant paper:
+ * M. Lambers. Interactive Creation of Perceptually Uniform Color Maps.
+ * Proc. EuroVis Short Papers, May 2020. Accepted for publication.
  */
 
 /* Sequential perceptually uniform maps */

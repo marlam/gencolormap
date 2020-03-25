@@ -24,5 +24,8 @@ The following papers are implemented:
 - J. McNames.
   [An Effective Color Scale for Simultaneous Color and Gray-Scale Publications](http://dx.doi.org/10.1109/MSP.2006.1593340).
   IEEE Signal Processing Magazine 23(1), January 2006.
+- M. Lambers.
+  Interactive Creation of Perceptually Uniform Color Maps. Proc. EuroVis Short
+  Papers, May 2020. Accepted for publication.
 
 ![GUI screen shot](https://git.marlam.de/gitweb/?p=gencolormap.git;a=blob_plain;f=screenshot.png;hb=HEAD)
