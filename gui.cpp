@@ -148,9 +148,8 @@ GUI::GUI()
     _reference_label->setWordWrap(true);
     _reference_label->setOpenExternalLinks(true);
     layout->addWidget(_reference_label, firstRow + 1, 0);
-    layout->addItem(new QSpacerItem(0, 0), firstRow + 2, 0);
     _clipped_label = new QLabel("");
-    layout->addWidget(_clipped_label, firstRow + 3, 0);
+    layout->addWidget(_clipped_label, firstRow + 2, 0);
 
     _colormap_label = new QLabel();
     _colormap_label->setScaledContents(true);
@@ -161,16 +160,17 @@ GUI::GUI()
             "designed by P. Kovesi</a>:");
     test_label->setWordWrap(true);
     test_label->setOpenExternalLinks(true);
-    layout->addWidget(test_label, firstRow + 4, 0, 1, 2);
+    layout->addWidget(test_label, firstRow + 3, 0, 1, 2);
     _test_widget = new ColorMapTestWidget();
-    layout->addWidget(_test_widget, firstRow + 5, 0, 1, 2);
+    layout->addWidget(_test_widget, firstRow + 4, 0, 1, 2);
 
     QLabel* hint_label = new QLabel("Tip: Export as JSON and evaluate at <a href=\"https://colormeasures.org/\">colormeasures.org</a>.");
+    hint_label->setWordWrap(true);
     hint_label->setOpenExternalLinks(true);
-    layout->addWidget(hint_label, firstRow + 6, 0, 1, 2);
+    layout->addWidget(hint_label, firstRow + 5, 0, 1, 2);
 
     layout->setColumnStretch(0, 1);
-    layout->setRowStretch(firstRow + 2, 1);
+    layout->setRowStretch(firstRow, 1);
     widget->setLayout(layout);
     setCentralWidget(widget);
 
