@@ -156,7 +156,7 @@ GUI::GUI()
     layout->addWidget(_colormap_label, firstRow, 1, 4, 1);
 
     QLabel* test_label = new QLabel("Test pattern "
-            "<a href=\"http://peterkovesi.com/projects/colourmaps/colourmaptestimage.html\">"
+            "<a href=\"https://peterkovesi.com/projects/colourmaps/colourmaptestimage.html\">"
             "designed by P. Kovesi</a>:");
     test_label->setWordWrap(true);
     test_label->setOpenExternalLinks(true);
@@ -281,7 +281,7 @@ void GUI::help_about()
                 "<p>gencolormap version 2.0<br>"
                 "   <a href=\"https://marlam.de/gencolormap\">https://marlam.de/gencolormap</a></p>"
                 "<p>Copyright (C) 2020<br>"
-                "   <a href=\"http://www.cg.informatik.uni-siegen.de/\">"
+                "   <a href=\"https://www.cg.informatik.uni-siegen.de/\">"
                 "   Computer Graphics Group, University of Siegen</a>.<br>"
                 "   Written by <a href=\"https://marlam.de/\">Martin Lambers</a>.<br>"
                 "   This is free software under the terms of the "

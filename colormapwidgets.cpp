@@ -44,12 +44,12 @@
 
 static QString brewerlike_reference = QString("Relevant paper: "
         "M. Wijffelaars, R. Vliegen, J. J. van Wijk, E-J. van der Linden, "
-        "<a href=\"http://dx.doi.org/10.1111/j.1467-8659.2008.01203.x\">Generating Color Palettes using Intuitive Parameters</a>, "
+        "<a href=\"https://dx.doi.org/10.1111/j.1467-8659.2008.01203.x\">Generating Color Palettes using Intuitive Parameters</a>, "
         "Computer Graphics Forum 27(3), May 2008.");
 
 static QString pu_reference = QString("Relevant paper: "
         "M. Lambers, "
-        "<a href=\"http://dx.doi.org/10.2312/evs.20201048\">Interactive Creation of Perceptually Uniform Color Maps</a>, "
+        "<a href=\"https://dx.doi.org/10.2312/evs.20201048\">Interactive Creation of Perceptually Uniform Color Maps</a>, "
         "Proc. EuroVis Short Papers, May 2020.");
 
 static QString cubehelix_reference = QString("Relevant paper: "
@@ -59,12 +59,12 @@ static QString cubehelix_reference = QString("Relevant paper: "
 
 static QString moreland_reference = QString("Relevant paper: "
         "K. Moreland, "
-        "<a href=\"http://www.kennethmoreland.com/color-maps/\">Diverging Color Maps for Scientific Visualization</a>, "
+        "<a href=\"https://www.kennethmoreland.com/color-maps/\">Diverging Color Maps for Scientific Visualization</a>, "
         "Proc. Int. Symp. Visual Computing, December 2009."); // DOI 10.1007/978-3-642-10520-3_9.
 
 static QString mcnames_references = QString("Relevant paper: "
         "J. McNames, "
-        "<a href=\"http://dx.doi.org/10.1109/MSP.2006.1593340\">An Effective Color Scale for Simultaneous Color and Gray-Scale Publications</a>, "
+        "<a href=\"https://dx.doi.org/10.1109/MSP.2006.1593340\">An Effective Color Scale for Simultaneous Color and Gray-Scale Publications</a>, "
         "IEEE Signal Processing Magazine 23(1), January 2006.");
 
 /* ColorMapCombinedSliderSpinBox */
