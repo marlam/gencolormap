@@ -48,8 +48,9 @@ static QString brewerlike_reference = QString("Relevant paper: "
         "Computer Graphics Forum 27(3), May 2008.");
 
 static QString pu_reference = QString("Relevant paper: "
-        "M. Lambers, Interactive Creation of Perceptually Uniform Color Maps, "
-        "Proc. EuroVis Short Papers, May 2020 (accepted for publication).");
+        "M. Lambers, "
+        "<a href=\"http://dx.doi.org/10.2312/evs.20201048\">Interactive Creation of Perceptually Uniform Color Maps</a>, "
+        "Proc. EuroVis Short Papers, May 2020.");
 
 static QString cubehelix_reference = QString("Relevant paper: "
         "D. A. Green, "

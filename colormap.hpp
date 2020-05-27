@@ -115,7 +115,7 @@ int BrewerQualitative(int n, unsigned char* colormap,
  *
  * Relevant paper:
  * M. Lambers. Interactive Creation of Perceptually Uniform Color Maps.
- * Proc. EuroVis Short Papers, May 2020. Accepted for publication.
+ * Proc. EuroVis Short Papers, May 2020. http://dx.doi.org/10.2312/evs.20201048
  */
 
 /* Sequential perceptually uniform maps */
