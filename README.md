@@ -22,7 +22,7 @@ The following papers are implemented:
   [Diverging Color Maps for Scientific Visualization](https://dx.doi.org/10.1007/978-3-642-10520-3_9).
   Proc. Int. Symp. Visual Computing, December 2009.
 - D. A. Green.
-  [A colour scheme for the display of astronomical intensity](http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/).
+  [A colour scheme for the display of astronomical intensity](https://ui.adsabs.harvard.edu/abs/2011BASI...39..289G/abstract).
   Bulletin of the Astronomical Society of India 39(2), June 2011.
 - J. McNames.
   [An Effective Color Scale for Simultaneous Color and Gray-Scale Publications](https://dx.doi.org/10.1109/MSP.2006.1593340).

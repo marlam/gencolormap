@@ -54,7 +54,7 @@ static QString pu_reference = QString("Relevant paper: "
 
 static QString cubehelix_reference = QString("Relevant paper: "
         "D. A. Green, "
-        "<a href=\"http://www.mrao.cam.ac.uk/~dag/CUBEHELIX/\">A colour scheme for the display of astronomical intensity</a>, "
+        "<a href=\"https://ui.adsabs.harvard.edu/abs/2011BASI...39..289G/abstract\">A colour scheme for the display of astronomical intensity</a>, "
         "Bulletin of the Astronomical Society of India 39(2), June 2011.");
 
 static QString moreland_reference = QString("Relevant paper: "
