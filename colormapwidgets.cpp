@@ -24,6 +24,8 @@
 
 #include "gui.hpp"
 
+#include <QApplication>
+#include <QThread>
 #include <QGridLayout>
 #include <QLabel>
 #include <QSlider>
@@ -33,7 +35,6 @@
 #include <QImage>
 #include <QListWidget>
 #include <QPushButton>
-#include <QColorDialog>
 #include <QtMath>
 
 #include "colormapwidgets.hpp"
@@ -66,6 +67,45 @@ static QString mcnames_references = QString("Relevant paper: "
         "J. McNames, "
         "<a href=\"https://dx.doi.org/10.1109/MSP.2006.1593340\">An Effective Color Scale for Simultaneous Color and Gray-Scale Publications</a>, "
         "IEEE Signal Processing Magazine 23(1), January 2006.");
+
+/* A replacement for
+ *     QColor color = QColorDialog::getColor(initialColor, parentWidget);
+ * because that does not work on WebAssembly, see
+ * https://qtandeverything.blogspot.com/2019/05/exec-on-qt-webassembly.html
+ * Use
+ *     QColor color = getColorFromDialog(initialColor, parentWidget);
+ * instead.
+ */
+
+static QColor ColorDialogColor;
+static volatile int ColorDialogHaveColor;
+
+QColor ColorDialog::getColor(const QColor& initialColor, QWidget* parentWidget)
+{
+    ColorDialogHaveColor = 0;
+    QColorDialog* dlg = new QColorDialog(parentWidget);
+    dlg->setCurrentColor(initialColor);
+    connect(dlg, &QColorDialog::colorSelected,
+            [&](const QColor& selectedColor) {
+                ColorDialogColor = selectedColor;
+                ColorDialogHaveColor = 1;
+            });
+    dlg->open();
+    while (!ColorDialogHaveColor) {
+        QThread::msleep(1);
+        QApplication::processEvents();
+    }
+    return ColorDialogColor;
+}
+
+static QColor getColorFromDialog(const QColor& initialColor, QWidget* parentWidget)
+{
+#ifdef Q_OS_WASM
+    return ColorDialog::getColor(initialColor, parentWidget);
+#else
+    return QColorDialog::getColor(initialColor, parentWidget);
+#endif
+}
 
 /* ColorMapCombinedSliderSpinBox */
 
@@ -1111,7 +1151,7 @@ void ColorMapPUSequentialMultiHueWidget::update()
 
 void ColorMapPUSequentialMultiHueWidget::hueButtonClicked()
 {
-    QColor color = QColorDialog::getColor(_hue_button_color, this);
+    QColor color = getColorFromDialog(_hue_button_color, this);
     if (color.isValid()) {
         _hue_button_color = hueToColor(colorToHue(color));
         updateHueButton();
@@ -1616,7 +1656,7 @@ static QColor getButtonColor(QPushButton* button)
 
 void ColorMapMorelandWidget::chooseColor0()
 {
-    QColor c = QColorDialog::getColor(getButtonColor(_color0_button), this);
+    QColor c = getColorFromDialog(getButtonColor(_color0_button), this);
     if (c.isValid()) {
         setButtonColor(_color0_button, c);
         update();
@@ -1625,7 +1665,7 @@ void ColorMapMorelandWidget::chooseColor0()
 
 void ColorMapMorelandWidget::chooseColor1()
 {
-    QColor c = QColorDialog::getColor(getButtonColor(_color1_button), this);
+    QColor c = getColorFromDialog(getButtonColor(_color1_button), this);
     if (c.isValid()) {
         setButtonColor(_color1_button, c);
         update();

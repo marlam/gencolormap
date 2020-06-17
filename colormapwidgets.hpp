@@ -34,6 +34,15 @@ class QDoubleSpinBox;
 class QPushButton;
 class QListWidget;
 
+// Internal helper for QColorDialog on WebAssembly
+class ColorDialog : public QObject
+{
+Q_OBJECT
+
+public:
+    static QColor getColor(const QColor& initialColor, QWidget* parentWidget);
+};
+
 // Internal helper class for a slider/spinbox combination
 class ColorMapCombinedSliderSpinBox : public QObject
 {
