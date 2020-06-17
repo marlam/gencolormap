@@ -274,6 +274,7 @@ private:
 private slots:
     void update();
     void hueButtonClicked();
+    void colorSelected(const QColor& color);
     void addHue();
     void removeHue();
 
@@ -394,7 +395,9 @@ private:
     QPushButton* _color1_button;
 private slots:
     void chooseColor0();
+    void color0Selected(const QColor& color0);
     void chooseColor1();
+    void color1Selected(const QColor& color1);
     void update();
 
 public:

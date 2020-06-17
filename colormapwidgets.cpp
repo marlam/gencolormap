@@ -29,7 +29,6 @@
 #include <QSlider>
 #include <QDoubleSpinBox>
 #include <QPushButton>
-#include <QColorDialog>
 #include <QImage>
 #include <QListWidget>
 #include <QPushButton>
@@ -1111,7 +1110,19 @@ void ColorMapPUSequentialMultiHueWidget::update()
 
 void ColorMapPUSequentialMultiHueWidget::hueButtonClicked()
 {
-    QColor color = QColorDialog::getColor(_hue_button_color, this);
+#ifdef Q_OS_WASM
+    QColorDialog* dlg = new QColorDialog(this);
+    dlg->setCurrentColor(_hue_button_color);
+    connect(dlg, &QColorDialog::colorSelected, this, &ColorMapPUSequentialMultiHueWidget::colorSelected);
+    dlg->show();
+    dlg->adjustSize();
+#else
+    colorSelected(QColorDialog::getColor(_hue_button_color, this));
+#endif
+}
+
+void ColorMapPUSequentialMultiHueWidget::colorSelected(const QColor& color)
+{
     if (color.isValid()) {
         _hue_button_color = hueToColor(colorToHue(color));
         updateHueButton();
@@ -1616,18 +1627,42 @@ static QColor getButtonColor(QPushButton* button)
 
 void ColorMapMorelandWidget::chooseColor0()
 {
-    QColor c = QColorDialog::getColor(getButtonColor(_color0_button), this);
-    if (c.isValid()) {
-        setButtonColor(_color0_button, c);
+#ifdef Q_OS_WASM
+    QColorDialog* dlg = new QColorDialog(this);
+    dlg->setCurrentColor(getButtonColor(_color0_button));
+    connect(dlg, &QColorDialog::colorSelected, this, &ColorMapMorelandWidget::color0Selected);
+    dlg->show();
+    dlg->adjustSize();
+#else
+    color0Selected(QColorDialog::getColor(getButtonColor(_color0_button), this));
+#endif
+}
+
+void ColorMapMorelandWidget::color0Selected(const QColor& color0)
+{
+    if (color0.isValid()) {
+        setButtonColor(_color0_button, color0);
         update();
     }
 }
 
 void ColorMapMorelandWidget::chooseColor1()
 {
-    QColor c = QColorDialog::getColor(getButtonColor(_color1_button), this);
-    if (c.isValid()) {
-        setButtonColor(_color1_button, c);
+#ifdef Q_OS_WASM
+    QColorDialog* dlg = new QColorDialog(this);
+    dlg->setCurrentColor(getButtonColor(_color1_button));
+    connect(dlg, &QColorDialog::colorSelected, this, &ColorMapMorelandWidget::color1Selected);
+    dlg->show();
+    dlg->adjustSize();
+#else
+    color1Selected(QColorDialog::getColor(getButtonColor(_color1_button), this));
+#endif
+}
+
+void ColorMapMorelandWidget::color1Selected(const QColor& color1)
+{
+    if (color1.isValid()) {
+        setButtonColor(_color1_button, color1);
         update();
     }
 }
