@@ -178,6 +178,9 @@ static float lch_distance(triplet lch0, triplet lch1)
 
 static triplet luv_to_xyz(triplet luv)
 {
+    if (luv.l <= 0.0f)
+        return triplet(0.0f, 0.0f, 0.0f);
+
     triplet xyz;
     float u_prime = luv.u / (13.0f * luv.l) + d65_u_prime;
     float v_prime = luv.v / (13.0f * luv.l) + d65_v_prime;
