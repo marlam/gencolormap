@@ -71,20 +71,11 @@ static float uchar_to_float(unsigned char x)
 
 static unsigned char float_to_uchar(float x, bool* clipped = NULL)
 {
-    int v = std::round(x * 255.0f);
-    if (v < 0) {
-        v = 0;
-        if (clipped)
-            *clipped = true;
-    } else if (v > 255) {
-        v = 255;
-        if (clipped)
-            *clipped = true;
-    } else {
-        if (clipped)
-            *clipped = false;
+    if (clipped) {
+        *clipped = (x < 0.0f || x > 1.0f);
     }
-    return v;
+    int v = std::round(x * 255.0f);
+    return v < 0 ? 0 : v > 255 ? 255 : v;
 }
 
 /* A color triplet class without assumptions about the color space */
