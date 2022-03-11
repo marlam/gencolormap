@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -237,24 +237,25 @@ static triplet xyz_to_lab(triplet xyz)
     return triplet(116.0f * fxyz.y - 16.0f, 500.0f * (fxyz.x - fxyz.y), 200.0f * (fxyz.y - fxyz.z));
 }
 
-/* Color space conversion: RGB <-> XYZ */
+/* Color space conversion: RGB <-> XYZ
+ * The matrix entries are the same as used by PBRT3 and Mitsuba2.
+ * Other values exist, some claiming to be more precise, but we stick
+ * to these standard values for comparability. */
 
 static triplet rgb_to_xyz(triplet rgb)
 {
-    // values from http://terathon.com/blog/rgb-xyz-conversion-matrix-accuracy/
     return 100.0f * triplet(
-            (0.412391f * rgb.r + 0.357584f * rgb.g + 0.180481f * rgb.b),
-            (0.212639f * rgb.r + 0.715169f * rgb.g + 0.072192f * rgb.b),
-            (0.019331f * rgb.r + 0.119195f * rgb.g + 0.950532f * rgb.b));
+            (0.412453f * rgb.r + 0.357580f * rgb.g + 0.180423f * rgb.b),
+            (0.212671f * rgb.r + 0.715160f * rgb.g + 0.072169f * rgb.b),
+            (0.019334f * rgb.r + 0.119193f * rgb.g + 0.950227f * rgb.b));
 }
 
 static triplet xyz_to_rgb(triplet xyz)
 {
-    // values from http://terathon.com/blog/rgb-xyz-conversion-matrix-accuracy/
     return 0.01f * triplet(
-            (+3.240970f * xyz.x - 1.537383f * xyz.y - 0.498611f * xyz.z),
-            (-0.969244f * xyz.x + 1.875968f * xyz.y + 0.041555f * xyz.z),
-            (+0.055630f * xyz.x - 0.203977f * xyz.y + 1.056972f * xyz.z));
+            (+3.240479f * xyz.x - 1.537150f * xyz.y - 0.498535f * xyz.z),
+            (-0.969256f * xyz.x + 1.875991f * xyz.y + 0.041556f * xyz.z),
+            (+0.055648f * xyz.x - 0.204023f * xyz.y + 1.057311f * xyz.z));
 }
 
 /* Color space conversion: RGB <-> sRGB */
