@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -124,7 +124,7 @@ int BrewerQualitative(int n, unsigned char* colormap,
 
 const float PUSequentialLightnessDefaultLightnessRange = 0.95f;
 const float PUSequentialLightnessDefaultSaturationRange = 0.95f;
-const float PUSequentialLightnessDefaultSaturation = 0.45f;
+const float PUSequentialLightnessDefaultSaturation = 0.42f;
 const float PUSequentialLightnessDefaultHue = 0.349065850399f; // 20 deg
 
 int PUSequentialLightness(int n, unsigned char* colormap,
@@ -152,7 +152,7 @@ const float PUSequentialRainbowDefaultLightnessRange = PUSequentialLightnessDefa
 const float PUSequentialRainbowDefaultSaturationRange = PUSequentialLightnessDefaultSaturationRange;
 const float PUSequentialRainbowDefaultHue = 0.0f;
 const float PUSequentialRainbowDefaultRotations = -1.5f;
-const float PUSequentialRainbowDefaultSaturation = 1.1f;
+const float PUSequentialRainbowDefaultSaturation = 0.8f;
 
 int PUSequentialRainbow(int n, unsigned char* colormap,
         float lightness_range = PUSequentialRainbowDefaultLightnessRange,
@@ -232,7 +232,7 @@ int PUDivergingSaturation(int n, unsigned char* colormap,
 const float PUQualitativeHueDefaultHue = 0.0f;
 const float PUQualitativeHueDefaultDivergence = 4.18879020479f; // 2/3 * 2PI
 const float PUQualitativeHueDefaultLightness = 0.55f;
-const float PUQualitativeHueDefaultSaturation = 0.22f;
+const float PUQualitativeHueDefaultSaturation = 0.15f;
 
 int PUQualitativeHue(int n, unsigned char* colormap,
         float hue = PUQualitativeHueDefaultHue,

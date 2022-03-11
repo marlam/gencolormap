@@ -653,7 +653,15 @@ int PUSequentialLightness(int n, unsigned char* colormap,
         } else {
             lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, hue);
         }
-        if (lch_to_colormap(lch, colormap + 3 * i))
+        bool is_clipped = false;
+        if (lch.c > 100.0f) {
+            is_clipped = true;
+            lch.c = 100.0f;
+        }
+        if (lch_to_colormap(lch, colormap + 3 * i)) {
+            is_clipped = true;
+        }
+        if (is_clipped)
             clipped++;
     }
     return clipped;
@@ -679,7 +687,15 @@ int PUSequentialSaturation(int n, unsigned char* colormap,
     for (int i = 0; i < n; i++) {
         float t = (i + 0.5f) / n;
         lch = lch_compute_uniform_lc(t, 0.0f, 1.0f, lch_00, lch_10, D_00_10, hue);
-        if (lch_to_colormap(lch, colormap + 3 * i))
+        bool is_clipped = false;
+        if (lch.c > 100.0f) {
+            is_clipped = true;
+            lch.c = 100.0f;
+        }
+        if (lch_to_colormap(lch, colormap + 3 * i)) {
+            is_clipped = true;
+        }
+        if (is_clipped)
             clipped++;
     }
     return clipped;
@@ -715,7 +731,15 @@ int PUSequentialRainbow(int n, unsigned char* colormap,
         } else {
             lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, h);
         }
-        if (lch_to_colormap(lch, colormap + 3 * i))
+        bool is_clipped = false;
+        if (lch.c > 100.0f) {
+            is_clipped = true;
+            lch.c = 100.0f;
+        }
+        if (lch_to_colormap(lch, colormap + 3 * i)) {
+            is_clipped = true;
+        }
+        if (is_clipped)
             clipped++;
     }
     return clipped;
@@ -897,7 +921,15 @@ int PUSequentialBlackBody(int n, unsigned char* colormap,
         } else {
             lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, h);
         }
-        if (lch_to_colormap(lch, colormap + 3 * i))
+        bool is_clipped = false;
+        if (lch.c > 100.0f) {
+            is_clipped = true;
+            lch.c = 100.0f;
+        }
+        if (lch_to_colormap(lch, colormap + 3 * i)) {
+            is_clipped = true;
+        }
+        if (is_clipped)
             clipped++;
     }
     return clipped;
@@ -975,7 +1007,15 @@ int PUSequentialMultiHue(int n, unsigned char* colormap,
         } else {
             lch = lch_compute_uniform_lc(t, 0.5f, 1.0f, lch_05, lch_10, D_05_10, h);
         }
-        if (lch_to_colormap(lch, colormap + 3 * i))
+        bool is_clipped = false;
+        if (lch.c > 100.0f) {
+            is_clipped = true;
+            lch.c = 100.0f;
+        }
+        if (lch_to_colormap(lch, colormap + 3 * i)) {
+            is_clipped = true;
+        }
+        if (is_clipped)
             clipped++;
     }
     return clipped;
@@ -1018,11 +1058,17 @@ int PUQualitativeHue(int n, unsigned char* colormap,
     triplet lch;
     lch.l = std::max(0.01f, lightness * 100.0f);
     lch.c = lch_chroma(lch.l, saturation * 5.0f);
+    bool all_clipped = (lch.c > 100.0f);
+    if (all_clipped)
+        lch.c = 100.0f;
     int clipped = 0;
     for (int i = 0; i < n; i++) {
         float t = (i + 0.5f) / n;
         lch.h = hue + t * divergence;
+        bool is_clipped = false;
         if (lch_to_colormap(lch, colormap + 3 * i))
+            is_clipped = true;
+        if (is_clipped || all_clipped)
             clipped++;
     }
     return clipped;
