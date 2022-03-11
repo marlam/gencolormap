@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -278,9 +278,9 @@ void GUI::edit_copy()
 void GUI::help_about()
 {
     QMessageBox::about(this, "About",
-                "<p>gencolormap version 2.1<br>"
+                "<p>gencolormap version 2.2<br>"
                 "   <a href=\"https://marlam.de/gencolormap\">https://marlam.de/gencolormap</a></p>"
-                "<p>Copyright (C) 2020<br>"
+                "<p>Copyright (C) 2022<br>"
                 "   <a href=\"https://www.cg.informatik.uni-siegen.de/\">"
                 "   Computer Graphics Group, University of Siegen</a>.<br>"
                 "   Written by <a href=\"https://marlam.de/\">Martin Lambers</a>.<br>"

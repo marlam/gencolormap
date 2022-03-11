@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020
+ * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
  *
@@ -223,9 +223,9 @@ int main(int argc, char* argv[])
     }
 
     if (print_version) {
-        printf("gencolormap version 2.1\n"
+        printf("gencolormap version 2.2\n"
                 "https://marlam.de/gencolormap\n"
-                "Copyright (C) 2020 Computer Graphics Group, University of Siegen.\n"
+                "Copyright (C) 2022 Computer Graphics Group, University of Siegen.\n"
                 "Written by Martin Lambers <martin.lambers@uni-siegen.de>.\n"
                 "This is free software under the terms of the MIT/Expat License.\n"
                 "There is NO WARRANTY, to the extent permitted by law.\n");
