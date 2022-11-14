@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>de.marlam.gencolormap</id>
+  
+  <name>gencolormap</name>
+  <summary>Color Map Generator</summary>
+  
+  <metadata_license>FSFAP</metadata_license>
+  <project_license>MIT</project_license>
+  
+  <description>
+    <p>
+      A generator for color maps, for scientific visualization.
+    </p>
+  </description>
+  
+  <launchable type="desktop-id">de.marlam.gencolormap.desktop</launchable>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>The user interface.</caption>
+      <image>https://marlam.de/gencolormap/gencolormap-screenshot.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1" />
+
+  <url type="homepage">https://marlam.de/gencolormap</url>
+
+  <releases>
+    <release version="3.0" date="2022-11-14">
+      <description>
+        <p>Improved integration into desktop environments.</p>
+      </description>
+    </release>
+  </releases>
+
+
+</component>
