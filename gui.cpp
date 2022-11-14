@@ -2,6 +2,7 @@
  * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -156,7 +157,7 @@ GUI::GUI()
     layout->addWidget(_colormap_label, firstRow, 1, 4, 1);
 
     QLabel* test_label = new QLabel("Test pattern "
-            "<a href=\"https://peterkovesi.com/projects/colourmaps/colourmaptestimage.html\">"
+            "<a href=\"https://colorcet.com/testimage/index.html\">"
             "designed by P. Kovesi</a>:");
     test_label->setWordWrap(true);
     test_label->setOpenExternalLinks(true);
