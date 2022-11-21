@@ -223,7 +223,7 @@ int main(int argc, char* argv[])
     }
 
     if (print_version) {
-        printf("gencolormap version 2.2\n"
+        printf("gencolormap version 2.3\n"
                 "https://marlam.de/gencolormap\n"
                 "Copyright (C) 2022 Computer Graphics Group, University of Siegen.\n"
                 "Written by Martin Lambers <martin.lambers@uni-siegen.de>.\n"
