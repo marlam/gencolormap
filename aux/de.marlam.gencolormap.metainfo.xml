@@ -5,6 +5,10 @@
   <name>gencolormap</name>
   <summary>Color Map Generator</summary>
   
+  <developer id="de.marlam">
+    <name>Martin Lambers</name>
+  </developer>
+  
   <metadata_license>FSFAP</metadata_license>
   <project_license>MIT</project_license>
   
@@ -28,6 +32,11 @@
   <url type="homepage">https://marlam.de/gencolormap</url>
 
   <releases>
+    <release version="2.4" date="2024-06-03">
+      <description>
+        <p>Minor updates to the build system.</p>
+      </description>
+    </release>
     <release version="2.3" date="2022-11-21">
       <description>
         <p>Improved integration into desktop environments.</p>
