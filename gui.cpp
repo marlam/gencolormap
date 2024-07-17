@@ -47,7 +47,7 @@
 GUI::GUI()
 {
     setWindowTitle("Generate Color Map");
-    setWindowIcon(QIcon(":aux/gencolormap-logo-512.png"));
+    setWindowIcon(QIcon(":res/gencolormap-logo-512.png"));
 
     _brewerseq_widget = new ColorMapBrewerSequentialWidget;
     _brewerdiv_widget = new ColorMapBrewerDivergingWidget;
