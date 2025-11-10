@@ -37,9 +37,6 @@ std::string ToHEX(int n, const unsigned char* srgb_colormap);
 // Convert a color map with n sRGB triplets to CSV format
 std::string ToCSV(int n, const unsigned char* srgb_colormap);
 
-// Convert a color map with n sRGB triplets to JSON format
-std::string ToJSON(int n, const unsigned char* srgb_colormap);
-
 // Convert a color map with n sRGB triplets to PPM format
 std::string ToPPM(int n, const unsigned char* srgb_colormap);
 

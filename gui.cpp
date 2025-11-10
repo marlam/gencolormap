@@ -99,7 +99,6 @@ GUI::GUI()
     _export_format_ppm_button = new QRadioButton("PPM");
     _export_format_csv_button = new QRadioButton("CSV");
     _export_format_hex_button = new QRadioButton("HEX");
-    _export_format_json_button = new QRadioButton("JSON");
 #ifdef Q_OS_WASM
     _export_format_png_button->setEnabled(false);
     _export_format_ppm_button->setChecked(true);
@@ -110,7 +109,6 @@ GUI::GUI()
     export_format_group->addButton(_export_format_ppm_button);
     export_format_group->addButton(_export_format_csv_button);
     export_format_group->addButton(_export_format_hex_button);
-    export_format_group->addButton(_export_format_json_button);
     QGridLayout* export_format_layout = new QGridLayout;
     QLabel* export_format_label = new QLabel("Export/Copy format: ");
     export_format_layout->addWidget(export_format_label, 0, 0);
@@ -118,8 +116,7 @@ GUI::GUI()
     export_format_layout->addWidget(_export_format_ppm_button, 0, 2);
     export_format_layout->addWidget(_export_format_csv_button, 0, 3);
     export_format_layout->addWidget(_export_format_hex_button, 0, 4);
-    export_format_layout->addWidget(_export_format_json_button, 0, 5);
-    export_format_layout->addItem(new QSpacerItem(0, 0), 0, 6);
+    export_format_layout->addItem(new QSpacerItem(0, 0), 0, 5);
     export_format_layout->setColumnStretch(6, 1);
     layout->addLayout(export_format_layout, firstRow++, 0, 1, 2);
 
@@ -244,8 +241,6 @@ void GUI::file_export()
                     exportedColormap = ColorMap::ToCSV(colormap.size() / 3, colormap.constData());
                 } else if (_export_format_hex_button->isChecked()) {
                     exportedColormap = ColorMap::ToHEX(colormap.size() / 3, colormap.constData());
-                } else if (_export_format_json_button->isChecked()) {
-                    exportedColormap = ColorMap::ToJSON(colormap.size() / 3, colormap.constData());
                 }
                 stream << exportedColormap.c_str();
             }
@@ -272,8 +267,6 @@ void GUI::edit_copy()
             exportedColormap = ColorMap::ToCSV(colormap.size() / 3, colormap.constData());
         } else if (_export_format_hex_button->isChecked()) {
             exportedColormap = ColorMap::ToHEX(colormap.size() / 3, colormap.constData());
-        } else if (_export_format_json_button->isChecked()) {
-            exportedColormap = ColorMap::ToJSON(colormap.size() / 3, colormap.constData());
         }
         QApplication::clipboard()->setText(exportedColormap.c_str());
     }

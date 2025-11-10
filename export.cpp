@@ -55,25 +55,6 @@ std::string ToCSV(int n, const unsigned char* srgb_colormap)
     return s;
 }
 
-std::string ToJSON(int n, const unsigned char* srgb_colormap)
-{
-    std::string s =
-        "[\n"
-        "{\n"
-        "\"ColorSpace\" : \"RGB\",\n"
-        "\"Name\" : \"GenColorMapGenerated\",\n"
-        "\"NanColor\" : [ -1, -1, -1 ],\n"
-        "\"RGBPoints\" : [\n";
-    for (int i = 0; i < n; i++) {
-        s +=  std::to_string(i / float(n - 1)) + ", "
-            + std::to_string(srgb_colormap[3 * i + 0] / 255.0f) + ", "
-            + std::to_string(srgb_colormap[3 * i + 1] / 255.0f) + ", "
-            + std::to_string(srgb_colormap[3 * i + 2] / 255.0f) + (i == n - 1 ? "\n" : ",\n");
-    }
-    s += "]\n}\n]\n";
-    return s;
-}
-
 std::string ToPPM(int n, const unsigned char* srgb_colormap)
 {
     std::string s = "P3\n"; // magic number for plain PPM

@@ -57,7 +57,6 @@ enum type {
 enum format {
     hex,
     csv,
-    json,
     ppm
 };
 
@@ -129,7 +128,6 @@ int main(int argc, char* argv[])
         case 'f':
             format = (strcmp(optarg, "hex") == 0 ? hex
                     : strcmp(optarg, "csv") == 0 ? csv
-                    : strcmp(optarg, "json") == 0 ? json
                     : strcmp(optarg, "ppm") == 0 ? ppm
                     : -1);
             break;
@@ -241,7 +239,7 @@ int main(int argc, char* argv[])
                 "Generates a color map and prints it to standard output.\n"
                 "Prints the number of colors that had to be clipped to standard error.\n"
                 "Common options:\n"
-                "  [-f|--format=hex|csv|json|ppm]      Set output format\n"
+                "  [-f|--format=hex|csv|ppm]           Set output format\n"
                 "  [-n|--n=N]                          Set number of colors in the map\n"
                 "Brewer-like color maps:\n"
                 "  [-t|--type=brewer-sequential]       Generate a sequential color map\n"
@@ -533,8 +531,6 @@ int main(int argc, char* argv[])
         output = ColorMap::ToHEX(n, colormap.data());
     } else if (format == csv) {
         output = ColorMap::ToCSV(n, colormap.data());
-    } else if (format == json) {
-        output = ColorMap::ToJSON(n, colormap.data());
     } else {
         output = ColorMap::ToPPM(n, colormap.data());
     }
