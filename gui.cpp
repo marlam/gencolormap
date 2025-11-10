@@ -169,11 +169,6 @@ GUI::GUI()
     _test_widget = new ColorMapTestWidget();
     layout->addWidget(_test_widget, firstRow + 4, 0, 1, 2);
 
-    QLabel* hint_label = new QLabel("Tip: Export as JSON and evaluate at <a href=\"https://colormeasures.org/\">colormeasures.org</a>.");
-    hint_label->setWordWrap(true);
-    hint_label->setOpenExternalLinks(true);
-    layout->addWidget(hint_label, firstRow + 5, 0, 1, 2);
-
     layout->setColumnStretch(0, 1);
     layout->setRowStretch(firstRow, 1);
     widget->setLayout(layout);
