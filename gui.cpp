@@ -117,7 +117,7 @@ GUI::GUI()
     export_format_layout->addWidget(_export_format_csv_button, 0, 3);
     export_format_layout->addWidget(_export_format_hex_button, 0, 4);
     export_format_layout->addItem(new QSpacerItem(0, 0), 0, 5);
-    export_format_layout->setColumnStretch(6, 1);
+    export_format_layout->setColumnStretch(5, 1);
     layout->addLayout(export_format_layout, firstRow++, 0, 1, 2);
 
     _category_widget = new QTabWidget();
@@ -166,8 +166,15 @@ GUI::GUI()
     _test_widget = new ColorMapTestWidget();
     layout->addWidget(_test_widget, firstRow + 4, 0, 1, 2);
 
+#ifdef Q_OS_WASM
+    layout->addItem(new QSpacerItem(0, 0), firstRow + 4, 3);
+    layout->setColumnStretch(3, 1);
+    layout->addItem(new QSpacerItem(0, 0), firstRow + 5, 0, 1, 3);
+    layout->setRowStretch(firstRow + 5, 1);
+#else
     layout->setColumnStretch(0, 1);
     layout->setRowStretch(firstRow, 1);
+#endif
     widget->setLayout(layout);
     setCentralWidget(widget);
 
