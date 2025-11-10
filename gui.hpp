@@ -2,6 +2,8 @@
  * Copyright (C) 2015, 2016, 2020
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2025
+ * Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,6 +84,7 @@ private:
     QRadioButton* _export_format_png_button;
     QRadioButton* _export_format_ppm_button;
     QRadioButton* _export_format_csv_button;
+    QRadioButton* _export_format_hex_button;
     QRadioButton* _export_format_json_button;
 
     ColorMapWidget* currentWidget();

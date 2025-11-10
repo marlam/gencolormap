@@ -2,7 +2,8 @@
  * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
- * Copyright (C) 2022 Martin Lambers <marlam@marlam.de>
+ * Copyright (C) 2022, 2023, 2024, 2025
+ * Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -97,6 +98,7 @@ GUI::GUI()
     _export_format_png_button = new QRadioButton("PNG");
     _export_format_ppm_button = new QRadioButton("PPM");
     _export_format_csv_button = new QRadioButton("CSV");
+    _export_format_hex_button = new QRadioButton("HEX");
     _export_format_json_button = new QRadioButton("JSON");
 #ifdef Q_OS_WASM
     _export_format_png_button->setEnabled(false);
@@ -107,6 +109,7 @@ GUI::GUI()
     export_format_group->addButton(_export_format_png_button);
     export_format_group->addButton(_export_format_ppm_button);
     export_format_group->addButton(_export_format_csv_button);
+    export_format_group->addButton(_export_format_hex_button);
     export_format_group->addButton(_export_format_json_button);
     QGridLayout* export_format_layout = new QGridLayout;
     QLabel* export_format_label = new QLabel("Export/Copy format: ");
@@ -114,9 +117,10 @@ GUI::GUI()
     export_format_layout->addWidget(_export_format_png_button, 0, 1);
     export_format_layout->addWidget(_export_format_ppm_button, 0, 2);
     export_format_layout->addWidget(_export_format_csv_button, 0, 3);
-    export_format_layout->addWidget(_export_format_json_button, 0, 4);
-    export_format_layout->addItem(new QSpacerItem(0, 0), 0, 5);
-    export_format_layout->setColumnStretch(5, 1);
+    export_format_layout->addWidget(_export_format_hex_button, 0, 4);
+    export_format_layout->addWidget(_export_format_json_button, 0, 5);
+    export_format_layout->addItem(new QSpacerItem(0, 0), 0, 6);
+    export_format_layout->setColumnStretch(6, 1);
     layout->addLayout(export_format_layout, firstRow++, 0, 1, 2);
 
     _category_widget = new QTabWidget();
@@ -243,6 +247,8 @@ void GUI::file_export()
                     exportedColormap = ColorMap::ToPPM(colormap.size() / 3, colormap.constData());
                 } else if (_export_format_csv_button->isChecked()) {
                     exportedColormap = ColorMap::ToCSV(colormap.size() / 3, colormap.constData());
+                } else if (_export_format_hex_button->isChecked()) {
+                    exportedColormap = ColorMap::ToHEX(colormap.size() / 3, colormap.constData());
                 } else if (_export_format_json_button->isChecked()) {
                     exportedColormap = ColorMap::ToJSON(colormap.size() / 3, colormap.constData());
                 }
@@ -269,6 +275,8 @@ void GUI::edit_copy()
             exportedColormap = ColorMap::ToPPM(colormap.size() / 3, colormap.constData());
         } else if (_export_format_csv_button->isChecked()) {
             exportedColormap = ColorMap::ToCSV(colormap.size() / 3, colormap.constData());
+        } else if (_export_format_hex_button->isChecked()) {
+            exportedColormap = ColorMap::ToHEX(colormap.size() / 3, colormap.constData());
         } else if (_export_format_json_button->isChecked()) {
             exportedColormap = ColorMap::ToJSON(colormap.size() / 3, colormap.constData());
         }

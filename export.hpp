@@ -2,6 +2,8 @@
  * Copyright (C) 2019
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2025
+ * Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +30,9 @@
 #include <string>
 
 namespace ColorMap {
+
+// Convert a color map with n sRGB triplets to HEX format
+std::string ToHEX(int n, const unsigned char* srgb_colormap);
 
 // Convert a color map with n sRGB triplets to CSV format
 std::string ToCSV(int n, const unsigned char* srgb_colormap);

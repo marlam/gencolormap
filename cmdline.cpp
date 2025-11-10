@@ -2,6 +2,8 @@
  * Copyright (C) 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2025
+ * Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -53,6 +55,7 @@ enum type {
 };
 
 enum format {
+    hex,
     csv,
     json,
     ppm
@@ -124,7 +127,8 @@ int main(int argc, char* argv[])
             print_help = true;
             break;
         case 'f':
-            format = (strcmp(optarg, "csv") == 0 ? csv
+            format = (strcmp(optarg, "hex") == 0 ? hex
+                    : strcmp(optarg, "csv") == 0 ? csv
                     : strcmp(optarg, "json") == 0 ? json
                     : strcmp(optarg, "ppm") == 0 ? ppm
                     : -1);
@@ -237,7 +241,7 @@ int main(int argc, char* argv[])
                 "Generates a color map and prints it to standard output.\n"
                 "Prints the number of colors that had to be clipped to standard error.\n"
                 "Common options:\n"
-                "  [-f|--format=csv|json|ppm]          Set output format\n"
+                "  [-f|--format=hex|csv|json|ppm]      Set output format\n"
                 "  [-n|--n=N]                          Set number of colors in the map\n"
                 "Brewer-like color maps:\n"
                 "  [-t|--type=brewer-sequential]       Generate a sequential color map\n"
@@ -525,7 +529,9 @@ int main(int argc, char* argv[])
     }
 
     std::string output;
-    if (format == csv) {
+    if (format == hex) {
+        output = ColorMap::ToHEX(n, colormap.data());
+    } else if (format == csv) {
         output = ColorMap::ToCSV(n, colormap.data());
     } else if (format == json) {
         output = ColorMap::ToJSON(n, colormap.data());

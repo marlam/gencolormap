@@ -2,6 +2,8 @@
  * Copyright (C) 2019
  * Computer Graphics Group, University of Siegen
  * Written by Martin Lambers <martin.lambers@uni-siegen.de>
+ * Copyright (C) 2025
+ * Martin Lambers <marlam@marlam.de>
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +27,22 @@
 #include "export.hpp"
 
 namespace ColorMap {
+
+std::string ToHEX(int n, const unsigned char* srgb_colormap)
+{
+    const char *hex = "0123456789ABCDEF";
+    std::string s;
+    for (int i = 0; i < n; i++) {
+        s += hex[(srgb_colormap[3 * i + 0] & 0xf0) >> 4];
+        s += hex[(srgb_colormap[3 * i + 0] & 0x0f)     ];
+        s += hex[(srgb_colormap[3 * i + 1] & 0xf0) >> 4];
+        s += hex[(srgb_colormap[3 * i + 1] & 0x0f)     ];
+        s += hex[(srgb_colormap[3 * i + 2] & 0xf0) >> 4];
+        s += hex[(srgb_colormap[3 * i + 2] & 0x0f)     ];
+        s += '\n';
+    }
+    return s;
+}
 
 std::string ToCSV(int n, const unsigned char* srgb_colormap)
 {
