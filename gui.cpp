@@ -277,7 +277,7 @@ void GUI::edit_copy_hex()
 void GUI::help_about()
 {
     QMessageBox::about(this, "About",
-                "<p>gencolormap version 2.5<br>"
+                "<p>gencolormap version 2.6<br>"
                 "   <a href=\"https://marlam.de/gencolormap\">https://marlam.de/gencolormap</a></p>"
                 "<p>Copyright (C) 2025<br>"
                 "   <a href=\"https://www.cg.informatik.uni-siegen.de/\">"
