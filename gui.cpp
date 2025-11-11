@@ -87,8 +87,7 @@ GUI::GUI()
     QLabel *copy_hint_label = new QLabel("<b>Web Demo:</b> "
             "<i>Press CTRL+C to copy the color map in a text-based format, "
             "then save it to a file using a text editor. "
-            "Other export options are only available in the native version. "
-            "This is a limitation of Qt for WebAssembly.</i>");
+            "Other export options are available in the native version.</i>");
     copy_hint_label->setWordWrap(true);
     layout->addWidget(copy_hint_label, 0, 0, 1, 2);
     firstRow = 1;
