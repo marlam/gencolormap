@@ -32,7 +32,7 @@
   <url type="homepage">https://marlam.de/gencolormap</url>
 
   <releases>
-    <release version="2.5" date="2025-11-11">
+    <release version="2.6" date="2025-11-11">
       <description>
         <p>Improved user interface and new HEX export format.</p>
       </description>
