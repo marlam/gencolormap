@@ -81,20 +81,21 @@ private:
     QLabel* _clipped_label;
     QLabel* _colormap_label;
     ColorMapTestWidget* _test_widget;
-    QRadioButton* _export_format_png_button;
-    QRadioButton* _export_format_ppm_button;
-    QRadioButton* _export_format_csv_button;
-    QRadioButton* _export_format_hex_button;
-    QRadioButton* _export_format_json_button;
 
     ColorMapWidget* currentWidget();
 
 private slots:
     void update();
 
-    void file_export();
+    void file_export_png();
+    void file_export_ppm();
+    void file_export_csv();
+    void file_export_hex();
     void edit_reset();
-    void edit_copy();
+    void edit_copy_png();
+    void edit_copy_ppm();
+    void edit_copy_csv();
+    void edit_copy_hex();
     void help_about();
 };
 
