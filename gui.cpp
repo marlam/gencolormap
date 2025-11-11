@@ -283,10 +283,10 @@ void GUI::help_about()
     QMessageBox::about(this, "About",
                 "<p>gencolormap version 2.4<br>"
                 "   <a href=\"https://marlam.de/gencolormap\">https://marlam.de/gencolormap</a></p>"
-                "<p>Copyright (C) 2024<br>"
+                "<p>Copyright (C) 2025<br>"
                 "   <a href=\"https://www.cg.informatik.uni-siegen.de/\">"
-                "   Computer Graphics Group, University of Siegen</a>.<br>"
-                "   Written by <a href=\"https://marlam.de/\">Martin Lambers</a>.<br>"
+                "   Computer Graphics Group, University of Siegen</a> and "
+                "   <a href=\"https://marlam.de/\">Martin Lambers</a>.<br>"
                 "   This is free software under the terms of the "
                     "<a href=\"https://www.debian.org/legal/licenses/mit\">MIT/Expat License</a>. "
                 "   There is NO WARRANTY, to the extent permitted by law."
