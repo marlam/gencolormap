@@ -166,6 +166,7 @@ GUI::GUI()
     edit_menu->addAction(edit_reset_act);
 
     QAction* edit_copy_png_act = new QAction("&Copy as PNG", this);
+    edit_copy_png_act->setShortcut(QKeySequence::Copy);
     connect(edit_copy_png_act, SIGNAL(triggered()), this, SLOT(edit_copy_png()));
     edit_menu->addAction(edit_copy_png_act);
     QAction* edit_copy_ppm_act = new QAction("Copy as PPM", this);
@@ -177,12 +178,6 @@ GUI::GUI()
     QAction* edit_copy_hex_act = new QAction("Copy as HEX", this);
     connect(edit_copy_hex_act, SIGNAL(triggered()), this, SLOT(edit_copy_hex()));
     edit_menu->addAction(edit_copy_hex_act);
-#ifdef Q_OS_WASM
-    edit_copy_png_act->setEnabled(false);
-    edit_copy_csv_act->setShortcut(QKeySequence::Copy);
-#else
-    edit_copy_png_act->setShortcut(QKeySequence::Copy);
-#endif
 
     QMenu* help_menu = menuBar()->addMenu("&Help");
     QAction* help_about_act = new QAction("&About", this);
